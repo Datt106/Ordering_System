@@ -1,0 +1,31 @@
+.root {
+    -fx-font-family: "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #0f1419;
+}
+
+.header {
+    -fx-background-color: linear-gradient(to bottom, #1a2633, #121820);
+    -fx-border-color: #243042;
+    -fx-border-width: 0 0 1 0;
+}
+
+.title {
+    -fx-text-fill: #e8edf4;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.subtitle {
+    -fx-text-fill: #8b9cb3;
+    -fx-font-size: 13px;
+}
+
+.content {
+    -fx-background-color: #0f1419;
+}
+
+.hint {
+    -fx-text-fill: #5c6d82;
+    -fx-font-size: 14px;
+}
