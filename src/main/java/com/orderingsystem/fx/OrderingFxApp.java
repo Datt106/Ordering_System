@@ -2,6 +2,7 @@ package com.orderingsystem.fx;
 
 import com.orderingsystem.fx.framework.FxmlLoaderFactory;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -11,6 +12,7 @@ public class OrderingFxApp extends Application {
     @Override
     public void init() {
         JpaBootstrap.init();
+        new DatabaseSeeder().seedDemoData();
     }
 
     @Override
