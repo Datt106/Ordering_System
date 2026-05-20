@@ -1,11 +1,17 @@
 package com.orderingsystem.fx;
 
 import com.orderingsystem.fx.framework.FxmlLoaderFactory;
+import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class OrderingFxApp extends Application {
+
+    @Override
+    public void init() {
+        JpaBootstrap.init();
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -14,11 +20,16 @@ public class OrderingFxApp extends Application {
         var scene = new Scene(root, 960, 640);
         scene.getStylesheets().add(getClass().getResource("/css/app.css").toExternalForm());
 
-        primaryStage.setTitle("Ordering — JavaFX");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(720);
         primaryStage.setMinHeight(480);
+        primaryStage.setTitle("Ordering — JavaFX | DB: " + JpaBootstrap.databasePath());
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() {
+        JpaBootstrap.shutdown();
     }
 
     public static void main(String[] args) {
