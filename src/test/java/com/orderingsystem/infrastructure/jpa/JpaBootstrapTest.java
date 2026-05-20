@@ -26,6 +26,10 @@ class JpaBootstrapTest {
         EntityManager em = JpaBootstrap.openEntityManager();
         try {
             em.getTransaction().begin();
+            Site existing = em.find(Site.class, "S-TEST");
+            if (existing != null) {
+                em.remove(existing);
+            }
             Site site = new Site("S-TEST", "Test Import Site", "demo");
             em.persist(site);
             em.getTransaction().commit();
