@@ -70,4 +70,21 @@ public class ImportRequestRepository extends BaseRepository {
             }
         });
     }
+
+    /** UC005 — chỉ tiếp nhận yêu cầu đang Chờ xử lý. */
+    public void acceptForProcessing(String requestId, String processedBy) {
+        inTransaction(em -> {
+            ImportRequest request = em.find(ImportRequest.class, requestId);
+            if (request == null) {
+                throw new IllegalArgumentException("Yêu cầu không tồn tại: " + requestId);
+            }
+            if (request.getStatus() != RequestStatus.CHO_XU_LY) {
+                throw new IllegalStateException(
+                        "Chỉ tiếp nhận được yêu cầu ở trạng thái Chờ xử lý. Hiện tại: " + request.getStatus());
+            }
+            request.setStatus(RequestStatus.DANG_XU_LY);
+            request.setProcessedBy(processedBy);
+            request.setProcessedAt(Instant.now());
+        });
+    }
 }
