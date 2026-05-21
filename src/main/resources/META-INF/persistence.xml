@@ -11,6 +11,7 @@
         <class>com.orderingsystem.domain.auth.User</class>
         <class>com.orderingsystem.domain.site.Site</class>
         <class>com.orderingsystem.domain.site.SiteMerchandise</class>
+        <class>com.orderingsystem.domain.catalog.StandardMerchandise</class>
         <class>com.orderingsystem.domain.request.ImportRequest</class>
         <class>com.orderingsystem.domain.request.ImportRequestItem</class>
         <class>com.orderingsystem.domain.inventory.InventoryQuery</class>
