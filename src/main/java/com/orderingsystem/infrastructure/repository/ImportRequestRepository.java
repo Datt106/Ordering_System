@@ -36,6 +36,18 @@ public class ImportRequestRepository extends BaseRepository {
         });
     }
 
+    /** Đếm yêu cầu có mã bắt đầu bằng prefix (vd. REQ-20260521-) — sinh sequence UC002. */
+    public int countByRequestIdPrefix(String prefix) {
+        return query(em -> {
+            Long count = em.createQuery(
+                            "SELECT COUNT(r) FROM ImportRequest r WHERE r.requestId LIKE :pattern",
+                            Long.class)
+                    .setParameter("pattern", prefix + "%")
+                    .getSingleResult();
+            return count.intValue();
+        });
+    }
+
     public List<ImportRequest> findByStatus(RequestStatus status) {
         return query(em -> em.createQuery(
                         "SELECT r FROM ImportRequest r WHERE r.status = :status "
