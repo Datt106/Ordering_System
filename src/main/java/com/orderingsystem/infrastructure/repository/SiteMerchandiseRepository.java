@@ -73,6 +73,14 @@ public class SiteMerchandiseRepository extends BaseRepository {
         });
     }
 
+    public void deleteAllBySiteCode(String siteCode) {
+        inTransaction(em -> {
+            em.createQuery("DELETE FROM SiteMerchandise sm WHERE sm.site.siteCode = :siteCode")
+                    .setParameter("siteCode", siteCode)
+                    .executeUpdate();
+        });
+    }
+
     public SiteMerchandise createLink(Site site, String merchandiseCode) {
         return inTransaction(em -> {
             Site managedSite = em.getReference(Site.class, site.getSiteCode());
