@@ -48,6 +48,59 @@ public class ImportRequestRepository extends BaseRepository {
         });
     }
 
+    public List<ImportRequest> findByDepartment(String department) {
+        return query(em -> em.createQuery(
+                        "SELECT r FROM ImportRequest r WHERE r.department = :department "
+                                + "ORDER BY r.createdAt DESC",
+                        ImportRequest.class)
+                .setParameter("department", department)
+                .getResultList());
+    }
+
+    /** UC003 — lọc theo trạng thái và/hoặc khoảng ngày tạo (theo ngày lịch, inclusive). */
+    public List<ImportRequest> findByDepartmentFiltered(
+            String department,
+            RequestStatus status,
+            Instant createdFromInclusive,
+            Instant createdToExclusive
+    ) {
+        return query(em -> {
+            StringBuilder jpql = new StringBuilder(
+                    "SELECT r FROM ImportRequest r WHERE r.department = :department");
+            if (status != null) {
+                jpql.append(" AND r.status = :status");
+            }
+            if (createdFromInclusive != null) {
+                jpql.append(" AND r.createdAt >= :createdFrom");
+            }
+            if (createdToExclusive != null) {
+                jpql.append(" AND r.createdAt < :createdTo");
+            }
+            jpql.append(" ORDER BY r.createdAt DESC");
+
+            var query = em.createQuery(jpql.toString(), ImportRequest.class)
+                    .setParameter("department", department);
+            if (status != null) {
+                query.setParameter("status", status);
+            }
+            if (createdFromInclusive != null) {
+                query.setParameter("createdFrom", createdFromInclusive);
+            }
+            if (createdToExclusive != null) {
+                query.setParameter("createdTo", createdToExclusive);
+            }
+            return query.getResultList();
+        });
+    }
+
+    public long countItemsByRequestId(String requestId) {
+        return query(em -> em.createQuery(
+                        "SELECT COUNT(i) FROM ImportRequestItem i WHERE i.request.requestId = :requestId",
+                        Long.class)
+                .setParameter("requestId", requestId)
+                .getSingleResult());
+    }
+
     public List<ImportRequest> findByStatus(RequestStatus status) {
         return query(em -> em.createQuery(
                         "SELECT r FROM ImportRequest r WHERE r.status = :status "
