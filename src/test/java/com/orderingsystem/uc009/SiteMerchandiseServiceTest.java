@@ -8,6 +8,7 @@ import com.orderingsystem.uc009.dto.SiteMerchandiseDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,8 +27,9 @@ class SiteMerchandiseServiceTest {
         new DatabaseSeeder().seedDemoData();
     }
 
+    @BeforeEach
     @AfterEach
-    void cleanup() {
+    void resetSiteMerchandise() {
         authService.logout();
         siteMerchandiseRepository.deleteAllBySiteCode(DatabaseSeeder.DEMO_SITE_CODE);
     }
