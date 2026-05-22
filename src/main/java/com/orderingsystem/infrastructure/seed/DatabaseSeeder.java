@@ -20,6 +20,12 @@ public final class DatabaseSeeder {
 
     public static final List<String> DEMO_MERCHANDISE_CODES = List.of("P001", "P002", "P003");
 
+    private static final String[][] DEMO_CATALOG = {
+            {"P001", "Precision Bearing", "Industrial precision bearing"},
+            {"P002", "Hydraulic Pump", "Standard hydraulic pump unit"},
+            {"P003", "Control Valve", "Flow control valve assembly"},
+    };
+
     private final UserRepository userRepository;
     private final SiteRepository siteRepository;
     private final MerchandiseCatalogRepository merchandiseCatalogRepository;
@@ -49,9 +55,14 @@ public final class DatabaseSeeder {
     }
 
     private void seedStandardCatalog() {
-        for (String code : DEMO_MERCHANDISE_CODES) {
+        for (String[] row : DEMO_CATALOG) {
+            String code = row[0];
+            String name = row[1];
+            String description = row[2];
             if (!merchandiseCatalogRepository.existsByCode(code)) {
-                merchandiseCatalogRepository.save(new StandardMerchandise(code));
+                merchandiseCatalogRepository.save(new StandardMerchandise(code, name, description));
+            } else {
+                merchandiseCatalogRepository.updateInfo(code, name, description);
             }
         }
     }
