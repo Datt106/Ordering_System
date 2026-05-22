@@ -44,4 +44,30 @@ public class InventoryQueryRepository extends BaseRepository {
                     .executeUpdate();
         });
     }
+
+    public List<InventoryQuery> findPendingBySiteCode(String siteCode) {
+        return query(em -> em.createQuery(
+                        "SELECT q FROM InventoryQuery q WHERE q.siteCode = :siteCode "
+                                + "AND q.respondedAt IS NULL ORDER BY q.requestId, q.merchandiseCode",
+                        InventoryQuery.class)
+                .setParameter("siteCode", siteCode)
+                .getResultList());
+    }
+
+    public long countByRequestId(String requestId) {
+        return query(em -> em.createQuery(
+                        "SELECT COUNT(q) FROM InventoryQuery q WHERE q.requestId = :requestId",
+                        Long.class)
+                .setParameter("requestId", requestId)
+                .getSingleResult());
+    }
+
+    public long countRespondedByRequestId(String requestId) {
+        return query(em -> em.createQuery(
+                        "SELECT COUNT(q) FROM InventoryQuery q WHERE q.requestId = :requestId "
+                                + "AND q.respondedAt IS NOT NULL",
+                        Long.class)
+                .setParameter("requestId", requestId)
+                .getSingleResult());
+    }
 }

@@ -81,4 +81,16 @@ public class InventoryQuery {
     public Instant getRespondedAt() {
         return respondedAt;
     }
+
+    public boolean isPending() {
+        return respondedAt == null;
+    }
+
+    public void setInStockQuantity(int inStockQuantity) {
+        this.inStockQuantity = inStockQuantity;
+    }
+
+    public void setRespondedAt(Instant respondedAt) {
+        this.respondedAt = respondedAt;
+    }
 }

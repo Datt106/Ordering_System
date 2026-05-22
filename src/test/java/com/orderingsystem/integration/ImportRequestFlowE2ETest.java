@@ -15,6 +15,8 @@ import com.orderingsystem.uc003.dto.ImportRequestListItemDto;
 import com.orderingsystem.uc003.dto.ImportRequestTrackingDetailDto;
 import com.orderingsystem.uc005.ImportRequestAcceptanceService;
 import com.orderingsystem.uc009.SiteMerchandiseService;
+import com.orderingsystem.uc006.InventoryQueryService;
+import com.orderingsystem.uc006.dto.InventoryQueryDispatchResultDto;
 import com.orderingsystem.uc010.SiteShippingService;
 import com.orderingsystem.uc004.dto.SiteDto;
 import org.junit.jupiter.api.AfterAll;
@@ -46,6 +48,7 @@ class ImportRequestFlowE2ETest {
             new ImportRequestAcceptanceService();
     private static final ImportRequestTrackingService trackingService =
             new ImportRequestTrackingService();
+    private static final InventoryQueryService inventoryQueryService = new InventoryQueryService();
     private static final SiteMerchandiseRepository siteMerchandiseRepository =
             new SiteMerchandiseRepository();
 
@@ -77,7 +80,19 @@ class ImportRequestFlowE2ETest {
 
         overseasAccepts(requestId);
 
+        InventoryQueryDispatchResultDto inventory = overseasDispatchesInventory(requestId);
+
         salesSeesProcessing(requestId);
+
+        assertEquals(1, inventory.totalQueries());
+        assertEquals(1, inventory.pendingQueries());
+    }
+
+    private InventoryQueryDispatchResultDto overseasDispatchesInventory(String requestId) {
+        authService.login("overseas", "overseas123");
+        InventoryQueryDispatchResultDto result = inventoryQueryService.dispatchInventoryQueries(requestId);
+        authService.logout();
+        return result;
     }
 
     private void prepareDemoSite() {

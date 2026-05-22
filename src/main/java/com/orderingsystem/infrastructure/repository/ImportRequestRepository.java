@@ -1,6 +1,8 @@
 package com.orderingsystem.infrastructure.repository;
 
 import com.orderingsystem.domain.request.ImportRequest;
+import com.orderingsystem.domain.request.ImportRequestItem;
+import com.orderingsystem.domain.request.ItemStatus;
 import com.orderingsystem.domain.request.RequestStatus;
 
 import java.time.Instant;
@@ -121,6 +123,17 @@ public class ImportRequestRepository extends BaseRepository {
                 request.setProcessedBy(processedBy);
                 request.setProcessedAt(Instant.now());
             }
+        });
+    }
+
+    /** UC006 — đánh dấu dòng yêu cầu khi không có Site kinh doanh mặt hàng. */
+    public void updateItemStatus(long itemId, ItemStatus status) {
+        inTransaction(em -> {
+            ImportRequestItem item = em.find(ImportRequestItem.class, itemId);
+            if (item == null) {
+                throw new IllegalArgumentException("Dòng yêu cầu không tồn tại: " + itemId);
+            }
+            item.setItemStatus(status);
         });
     }
 
