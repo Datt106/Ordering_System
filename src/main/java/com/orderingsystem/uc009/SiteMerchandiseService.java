@@ -49,7 +49,7 @@ public class SiteMerchandiseService {
         authService.requireRole(UserRole.SITE);
         String siteCode = requireSiteCode();
         return siteMerchandiseRepository.findBySiteCode(siteCode).stream()
-                .map(entry -> SiteMerchandiseDto.from(entry, siteCode))
+                .map(entry -> toDto(entry, siteCode))
                 .toList();
     }
 
@@ -71,7 +71,7 @@ public class SiteMerchandiseService {
 
         Site site = siteRepository.findByCode(siteCode).orElseThrow();
         SiteMerchandise created = siteMerchandiseRepository.createLink(site, code);
-        return SiteMerchandiseDto.from(created, siteCode);
+        return toDto(created, siteCode);
     }
 
     /** Xóa mặt hàng khỏi danh sách kinh doanh của Site hiện tại. */
@@ -93,6 +93,17 @@ public class SiteMerchandiseService {
             throw new IllegalStateException("Tài khoản Site chưa gắn mã Site.");
         }
         return siteCode.trim();
+    }
+
+    private SiteMerchandiseDto toDto(SiteMerchandise entry, String siteCode) {
+        return merchandiseCatalogRepository.findByCode(entry.getMerchandiseCode())
+                .map(catalog -> SiteMerchandiseDto.from(
+                        entry,
+                        siteCode,
+                        catalog.getMerchandiseName(),
+                        catalog.getDescription()))
+                .orElseGet(() -> SiteMerchandiseDto.from(
+                        entry, siteCode, entry.getMerchandiseCode(), null));
     }
 
     private static String normalizeMerchandiseCode(String merchandiseCode) {
