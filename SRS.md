@@ -94,26 +94,26 @@ Hệ thống phần mềm được xây dựng để **số hóa và tự độn
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  HỆ THỐNG ĐẶT HÀNG NHẬP KHẨU               │
+│                  HỆ THỐNG ĐẶT HÀNG NHẬP KHẨU                │
 │                                                             │
-│  ┌──────────────┐   ┌──────────────────┐   ┌────────────┐  │
-│  │  Module      │   │  Module Đặt hàng │   │  Module    │  │
-│  │  Bán hàng    │   │  quốc tế         │   │  Kho       │  │
-│  │  (UC002,003) │   │  (UC004–UC008)   │   │  (UC013,14)│  │
-│  └──────┬───────┘   └────────┬─────────┘   └─────┬──────┘  │
-│         │                   │                     │         │
-│         └───────────────────┼─────────────────────┘         │
-│                             │                               │
-│                    ┌────────▼────────┐                      │
-│                    │  Cơ sở dữ liệu │                      │
-│                    │  trung tâm      │                      │
-│                    └─────────────────┘                      │
+│  ┌──────────────┐   ┌──────────────────┐   ┌────────────┐   │
+│  │  Module      │   │  Module Đặt hàng │   │  Module    │   │
+│  │  Bán hàng    │   │  quốc tế         │   │  Kho       │   │
+│  │  (UC002,003) │   │  (UC004–UC008)   │   │  (UC013,14)│   │
+│  └──────┬───────┘   └────────┬─────────┘   └─────┬──────┘   │
+│         │                    │                   │          │
+│         └────────────────────┼───────────────────┘          │
+│                              │                              │
+│                    ┌─────────▼─────────┐                    │
+│                    │  Cơ sở dữ liệu    │                    │
+│                    │  trung tâm        │                    │
+│                    └───────────────────┘                    │
 └─────────────────────────────┬───────────────────────────────┘
                               │ Kết nối mạng / API
               ┌───────────────▼────────────────┐
               │   SITE NHẬP KHẨU (50 Site)     │
-              │   Module Site (UC009–UC012)     │
-              └─────────────────────────────────┘
+              │   Module Site (UC009–UC012)    │
+              └────────────────────────────────┘
 ```
 
 ### 2.3 Các chức năng chính
@@ -244,14 +244,16 @@ Hệ thống cung cấp 6 nhóm chức năng chính:
 
 | Mã | Yêu cầu |
 |---|---|
+| FR-06.1| Hệ thống cho phép chọn nhiều yêu cầu chờ xử lý để gộp chung. Các mặt hàng trùng mã sẽ được cộng dồn số lượng. Ngày nhận đích (Target Date) của lô hàng áp dụng **Quy tắc ngày sớm nhất (Earliest Date Rule)** trong nhóm. |
 | FR-06.1 | Hệ thống phải xử lý từng mặt hàng độc lập trong yêu cầu |
-| FR-06.2 | Với mỗi mặt hàng, hệ thống phải lọc ra danh sách Site đáp ứng được ngày nhận mong muốn (xét cả đường tàu và đường hàng không) |
-| FR-06.3 | Hệ thống phải sắp xếp các Site theo thứ tự ưu tiên: **(1) Ưu tiên tàu hơn hàng không → (2) Ưu tiên tồn kho lớn hơn** |
-| FR-06.4 | Hệ thống phải phân bổ số lượng theo thứ tự ưu tiên, chọn số lượng Site nhỏ nhất có thể để đủ số lượng yêu cầu |
-| FR-06.5 | Nếu tổng tồn kho khả dụng nhỏ hơn số lượng yêu cầu, hệ thống phải ghi nhận lỗi "Không đủ hàng" kèm số lượng còn thiếu |
-| FR-06.6 | Nếu không có Site nào đáp ứng ngày nhận mong muốn, hệ thống phải thông báo lỗi và đề xuất nới rộng ngày nhận |
-| FR-06.7 | Hệ thống phải hiển thị kết quả tách đơn để người dùng xem xét trước khi xác nhận |
-| FR-06.8 | Người dùng có thể điều chỉnh thủ công kết quả tách đơn trước khi xác nhận |
+| FR-06.2 | Với mỗi mặt hàng, hệ thống tính toán **Ngày về dự kiến (ETA)**: `ETA = Ngày chốt đơn + Số ngày vận chuyển` (áp dụng riêng cho Tàu và Máy bay). |
+| FR-06.3 | Hệ thống chỉ lọc ra danh sách Site có `ETA ≤ Ngày nhận đích`. |
+| FR-06.4 | Hệ thống phải sắp xếp các Site theo thứ tự ưu tiên: **(1) Ưu tiên tàu hơn hàng không → (2) Ưu tiên tồn kho lớn hơn** |
+| FR-06.5 | Hệ thống phải phân bổ số lượng theo thứ tự ưu tiên, chọn số lượng Site nhỏ nhất có thể để đủ số lượng yêu cầu |
+| FR-06.6 | Nếu tổng tồn kho khả dụng nhỏ hơn số lượng yêu cầu, hệ thống phải ghi nhận lỗi "Không đủ hàng" kèm số lượng còn thiếu |
+| FR-06.7 | Nếu không có Site nào đáp ứng ngày nhận mong muốn, hệ thống phải thông báo lỗi và đề xuất nới rộng ngày nhận |
+| FR-06.8 | Hệ thống phải hiển thị kết quả tách đơn để người dùng xem xét trước khi xác nhận |
+| FR-06.9 | Người dùng có thể điều chỉnh thủ công kết quả tách đơn trước khi xác nhận |
 
 #### FR-07: Gửi đơn hàng (UC008)
 

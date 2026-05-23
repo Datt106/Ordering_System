@@ -49,8 +49,8 @@ Nhập từng dòng mặt hàng:
   [Mã hàng] [Số lượng] [Đơn vị] [Ngày nhận mong muốn]
   │
   ├── Thêm dòng mới? ──────────────────────────────────┐
-  │                                                     │
-  │◄────────────────────────────────────────────────────┘
+  │                                                    │
+  │◄───────────────────────────────────────────────────┘
   │
   ▼
 Gửi yêu cầu
@@ -145,6 +145,15 @@ KẾT THÚC
 BẮT ĐẦU
   │
   ▼
+  ┌──────────────────────────────────────────────────────┐
+  │ BƯỚC 0 – Gom lô (Batch Aggregation / Time Window)    │
+  │ - Lọc các YCNH đang chờ xử lý theo Khung thời gian.  │
+  │ - Gộp các YCNH có cùng Mã mặt hàng (M).              │
+  │ - Tổng cầu (Q) = SUM(Số lượng các YCNH).             │
+  │ - Ngày đích (D) = MIN(Ngày mong muốn) (Earliest Date)│
+  └────────────────────────────┬─────────────────────────┘
+                               │
+  ▼
 Đọc Tệp thông tin kho + Tệp thông tin site (số ngày vận chuyển)
   │
   ▼
@@ -152,11 +161,11 @@ Với mỗi mặt hàng M cần đặt (số lượng Q, ngày nhận D):
   │
   ▼
   ┌─────────────────────────────────────────────────────┐
-  │ BƯỚC 1 – Lọc Site khả dụng                          │
+  │ BƯỚC 1 – Tính ETA và Lọc Site khả dụng                          │
   │   Với mỗi Site S có tồn kho > 0 cho M:              │
   │     - Tính ngày về nếu đi tàu:  today + ship_days   │
   │     - Tính ngày về nếu đi air:  today + air_days    │
-  │     - Giữ lại nếu ngày về ≤ D                       │
+  │     - LOC: Giữ lại nếu ngày về ≤ D                       │
   └────────────────────────────┬────────────────────────┘
                                │
   ┌────────────────────────────▼────────────────────────┐
@@ -167,10 +176,10 @@ Với mỗi mặt hàng M cần đặt (số lượng Q, ngày nhận D):
                                │
   ┌────────────────────────────▼────────────────────────┐
   │ BƯỚC 3 – Phân bổ số lượng (Greedy)                  │
-  │   remaining = Q                                      │
+  │   remaining = Q                                     │
   │   For Site S theo thứ tự ưu tiên:                   │
-  │     allocate = min(stock[S], remaining)              │
-  │     remaining -= allocate                            │
+  │     allocate = min(stock[S], remaining)             │
+  │     remaining -= allocate                           │
   │     Ghi: [S | M | allocate | mode]                  │
   │     If remaining == 0: STOP                         │
   └────────────────────────────┬────────────────────────┘
@@ -195,34 +204,75 @@ Lưu các đơn con với trạng thái: [CHỜ GỬI]
 KẾT THÚC
 ```
 
-**Ví dụ minh họa:**
+**Ví dụ minh họa chạy thuật toán**
+
+**1. Bối cảnh & Cấu hình đầu vào**
+Ngày bắt đầu tính toán (Today): 2025-11-01
+Khung thời gian gom: 14 ngày (Hệ thống chỉ lấy các đơn có ngày mong muốn từ 2025-11-01 đến 2025-11-15).
+
+**2. Danh sách Yêu cầu nhập hàng (YCNH) chờ xử lý**
+YCNH #1: Tivi (T001), 100 cái, ngày nhận: 2025-11-10
+YCNH #2: Tivi (T001), 50 cái, ngày nhận: 2025-11-12
+YCNH #3: Tủ lạnh (R001), 250 cái, ngày nhận: 2025-11-08
+YCNH #4: Máy giặt (W001), 50 cái, ngày nhận: 2025-11-20 (Bị bỏ qua vì > 2025-11-15, chờ đợt gom sau).
+
+**3. Kết quả Gộp đơn hàng (Batching)**
+
+Lô 1 (T001): Cần 150 đơn vị (100+50). Ngày đích = MIN(10, 12) = 2025-11-10
+Lô 2 (R001): Cần 250 đơn vị. Ngày đích = 2025-11-08
+
+**CHI TIẾT TRACE LOG THUẬT TOÁN PHÂN BỔ**
+
+**Lô hàng 1**
 
 ```
-Mặt hàng: P001, cần 500 đơn vị, ngày nhận: 2025-08-20
-Today: 2025-08-01
+Mặt hàng: T001 (Tivi), cần 150 đơn vị, ngày nhận đích: 2025-11-10
+Today: 2025-11-01
 
 Site | Tồn kho | Tàu (ngày) | Ngày về tàu | Air (ngày) | Ngày về air | Đáp ứng?
 -----|---------|------------|-------------|------------|-------------|----------
- S01 |   300   |     15     |  2025-08-16 |     5      |  2025-08-06 |  Tàu ✓
- S02 |   250   |     25     |  2025-08-26 |     8      |  2025-08-09 |  Air ✓
- S03 |   100   |     18     |  2025-08-19 |     6      |  2025-08-07 |  Tàu ✓
+ S01 |   150   |     5      |  2025-11-06 |     2      |  2025-11-03 |  Tàu ✓
+ S02 |    80   |    10      |  2025-11-11 |     4      |  2025-11-05 |  Air ✓ (Tàu trễ)
 
 Sau sắp xếp (ưu tiên tàu, tồn kho lớn):
-  1. S01 – tàu – 300 đơn vị
-  2. S03 – tàu – 100 đơn vị
-  3. S02 – air – 250 đơn vị
+  1. S01 – tàu – 150 đơn vị
+  2. S02 – air – 80 đơn vị
 
 Phân bổ:
-  remaining = 500
-  → S01: allocate = min(300, 500) = 300, remaining = 200
-  → S03: allocate = min(100, 200) = 100, remaining = 100
-  → S02: allocate = min(250, 100) = 100, remaining = 0  ✓
+  remaining = 150
+  → S01: allocate = min(150, 150) = 150, remaining = 0  ✓
 
 Đơn con tạo ra:
-  [S01 | P001 | 300 | unit | ship delivery]
-  [S03 | P001 | 100 | unit | ship delivery]
-  [S02 | P001 | 100 | unit | air delivery]
+  [S01 | T001 | 150 | unit | ship delivery]
 ```
+
+**Lô hàng 2**
+
+```
+Mặt hàng: R001 (Tủ lạnh), cần 250 đơn vị, ngày nhận đích: 2025-11-08
+Today: 2025-11-01
+
+Site | Tồn kho | Tàu (ngày) | Ngày về tàu | Air (ngày) | Ngày về air | Đáp ứng?
+-----|---------|------------|-------------|------------|-------------|----------
+ S01 |   100   |     5      |  2025-11-06 |     2      |  2025-11-03 |  Tàu ✓
+ S03 |   200   |    12      |  2025-11-13 |     6      |  2025-11-07 |  Air ✓ (Tàu trễ)
+
+Sau sắp xếp (ưu tiên tàu, tồn kho lớn):
+  1. S01 – tàu – 100 đơn vị
+  2. S03 – air – 200 đơn vị
+
+Phân bổ:
+  remaining = 250
+  → S01: allocate = min(100, 250) = 100, remaining = 150
+  → S03: allocate = min(200, 150) = 150, remaining = 0  ✓
+
+Đơn con tạo ra:
+  [S01 | R001 | 100 | unit | ship delivery]
+  [S03 | R001 | 150 | unit | air delivery]
+```
+**4. Đợt chạy thuật toán tiếp theo**
+Ngày bắt đầu tính toán (Today): 2025-11-08
+Khung thời gian gom: 14 ngày (Hệ thống chỉ lấy các đơn có ngày mong muốn từ 2025-11-08 đến 2025-11-23).
 
 ---
 
@@ -254,16 +304,20 @@ Xác nhận gửi
   ║    └─ Từ chối? → Gửi lý do         ║
   ╚════════════════════════════════════╝
   │
-  ▼
-Cập nhật trạng thái:
-  - Đơn con: [ĐÃ GỬI] → [ĐÃ XÁC NHẬN]
-  - Yêu cầu gốc: [ĐÃ TÁCH ĐƠN]
+  ├── SITE XÁC NHẬN: 
+  │      Cập nhật trạng thái Đơn con: [ĐÃ XÁC NHẬN] 
+  │      Cập nhật trạng thái Yêu cầu gốc: [ĐÃ TÁCH ĐƠN]
+  │      Thông tin truyền tới Bộ phận Quản lý kho (UC013)
   │
-  ▼
-Thông tin đơn hàng được lưu vào hệ thống
-→ Hiển thị cho Bộ phận Quản lý kho (UC013)
-  │
-  ├── Site từ chối? → Thông báo Bộ phận ĐH quốc tế → Xử lý lại
+  └── SITE TỪ CHỐI (Gửi kèm lý do lỗi kho, đứt gãy cung ứng...):
+         Cập nhật trạng thái Đơn con: [BỊ TỪ CHỐI - ĐỎ]
+         │
+         ▼
+         Nhân viên BP Đặt hàng nhận thông báo và nhấn "Tái xử lý"
+         │
+         ▼
+         Hệ thống thu hồi khối lượng hàng bị từ chối 
+         Quay ngược lại GIAI ĐOẠN 3 (Chạy lại thuật toán cho lượng hàng này)
   │
   ▼
 KẾT THÚC
@@ -412,7 +466,7 @@ Bộ phận ĐH quốc tế có đối tác mới / thay đổi / ngừng hợp 
     ▼ (UC008 – Gửi đi)
 [ĐÃ GỬI]
     │
-    ├─── (UC012 – Site từ chối) ─────────► [TỪ CHỐI]
+    ├─── (UC012 – Site từ chối) ─────────► [TỪ CHỐI] ──(Tái xử lý)──► QUAY LẠI CHẠY THUẬT TOÁN
     │
     ▼ (UC012 – Site xác nhận)
 [ĐÃ XÁC NHẬN]

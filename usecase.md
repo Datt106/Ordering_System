@@ -213,30 +213,33 @@
 
 **Luồng sự kiện chính:**
 
-1. Người dùng khởi động chức năng tách đơn cho yêu cầu đang xử lý.
-2. Hệ thống đọc danh sách mặt hàng và số lượng cần đặt.
-3. Với từng mặt hàng, hệ thống thực hiện thuật toán phân bổ (xem chi tiết bên dưới).
-4. Hệ thống tổng hợp kết quả: danh sách `[Site | Mã hàng | Số lượng | Phương tiện]`.
-5. Hệ thống hiển thị kết quả tách đơn cho người dùng xem xét.
-6. Người dùng xác nhận hoặc điều chỉnh thủ công nếu cần.
-7. Hệ thống lưu các đơn hàng con với trạng thái **Chờ gửi**.
+1. Định kỳ theo tần suất vận hành của bộ phận, người dùng truy cập vào Không gian làm việc (Workspace) và thiết lập các tham số vận hành trên thanh công cụ cấu hình:
+   - **Ngày bắt đầu tính toán (Calculation Start Date):** Mặc định hiển thị ngày hệ thống hiện tại (`Current_Date`), cho phép người dùng tùy chỉnh bằng bộ chọn ngày (Date Picker).
+   - **Khung thời gian gom (Time Window):** Nhập số ngày gộp đơn thông qua ô nhập số hoặc danh sách chọn sẵn.
+2. Người dùng khởi động chức năng tách đơn cho yêu cầu đang xử lý.
+3. Hệ thống tự động gộp số lượng của các mặt hàng trùng mã từ các yêu cầu đã chọn để tạo thành Tổng nhu cầu. Hệ thống xác định **Ngày nhận đích (Target Date)** của lô hàng bằng **Ngày sớm nhất** trong các yêu cầu được gộp.
+4. Với từng mặt hàng, hệ thống thực hiện thuật toán phân bổ (xem chi tiết bên dưới).
+5. Hệ thống tổng hợp kết quả: danh sách `[Site | Mã hàng | Số lượng | Phương tiện]`.
+6. Hệ thống hiển thị kết quả tách đơn cho người dùng xem xét.
+7. Người dùng xác nhận hoặc điều chỉnh thủ công nếu cần.
+8. Hệ thống lưu các đơn hàng con với trạng thái **Chờ gửi**.
 
 **Thuật toán phân bổ (cho từng mặt hàng):**
 
 ```
-INPUT: merchandise M, quantity_needed Q, desired_delivery_date D
+INPUT: merchandise M, total_quantity Q, target_delivery_date D, calculation_start_date StartDate
 
-BƯỚC 1 – Lọc Site khả dụng:
-  Lấy danh sách Site S có in-stock quantity > 0 cho M
-  Với mỗi S, tính delivery_date_ship  = today + ship_days[S]
-                   delivery_date_air   = today + air_days[S]
-  Giữ lại (S, mode) nếu delivery_date_mode <= D
+BƯỚC 1 – Tính ETA & Lọc Site khả dụng:
+  Với mỗi Site S có in-stock quantity > 0 cho M:
+    Tính ETA_Ship = StartDate + ship_days[S]
+    Tính ETA_Air  = StartDate + air_days[S]
+    LỌC: Chỉ giữ lại phương án (S, mode) nếu ETA_mode <= D (Ngày nhận đích)
 
 BƯỚC 2 – Sắp xếp theo ưu tiên:
-  Tiêu chí 1: mode = "ship" trước "air"
+  Tiêu chí 1: mode = "ship" (Tàu) trước "air" (Hàng không)
   Tiêu chí 2 (cùng mode): in-stock quantity giảm dần
 
-BƯỚC 3 – Phân bổ số lượng:
+BƯỚC 3 – Phân bổ số lượng (Greedy):
   remaining = Q
   Lần lượt chọn Site theo thứ tự ưu tiên:
     allocate = min(in_stock[S], remaining)
