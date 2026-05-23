@@ -6,8 +6,6 @@ import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -152,8 +150,8 @@ public class SalesCreateRequestController extends BaseViewController {
                 .toList();
         UiTasks.runWithStatus(
                 "Đang gửi yêu cầu…",
-                () -> {
-                    ImportRequestDto created = app.importRequests().createImportRequest(inputs);
+                () -> app.importRequests().createImportRequest(inputs),
+                created -> {
                     lines.clear();
                     refreshTable();
                     resultLabel.setText("Mã yêu cầu: " + created.requestId());

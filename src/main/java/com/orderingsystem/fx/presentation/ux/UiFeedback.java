@@ -4,11 +4,10 @@ import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Heuristic #1 — Phản hồi trạng thái toàn cục (thanh trạng thái + busy).
+ * Phản hồi trạng thái toàn cục trên JavaFX Application Thread.
  */
 public final class UiFeedback {
 
@@ -27,11 +26,15 @@ public final class UiFeedback {
     }
 
     public static void setStatus(String message) {
-        runOnFx(() -> {
+        runOnFxThread(() -> {
             if (statusLabel != null) {
                 statusLabel.setText(message);
             }
         });
+    }
+
+    public static void setBusy(boolean busy) {
+        runOnFxThread(() -> updateBusy(busy));
     }
 
     public static void runWithFeedback(String busyMessage, Runnable action, String successMessage) {
@@ -55,22 +58,20 @@ public final class UiFeedback {
         }
     }
 
-    private static void setBusy(boolean busy) {
-        runOnFx(() -> {
-            if (busy) {
-                busyCount++;
-            } else {
-                busyCount = Math.max(0, busyCount - 1);
-            }
-            boolean show = busyCount > 0;
-            if (busyIndicator != null) {
-                busyIndicator.setVisible(show);
-                busyIndicator.setManaged(show);
-            }
-        });
+    private static void updateBusy(boolean busy) {
+        if (busy) {
+            busyCount++;
+        } else {
+            busyCount = Math.max(0, busyCount - 1);
+        }
+        boolean show = busyCount > 0;
+        if (busyIndicator != null) {
+            busyIndicator.setVisible(show);
+            busyIndicator.setManaged(show);
+        }
     }
 
-    private static void runOnFx(Runnable runnable) {
+    private static void runOnFxThread(Runnable runnable) {
         if (Platform.isFxApplicationThread()) {
             runnable.run();
         } else {

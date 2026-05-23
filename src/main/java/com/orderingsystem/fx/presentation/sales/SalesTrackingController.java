@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 public class SalesTrackingController extends BaseViewController {
@@ -87,20 +88,22 @@ public class SalesTrackingController extends BaseViewController {
 
     @FXML
     private void onSearch() {
+        RequestStatus status = statusFilter.getValue();
+        LocalDate from = fromPicker.getValue();
+        LocalDate to = toPicker.getValue();
         UiTasks.runWithStatus(
                 "Đang tìm…",
-                () -> {
-                    RequestStatus status = statusFilter.getValue();
-                    LocalDate from = fromPicker.getValue();
-                    LocalDate to = toPicker.getValue();
-                    var items = app.tracking().listRequests(status, from, to);
-                    listTable.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus(items.isEmpty()
-                            ? "Không có kết quả."
-                            : "Tìm thấy " + items.size() + " yêu cầu — chọn dòng để xem chi tiết.");
-                },
+                () -> app.tracking().listRequests(status, from, to),
+                this::applySearchResults,
                 "Danh sách đã cập nhật."
         );
+    }
+
+    private void applySearchResults(List<ImportRequestListItemDto> items) {
+        listTable.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus(items.isEmpty()
+                ? "Không có kết quả."
+                : "Tìm thấy " + items.size() + " yêu cầu — chọn dòng để xem chi tiết.");
     }
 
     @FXML
@@ -111,20 +114,23 @@ public class SalesTrackingController extends BaseViewController {
             setScreenStatus("Chưa chọn yêu cầu.");
             return;
         }
+        String requestId = id.trim();
         UiTasks.runWithStatus(
                 "Đang tải chi tiết…",
-                () -> {
-                    Optional<ImportRequestTrackingDetailDto> detail = app.tracking().getRequestDetail(id.trim());
-                    if (detail.isEmpty()) {
-                        detailArea.setText("Không tìm thấy yêu cầu \"" + id.trim() + "\".\nKiểm tra mã hoặc bấm Tìm để làm mới danh sách.");
-                        setScreenStatus("Không tìm thấy yêu cầu.");
-                        return;
-                    }
-                    detailArea.setText(formatDetail(detail.get()));
-                    setScreenStatus("Chi tiết: " + id.trim());
-                },
+                () -> app.tracking().getRequestDetail(requestId),
+                detail -> applyDetailResult(requestId, detail),
                 "Chi tiết đã hiển thị."
         );
+    }
+
+    private void applyDetailResult(String requestId, Optional<ImportRequestTrackingDetailDto> detail) {
+        if (detail.isEmpty()) {
+            detailArea.setText("Không tìm thấy yêu cầu \"" + requestId + "\".\nKiểm tra mã hoặc bấm Tìm để làm mới danh sách.");
+            setScreenStatus("Không tìm thấy yêu cầu.");
+            return;
+        }
+        detailArea.setText(formatDetail(detail.get()));
+        setScreenStatus("Chi tiết: " + requestId);
     }
 
     private static String formatDetail(ImportRequestTrackingDetailDto d) {

@@ -10,7 +10,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 
 /**
- * Nạp FXML và inject {@link AppContext} vào {@link ViewController} (DIP).
+ * Nạp FXML theo chuẩn {@link FXMLLoader}: inject {@code @FXML}, gọi {@link javafx.fxml.Initializable},
+ * rồi inject {@link AppContext} qua {@link ViewController#init}.
+ * <p>Phải gọi {@link #load} trên JavaFX Application Thread vì tạo {@link Parent}.
  */
 public final class FxmlLoaderFactory {
 

@@ -11,6 +11,8 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.util.List;
+
 public class SiteInventoryResponseController extends BaseViewController {
 
     /** Yêu cầu 40% · Mã hàng 35% · ĐVT 25% */
@@ -56,12 +58,18 @@ public class SiteInventoryResponseController extends BaseViewController {
             return;
         }
         int qty = stockSpinner.getValue();
+        String queryId = selected.queryId();
+        String merchandiseCode = selected.merchandiseCode();
+        String unit = selected.unit();
         UiTasks.runWithStatus(
                 "Đang gửi phản hồi…",
                 () -> {
-                    app.siteInventoryResponses().respond(selected.queryId(), qty);
-                    setScreenStatus("Đã phản hồi " + selected.merchandiseCode() + ": tồn " + qty);
-                    UiTasks.showInfo("Đã gửi", "Tồn kho " + qty + " " + selected.unit() + " cho " + selected.merchandiseCode());
+                    app.siteInventoryResponses().respond(queryId, qty);
+                    return qty;
+                },
+                ignored -> {
+                    setScreenStatus("Đã phản hồi " + merchandiseCode + ": tồn " + qty);
+                    UiTasks.showInfo("Đã gửi", "Tồn kho " + qty + " " + unit + " cho " + merchandiseCode);
                     refresh();
                 },
                 "Sẵn sàng nhận truy vấn mới."
@@ -71,14 +79,16 @@ public class SiteInventoryResponseController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải truy vấn…",
-                () -> {
-                    var items = app.siteInventoryResponses().listMyPendingQueries();
-                    table.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus(items.isEmpty()
-                            ? "Không còn truy vấn chờ phản hồi."
-                            : items.size() + " truy vấn chờ — chọn dòng, nhập tồn, bấm Gửi phản hồi.");
-                },
+                () -> app.siteInventoryResponses().listMyPendingQueries(),
+                this::applyQueryList,
                 "Danh sách đã cập nhật."
         );
+    }
+
+    private void applyQueryList(List<InventoryQueryDto> items) {
+        table.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus(items.isEmpty()
+                ? "Không còn truy vấn chờ phản hồi."
+                : items.size() + " truy vấn chờ — chọn dòng, nhập tồn, bấm Gửi phản hồi.");
     }
 }

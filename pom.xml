@@ -19,6 +19,9 @@
         <hibernate.version>6.4.4.Final</hibernate.version>
         <sqlite.jdbc.version>3.45.3.0</sqlite.jdbc.version>
         <junit.version>5.10.2</junit.version>
+        <testfx.version>4.0.18</testfx.version>
+        <groups></groups>
+        <excludedGroups>ui</excludedGroups>
     </properties>
 
     <dependencies>
@@ -61,6 +64,18 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>testfx-junit5</artifactId>
+            <version>${testfx.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <version>21.0.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -85,7 +100,42 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <groups>${groups}</groups>
+                    <excludedGroups>${excludedGroups}</excludedGroups>
+                    <argLine>
+                        -Djava.awt.headless=true
+                        -Dtestfx.headless=true
+                        -Dtestfx.robot=glass
+                        -Dprism.order=sw
+                        -Dglass.platform=Monocle
+                        -Dmonocle.platform=Headless
+                    </argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>ui-tests</id>
+            <properties>
+                <groups>ui</groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <reuseForks>false</reuseForks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

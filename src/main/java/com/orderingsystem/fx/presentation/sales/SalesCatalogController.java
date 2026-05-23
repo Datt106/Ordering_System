@@ -14,6 +14,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
+import java.util.List;
+
 public class SalesCatalogController extends BaseViewController {
 
     private static final double[] CATALOG_COL_RATIOS = {0.15, 0.35, 0.50};
@@ -69,13 +71,24 @@ public class SalesCatalogController extends BaseViewController {
 
     @FXML
     private void onAdd() {
+        try {
+            validateRequired(codeField, "Nhập mã hàng (*).");
+            validateRequired(nameField, "Nhập tên mặt hàng (*).");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
+        String code = codeField.getText().trim();
+        String name = nameField.getText().trim();
+        String desc = descArea.getText();
         UiTasks.runWithStatus(
                 "Đang thêm mặt hàng…",
                 () -> {
-                    validateRequired(codeField, "Nhập mã hàng (*).");
-                    validateRequired(nameField, "Nhập tên mặt hàng (*).");
-                    app.catalog().registerMerchandise(codeField.getText(), nameField.getText(), descArea.getText());
-                    setScreenStatus("Đã thêm: " + codeField.getText().trim());
+                    app.catalog().registerMerchandise(code, name, desc);
+                    return code;
+                },
+                savedCode -> {
+                    setScreenStatus("Đã thêm: " + savedCode);
                     UiTasks.showInfo("Đã lưu", "Mặt hàng mới có trong danh mục chuẩn.");
                     refresh();
                 },
@@ -85,13 +98,24 @@ public class SalesCatalogController extends BaseViewController {
 
     @FXML
     private void onUpdate() {
+        try {
+            validateRequired(codeField, "Chọn hoặc nhập mã hàng (*).");
+            validateRequired(nameField, "Nhập tên mặt hàng (*).");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
+        String code = codeField.getText().trim();
+        String name = nameField.getText().trim();
+        String desc = descArea.getText();
         UiTasks.runWithStatus(
                 "Đang cập nhật…",
                 () -> {
-                    validateRequired(codeField, "Chọn hoặc nhập mã hàng (*).");
-                    validateRequired(nameField, "Nhập tên mặt hàng (*).");
-                    app.catalog().updateMerchandise(codeField.getText(), nameField.getText(), descArea.getText());
-                    setScreenStatus("Đã cập nhật: " + codeField.getText().trim());
+                    app.catalog().updateMerchandise(code, name, desc);
+                    return code;
+                },
+                savedCode -> {
+                    setScreenStatus("Đã cập nhật: " + savedCode);
                     UiTasks.showInfo("Đã lưu", "Thông tin mặt hàng đã được cập nhật.");
                     refresh();
                 },
@@ -101,7 +125,12 @@ public class SalesCatalogController extends BaseViewController {
 
     @FXML
     private void onDelete() {
-        validateRequired(codeField, "Chọn mặt hàng cần xóa trong bảng hoặc nhập mã.");
+        try {
+            validateRequired(codeField, "Chọn mặt hàng cần xóa trong bảng hoặc nhập mã.");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
         String code = codeField.getText().trim();
         if (!UiTasks.confirmDelete("Mặt hàng: " + code)) {
             setScreenStatus("Đã hủy xóa.");
@@ -111,11 +140,14 @@ public class SalesCatalogController extends BaseViewController {
                 "Đang xóa…",
                 () -> {
                     app.catalog().deleteMerchandise(code);
+                    return code;
+                },
+                deletedCode -> {
                     codeField.clear();
                     nameField.clear();
                     descArea.clear();
-                    setScreenStatus("Đã xóa: " + code);
-                    UiTasks.showInfo("Đã xóa", "Mã " + code + " đã được gỡ khỏi danh mục.");
+                    setScreenStatus("Đã xóa: " + deletedCode);
+                    UiTasks.showInfo("Đã xóa", "Mã " + deletedCode + " đã được gỡ khỏi danh mục.");
                     refresh();
                 },
                 "Danh mục đã cập nhật."
@@ -125,14 +157,16 @@ public class SalesCatalogController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải danh mục…",
-                () -> {
-                    var items = app.catalog().listAll();
-                    table.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus(items.isEmpty()
-                            ? "Danh mục trống — thêm mặt hàng đầu tiên."
-                            : "Hiển thị " + items.size() + " mặt hàng.");
-                },
+                () -> app.catalog().listAll(),
+                this::applyCatalogList,
                 "Danh mục đã tải."
         );
+    }
+
+    private void applyCatalogList(List<StandardMerchandiseDto> items) {
+        table.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus(items.isEmpty()
+                ? "Danh mục trống — thêm mặt hàng đầu tiên."
+                : "Hiển thị " + items.size() + " mặt hàng.");
     }
 }

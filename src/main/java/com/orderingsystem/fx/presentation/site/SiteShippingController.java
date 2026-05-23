@@ -1,5 +1,6 @@
 package com.orderingsystem.fx.presentation.site;
 
+import com.orderingsystem.domain.site.ShippingStatus;
 import com.orderingsystem.uc004.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
@@ -7,6 +8,7 @@ import com.orderingsystem.fx.presentation.UiTasks;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 
 public class SiteShippingController extends BaseViewController {
 
@@ -23,8 +25,8 @@ public class SiteShippingController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        shipSpinner.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(1, 365, 30));
-        airSpinner.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(1, 90, 7));
+        shipSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 365, 30));
+        airSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 90, 7));
         loadSite();
     }
 
@@ -35,24 +37,29 @@ public class SiteShippingController extends BaseViewController {
 
     @FXML
     private void onSave() {
-        UiTasks.runWithStatus(
-                "Đang lưu…",
-                () -> {
-                    SiteDto updated = app.siteShipping().updateMyShipping(shipSpinner.getValue(), airSpinner.getValue());
-                    bindSite(updated);
-                    UiTasks.showInfo(
-                            "Đã lưu vận chuyển",
-                            "Tàu: " + updated.shipDays() + " ngày · Bay: " + updated.airDays() + " ngày."
-                    );
-                },
+        int shipDays = shipSpinner.getValue();
+        int airDays = airSpinner.getValue();
+        UiTasks.<SiteDto>runWithStatus(
+                "Đang lưu...",
+                () -> app.siteShipping().updateMyShipping(shipDays, airDays),
+                this::bindSiteAfterSave,
                 "Thông tin vận chuyển đã cập nhật."
         );
     }
 
+    private void bindSiteAfterSave(SiteDto updated) {
+        bindSite(updated);
+        UiTasks.showInfo(
+                "Đã lưu vận chuyển",
+                "Tàu: " + updated.shipDays() + " ngày - Bay: " + updated.airDays() + " ngày."
+        );
+    }
+
     private void loadSite() {
-        UiTasks.runWithStatus(
-                "Đang tải…",
-                () -> bindSite(app.siteShipping().getMySite()),
+        UiTasks.<SiteDto>runWithStatus(
+                "Đang tải...",
+                () -> app.siteShipping().getMySite(),
+                this::bindSite,
                 "Sẵn sàng."
         );
     }
@@ -67,8 +74,9 @@ public class SiteShippingController extends BaseViewController {
         if (site.airDays() != null) {
             airSpinner.getValueFactory().setValue(site.airDays());
         }
-        setScreenStatus(site.shippingStatus() == com.orderingsystem.domain.site.ShippingStatus.DA_KHAI_BAO
-                ? "Site đã khai báo vận chuyển — có thể nhận truy vấn tồn kho."
+        boolean declared = site.shippingStatus() == ShippingStatus.DA_KHAI_BAO;
+        setScreenStatus(declared
+                ? "Site đã khai báo vận chuyển - có thể nhận truy vấn tồn kho."
                 : "Lưu số ngày tàu/bay để kích hoạt truy vấn tồn kho.");
     }
 }

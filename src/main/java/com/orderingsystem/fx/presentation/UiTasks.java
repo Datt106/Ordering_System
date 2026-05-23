@@ -1,7 +1,9 @@
 package com.orderingsystem.fx.presentation;
 
+import com.orderingsystem.fx.framework.FxAsync;
 import com.orderingsystem.fx.presentation.ux.UiFeedback;
 import com.orderingsystem.fx.presentation.ux.UserMessages;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -10,21 +12,32 @@ import javafx.scene.control.TextArea;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Thao tác UI thống nhất — lỗi thân thiện (#9), xác nhận (#3), trạng thái (#1).
+ * Thao tác UI — dialog/xác nhận trên FX thread; tác vụ nặng qua {@link FxAsync} + {@link javafx.concurrent.Task}.
  */
 public final class UiTasks {
 
     private UiTasks() {
     }
 
-    public static void run(Runnable action) {
-        run(action, null);
+    /** Chạy đồng bộ trên FX thread (chỉ dùng cho thao tác UI thuần, không gọi DB). */
+    public static void runOnFxThread(Runnable action) {
+        runOnFxThread(action, null);
     }
 
-    public static void run(Runnable action, Runnable onSuccess) {
+    public static void runOnFxThread(Runnable action, Runnable onSuccess) {
+        if (Platform.isFxApplicationThread()) {
+            executeOnFx(action, onSuccess);
+        } else {
+            Platform.runLater(() -> executeOnFx(action, onSuccess));
+        }
+    }
+
+    private static void executeOnFx(Runnable action, Runnable onSuccess) {
         try {
             action.run();
             if (onSuccess != null) {
@@ -35,12 +48,51 @@ public final class UiTasks {
         }
     }
 
-    public static void runWithStatus(String busyMessage, Runnable action, String successMessage) {
-        try {
-            UiFeedback.runWithFeedback(busyMessage, action, successMessage);
-        } catch (Exception ex) {
-            showError(ex);
-        }
+    /**
+     * Tác vụ nền (DB/service) + cập nhật UI trên Application Thread.
+     */
+    public static <T> void runWithStatus(
+            String busyMessage,
+            Callable<T> backgroundWork,
+            Consumer<T> onSuccessOnFxThread,
+            String successMessage
+    ) {
+        FxAsync.run(busyMessage, backgroundWork, onSuccessOnFxThread, successMessage);
+    }
+
+    public static void runWithStatus(
+            String busyMessage,
+            Runnable backgroundWork,
+            Runnable onSuccessOnFxThread,
+            String successMessage
+    ) {
+        FxAsync.run(busyMessage, backgroundWork, onSuccessOnFxThread, successMessage);
+    }
+
+    /**
+     * Chỉ chạy trên FX thread — dùng khi thao tác đã nằm trên FX thread và không gọi service/DB.
+     */
+    public static void runWithStatusOnFxThread(String busyMessage, Runnable fxAction, String successMessage) {
+        runOnFxThread(() -> {
+            UiFeedback.setBusy(true);
+            UiFeedback.setStatus(busyMessage);
+            try {
+                fxAction.run();
+                UiFeedback.setStatus(successMessage);
+            } finally {
+                UiFeedback.setBusy(false);
+            }
+        });
+    }
+
+    @Deprecated
+    public static void run(Runnable action) {
+        runOnFxThread(action);
+    }
+
+    @Deprecated
+    public static void run(Runnable action, Runnable onSuccess) {
+        runOnFxThread(action, onSuccess);
     }
 
     public static <T> T supply(Supplier<T> action) {
@@ -52,7 +104,6 @@ public final class UiTasks {
         }
     }
 
-    /** Heuristic #9 — Tóm tắt + gợi ý; chi tiết kỹ thuật ẩn trong phần mở rộng. */
     public static void showError(Exception ex) {
         UserMessages.FriendlyError friendly = UserMessages.from(ex);
         UiFeedback.setStatus("Lỗi: " + friendly.summary());
@@ -80,7 +131,6 @@ public final class UiTasks {
         UiFeedback.setStatus(header);
     }
 
-    /** Heuristic #3 — Xác nhận trước thao tác không hoàn tác. */
     public static boolean confirm(String title, String header, String detail) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);

@@ -15,6 +15,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
+import java.util.List;
+
 public class OverseasSitesController extends BaseViewController {
 
     /** Mã 12% · Tên 28% · Vận chuyển 50% · Trạng thái 10% */
@@ -70,13 +72,24 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onAdd() {
+        try {
+            validateRequired(codeField, "Nhập mã Site (*).");
+            validateRequired(nameField, "Nhập tên Site (*).");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
+        String code = codeField.getText().trim();
+        String name = nameField.getText().trim();
+        String other = otherArea.getText();
         UiTasks.runWithStatus(
                 "Đang đăng ký Site…",
                 () -> {
-                    validateRequired(codeField, "Nhập mã Site (*).");
-                    validateRequired(nameField, "Nhập tên Site (*).");
-                    app.sites().registerSite(codeField.getText(), nameField.getText(), otherArea.getText());
-                    UiTasks.showInfo("Đã lưu", "Site " + codeField.getText().trim() + " đã được đăng ký.");
+                    app.sites().registerSite(code, name, other);
+                    return code;
+                },
+                savedCode -> {
+                    UiTasks.showInfo("Đã lưu", "Site " + savedCode + " đã được đăng ký.");
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -85,13 +98,24 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onUpdate() {
+        try {
+            validateRequired(codeField, "Chọn Site trong bảng (*).");
+            validateRequired(nameField, "Nhập tên Site (*).");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
+        String code = codeField.getText().trim();
+        String name = nameField.getText().trim();
+        String other = otherArea.getText();
         UiTasks.runWithStatus(
                 "Đang cập nhật…",
                 () -> {
-                    validateRequired(codeField, "Chọn Site trong bảng (*).");
-                    validateRequired(nameField, "Nhập tên Site (*).");
-                    app.sites().updateMaster(codeField.getText(), nameField.getText(), otherArea.getText());
-                    UiTasks.showInfo("Đã lưu", "Đã cập nhật Site " + codeField.getText().trim());
+                    app.sites().updateMaster(code, name, other);
+                    return code;
+                },
+                savedCode -> {
+                    UiTasks.showInfo("Đã lưu", "Đã cập nhật Site " + savedCode);
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -100,7 +124,12 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onDelete() {
-        validateRequired(codeField, "Chọn Site cần xóa.");
+        try {
+            validateRequired(codeField, "Chọn Site cần xóa.");
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
         String code = codeField.getText().trim();
         if (!UiTasks.confirmDelete("Site: " + code)) {
             setScreenStatus("Đã hủy xóa Site.");
@@ -110,7 +139,10 @@ public class OverseasSitesController extends BaseViewController {
                 "Đang xóa Site…",
                 () -> {
                     app.sites().deleteSite(code);
-                    UiTasks.showInfo("Đã xóa", "Site " + code + " đã được gỡ.");
+                    return code;
+                },
+                deletedCode -> {
+                    UiTasks.showInfo("Đã xóa", "Site " + deletedCode + " đã được gỡ.");
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -120,13 +152,15 @@ public class OverseasSitesController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải Site…",
-                () -> {
-                    var items = app.sites().listAllSites();
-                    table.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus("Có " + items.size() + " Site.");
-                },
+                () -> app.sites().listAllSites(),
+                this::applySiteList,
                 "Danh sách Site sẵn sàng."
         );
+    }
+
+    private void applySiteList(List<SiteDto> items) {
+        table.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus("Có " + items.size() + " Site.");
     }
 
     private static String formatShipping(SiteDto site) {

@@ -41,28 +41,35 @@ public class LoginController extends BaseViewController {
 
     @FXML
     private void onLogin() {
+        try {
+            FormValidation.requireNonBlank(usernameField, "Vui lòng nhập tên đăng nhập.", () -> setScreenStatus("Thiếu tên đăng nhập."));
+            FormValidation.requireNonBlank(passwordField, "Vui lòng nhập mật khẩu.", () -> setScreenStatus("Thiếu mật khẩu."));
+        } catch (IllegalArgumentException ex) {
+            UiTasks.showError(ex);
+            return;
+        }
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText();
         UiTasks.runWithStatus(
                 "Đang đăng nhập…",
-                () -> {
-                    FormValidation.requireNonBlank(usernameField, "Vui lòng nhập tên đăng nhập.", () -> setScreenStatus("Thiếu tên đăng nhập."));
-                    FormValidation.requireNonBlank(passwordField, "Vui lòng nhập mật khẩu.", () -> setScreenStatus("Thiếu mật khẩu."));
-
-                    Optional<AuthenticatedUser> user = app.auth().login(
-                            usernameField.getText().trim(),
-                            passwordField.getText());
-                    if (user.isEmpty()) {
-                        setScreenStatus("Đăng nhập thất bại.");
-                        throw new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu. Kiểm tra gợi ý tài khoản demo bên dưới.");
-                    }
-                    try {
-                        navigator.showDashboard(user.get());
-                    } catch (Exception ex) {
-                        app.auth().logout();
-                        throw new IllegalStateException("Không mở được màn hình chính. " + ex.getMessage(), ex);
-                    }
-                },
+                () -> app.auth().login(username, password),
+                this::handleLoginResult,
                 "Đăng nhập thành công."
         );
+    }
+
+    private void handleLoginResult(Optional<AuthenticatedUser> user) {
+        if (user.isEmpty()) {
+            setScreenStatus("Đăng nhập thất bại.");
+            UiTasks.showError(new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu. Kiểm tra gợi ý tài khoản demo bên dưới."));
+            return;
+        }
+        try {
+            navigator.showDashboard(user.get());
+        } catch (Exception ex) {
+            app.auth().logout();
+            UiTasks.showError(new IllegalStateException("Không mở được màn hình chính. " + ex.getMessage(), ex));
+        }
     }
 
     @FXML

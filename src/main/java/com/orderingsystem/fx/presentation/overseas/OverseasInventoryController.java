@@ -12,6 +12,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 
+import java.util.List;
+
 public class OverseasInventoryController extends BaseViewController {
 
     /** Mã YC 45% · Tiếp nhận bởi 55% */
@@ -59,9 +61,11 @@ public class OverseasInventoryController extends BaseViewController {
             setScreenStatus("Đã hủy gửi truy vấn.");
             return;
         }
+        String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang gửi truy vấn…",
-                () -> showResult(app.inventoryQueries().dispatchInventoryQueries(selected.requestId())),
+                () -> app.inventoryQueries().dispatchInventoryQueries(requestId),
+                this::showResult,
                 "Truy vấn đã gửi."
         );
     }
@@ -72,9 +76,11 @@ public class OverseasInventoryController extends BaseViewController {
         if (selected == null) {
             return;
         }
+        String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang tải trạng thái…",
-                () -> showResult(app.inventoryQueries().getInventoryQueryStatus(selected.requestId())),
+                () -> app.inventoryQueries().getInventoryQueryStatus(requestId),
+                this::showResult,
                 "Trạng thái đã cập nhật."
         );
     }
@@ -93,12 +99,17 @@ public class OverseasInventoryController extends BaseViewController {
             setScreenStatus("Đã hủy.");
             return;
         }
+        String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang xử lý timeout…",
                 () -> {
-                    int n = app.inventoryQueries().applyTimeoutAsZeroStock(selected.requestId());
-                    setScreenStatus("Đã ghi 0 tồn cho " + n + " dòng chờ.");
-                    showResult(app.inventoryQueries().getInventoryQueryStatus(selected.requestId()));
+                    int updated = app.inventoryQueries().applyTimeoutAsZeroStock(requestId);
+                    InventoryQueryDispatchResultDto status = app.inventoryQueries().getInventoryQueryStatus(requestId);
+                    return new TimeoutResult(updated, status);
+                },
+                result -> {
+                    setScreenStatus("Đã ghi 0 tồn cho " + result.updatedCount() + " dòng chờ.");
+                    showResult(result.status());
                 },
                 "Timeout đã áp dụng."
         );
@@ -115,15 +126,17 @@ public class OverseasInventoryController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải…",
-                () -> {
-                    var items = app.acceptance().listProcessingRequests();
-                    processingTable.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus(items.isEmpty()
-                            ? "Chưa có yêu cầu đang xử lý."
-                            : items.size() + " yêu cầu — chọn rồi Gửi truy vấn hoặc Xem trạng thái.");
-                },
+                () -> app.acceptance().listProcessingRequests(),
+                this::applyProcessingList,
                 "Danh sách sẵn sàng."
         );
+    }
+
+    private void applyProcessingList(List<ImportRequestDto> items) {
+        processingTable.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus(items.isEmpty()
+                ? "Chưa có yêu cầu đang xử lý."
+                : items.size() + " yêu cầu — chọn rồi Gửi truy vấn hoặc Xem trạng thái.");
     }
 
     private void showResult(InventoryQueryDispatchResultDto result) {
@@ -146,5 +159,8 @@ public class OverseasInventoryController extends BaseViewController {
                     .append(": ").append(e.message()).append('\n'));
         }
         resultArea.setText(sb.toString());
+    }
+
+    private record TimeoutResult(int updatedCount, InventoryQueryDispatchResultDto status) {
     }
 }

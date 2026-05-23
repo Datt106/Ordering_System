@@ -8,7 +8,7 @@ import javafx.scene.control.Tooltip;
 import javafx.util.Callback;
 
 /**
- * Bảng full width + cột % cố định (không kéo resize) — dùng chung Sales / Overseas / Site.
+ * Bảng full width + cột % cố định — dùng binding JavaFX và CSS {@code -fx-text-overrun: ellipsis}.
  */
 public final class TableColumnLayout {
 
@@ -21,19 +21,21 @@ public final class TableColumnLayout {
             throw new IllegalArgumentException("Số cột và tỉ lệ phải khớp nhau.");
         }
         double sum = 0;
-        for (double r : ratios) {
-            sum += r;
+        for (double ratio : ratios) {
+            sum += ratio;
         }
         if (Math.abs(sum - 1.0) > 0.001) {
             throw new IllegalArgumentException("Tổng tỉ lệ cột phải bằng 1.0, hiện tại: " + sum);
         }
 
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.setMaxWidth(Double.MAX_VALUE);
 
         for (TableColumn<T, ?> col : columns) {
             col.setResizable(false);
             col.setReorderable(false);
+            col.setSortable(true);
+            col.getStyleClass().add("col-proportional");
         }
 
         for (int i = 0; i < columns.length; i++) {
@@ -44,6 +46,8 @@ public final class TableColumnLayout {
                     Bindings.createDoubleBinding(
                             () -> Math.max(min, table.getWidth() * ratio),
                             table.widthProperty()));
+            col.minWidthProperty().bind(col.prefWidthProperty());
+            col.maxWidthProperty().bind(col.prefWidthProperty());
         }
     }
 

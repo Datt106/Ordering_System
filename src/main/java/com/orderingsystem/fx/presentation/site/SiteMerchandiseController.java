@@ -12,6 +12,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.util.List;
+
 public class SiteMerchandiseController extends BaseViewController {
 
     /** Mã 20% · Tên 80% */
@@ -36,19 +38,25 @@ public class SiteMerchandiseController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(nameCol);
 
         bindEmptyTable(table, "Chưa khai báo mặt hàng kinh doanh — chọn mã từ danh mục chuẩn và bấm Thêm.");
+        loadCatalog();
+        refresh();
+    }
+
+    private void loadCatalog() {
         UiTasks.runWithStatus(
                 "Đang tải danh mục…",
-                () -> {
-                    var catalog = app.catalog().listCatalogForBrowsing();
-                    catalogCombo.setItems(FXCollections.observableArrayList(
-                            catalog.stream().map(StandardMerchandiseDto::merchandiseCode).toList()));
-                    if (!catalog.isEmpty()) {
-                        catalogCombo.getSelectionModel().selectFirst();
-                    }
-                },
+                () -> app.catalog().listCatalogForBrowsing(),
+                this::applyCatalogCodes,
                 "Danh mục chuẩn sẵn sàng."
         );
-        refresh();
+    }
+
+    private void applyCatalogCodes(List<StandardMerchandiseDto> catalog) {
+        catalogCombo.setItems(FXCollections.observableArrayList(
+                catalog.stream().map(StandardMerchandiseDto::merchandiseCode).toList()));
+        if (!catalog.isEmpty()) {
+            catalogCombo.getSelectionModel().selectFirst();
+        }
     }
 
     @FXML
@@ -67,7 +75,10 @@ public class SiteMerchandiseController extends BaseViewController {
                 "Đang thêm…",
                 () -> {
                     app.siteMerchandise().addMerchandise(code);
-                    setScreenStatus("Đã thêm " + code);
+                    return code;
+                },
+                addedCode -> {
+                    setScreenStatus("Đã thêm " + addedCode);
                     refresh();
                 },
                 "Danh sách đã cập nhật."
@@ -85,11 +96,15 @@ public class SiteMerchandiseController extends BaseViewController {
             setScreenStatus("Đã hủy xóa.");
             return;
         }
+        String code = selected.merchandiseCode();
         UiTasks.runWithStatus(
                 "Đang xóa…",
                 () -> {
-                    app.siteMerchandise().removeMerchandise(selected.merchandiseCode());
-                    setScreenStatus("Đã xóa " + selected.merchandiseCode());
+                    app.siteMerchandise().removeMerchandise(code);
+                    return code;
+                },
+                removedCode -> {
+                    setScreenStatus("Đã xóa " + removedCode);
                     refresh();
                 },
                 "Danh sách đã cập nhật."
@@ -99,12 +114,14 @@ public class SiteMerchandiseController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải…",
-                () -> {
-                    var items = app.siteMerchandise().listMyMerchandise();
-                    table.setItems(FXCollections.observableArrayList(items));
-                    setScreenStatus("Site đang kinh doanh " + items.size() + " mặt hàng.");
-                },
+                () -> app.siteMerchandise().listMyMerchandise(),
+                this::applyMerchandiseList,
                 "Sẵn sàng."
         );
+    }
+
+    private void applyMerchandiseList(List<SiteMerchandiseDto> items) {
+        table.setItems(FXCollections.observableArrayList(items));
+        setScreenStatus("Site đang kinh doanh " + items.size() + " mặt hàng.");
     }
 }

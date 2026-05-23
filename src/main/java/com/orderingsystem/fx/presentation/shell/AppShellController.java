@@ -79,7 +79,7 @@ public class AppShellController extends BaseViewController {
     private void showScreen(int index) {
         ScreenDefinition screen = screens.get(index);
         contextHelpLabel.setText(screen.helpText());
-        UiTasks.runWithStatus(
+        UiTasks.runWithStatusOnFxThread(
                 "Đang mở: " + screen.label() + "…",
                 () -> {
                     try {

@@ -322,6 +322,10 @@
     -fx-wrap-text: false;
 }
 
+.catalog-table .table-column.col-proportional .table-cell {
+    -fx-text-overrun: ellipsis;
+}
+
 .catalog-table .table-column.col-code {
     -fx-alignment: CENTER-LEFT;
 }
