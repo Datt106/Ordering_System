@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.orderingsystem.fx.presentation.auth.LoginController"
+      alignment="CENTER" spacing="16" styleClass="login-root">
+    <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+    <Label styleClass="title" text="Hệ thống Đặt hàng Nhập khẩu"/>
+    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="420"/>
+    <VBox spacing="8" styleClass="form-card" maxWidth="400">
+        <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+        <Label text="Tên đăng nhập *"/>
+        <TextField fx:id="usernameField" promptText="vd. sales"/>
+        <Label text="Mật khẩu *"/>
+        <PasswordField fx:id="passwordField" onAction="#onLogin" promptText="••••••••"/>
+        <Button fx:id="loginButton" text="Đăng nhập" onAction="#onLogin" defaultButton="true" styleClass="btn-primary"/>
+        <Button text="Thông tin hệ thống…" onAction="#onShowSystemInfo" styleClass="btn-link"/>
+    </VBox>
+    <Label fx:id="hintLabel" styleClass="help-banner" wrapText="true" maxWidth="480"/>
+</VBox>

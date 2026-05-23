@@ -36,6 +36,14 @@ public class ImportRequestAcceptanceService {
                 .toList();
     }
 
+    /** Danh sách yêu cầu Đang xử lý — dùng cho UC006 truy vấn tồn kho. */
+    public List<ImportRequestDto> listProcessingRequests() {
+        authService.requireRole(UserRole.OVERSEAS);
+        return importRequestRepository.findByStatus(RequestStatus.DANG_XU_LY).stream()
+                .map(ImportRequestDto::fromSummary)
+                .toList();
+    }
+
     /** Chi tiết yêu cầu (kèm danh sách mặt hàng) — xem trước khi tiếp nhận. */
     public Optional<ImportRequestDto> getRequest(String requestId) {
         authService.requireRole(UserRole.OVERSEAS);

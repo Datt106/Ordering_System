@@ -3,8 +3,13 @@ package com.orderingsystem.infrastructure.repository;
 import com.orderingsystem.domain.inventory.InventoryQuery;
 
 import java.util.List;
+import java.util.Optional;
 
 public class InventoryQueryRepository extends BaseRepository {
+
+    public Optional<InventoryQuery> findById(String queryId) {
+        return query(em -> Optional.ofNullable(em.find(InventoryQuery.class, queryId)));
+    }
 
     public void save(InventoryQuery query) {
         inTransaction(em -> {

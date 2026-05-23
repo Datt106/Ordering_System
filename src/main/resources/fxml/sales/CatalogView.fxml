@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.orderingsystem.fx.presentation.sales.SalesCatalogController"
+      spacing="16" styleClass="screen" maxWidth="Infinity">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Danh mục mặt hàng chuẩn" styleClass="screen-title"/>
+    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
+
+    <!-- Card: bảng full width -->
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <Label text="Danh sách mặt hàng" styleClass="section-heading"/>
+        <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
+            <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+            <Button fx:id="addButton" text="Thêm" onAction="#onAdd" styleClass="btn-primary"/>
+            <Button fx:id="updateButton" text="Cập nhật" onAction="#onUpdate" styleClass="btn-secondary"/>
+            <Button text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
+        </HBox>
+        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+            <TableView fx:id="table" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="220" maxWidth="Infinity">
+                <columns>
+                    <TableColumn fx:id="codeCol" text="Mã" sortable="true"/>
+                    <TableColumn fx:id="nameCol" text="Tên" sortable="true"/>
+                    <TableColumn fx:id="descCol" text="Mô tả" sortable="true"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <VBox styleClass="content-card" maxWidth="Infinity">
+        <Label text="Thêm/Sửa Mặt hàng" styleClass="section-heading"/>
+        <GridPane hgap="16" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints minWidth="120" prefWidth="140"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="200"/>
+            </columnConstraints>
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" maxWidth="Infinity">
+                <Label text="Mã" styleClass="field-label"/>
+                <TextField fx:id="codeField" promptText="vd. P001" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2" maxWidth="Infinity">
+                <Label text="Tên" styleClass="field-label"/>
+                <TextField fx:id="nameField" promptText="Tên mặt hàng" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" maxWidth="Infinity">
+                <Label text="Mô tả" styleClass="field-label"/>
+                <TextArea fx:id="descArea" prefRowCount="3" promptText="Mô tả ngắn (tùy chọn)" wrapText="true" maxWidth="Infinity"/>
+            </VBox>
+        </GridPane>
+    </VBox>
+</VBox>

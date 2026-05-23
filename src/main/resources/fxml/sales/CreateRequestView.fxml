@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.orderingsystem.fx.presentation.sales.SalesCreateRequestController"
+      spacing="16" styleClass="screen" maxWidth="Infinity">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Tạo yêu cầu nhập hàng" styleClass="screen-title"/>
+    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
+
+    <!-- Card: nhập dòng -->
+    <VBox styleClass="content-card" maxWidth="Infinity">
+        <Label text="Thêm dòng mặt hàng" styleClass="section-heading"/>
+        <GridPane hgap="16" vgap="16">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25" minWidth="100"/>
+                <ColumnConstraints percentWidth="15" minWidth="72"/>
+                <ColumnConstraints percentWidth="15" minWidth="72"/>
+                <ColumnConstraints percentWidth="25" minWidth="120"/>
+                <ColumnConstraints percentWidth="20" minWidth="140"/>
+            </columnConstraints>
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="Mã hàng" styleClass="field-label"/>
+                <TextField fx:id="codeField" promptText="vd. P001" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="SL" styleClass="field-label"/>
+                <Spinner fx:id="qtySpinner" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <Label text="ĐVT" styleClass="field-label"/>
+                <TextField fx:id="unitField" promptText="pcs" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                <Label text="Ngày nhận" styleClass="field-label"/>
+                <DatePicker fx:id="deliveryPicker" maxWidth="Infinity"/>
+            </VBox>
+            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="5">
+                <Button fx:id="addLineButton" text="Thêm dòng" onAction="#onAddLine" styleClass="btn-primary"/>
+                <Button text="Xóa dòng" onAction="#onRemoveLine" styleClass="btn-secondary"/>
+                <Button text="Xóa tất cả" onAction="#onClearAll" styleClass="btn-secondary"/>
+            </HBox>
+        </GridPane>
+    </VBox>
+
+    <!-- Card: bảng dòng — full width -->
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <Label text="Danh sách dòng yêu cầu" styleClass="section-heading"/>
+        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+            <TableView fx:id="linesTable" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="220" maxWidth="Infinity">
+                <columns>
+                    <TableColumn fx:id="codeCol" text="Mã" sortable="true"/>
+                    <TableColumn fx:id="qtyCol" text="SL" sortable="true"/>
+                    <TableColumn fx:id="unitCol" text="ĐVT" sortable="true"/>
+                    <TableColumn fx:id="dateCol" text="Ngày nhận" sortable="true"/>
+                </columns>
+            </TableView>
+        </VBox>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="submitButton" text="Gửi yêu cầu" onAction="#onSubmit" styleClass="btn-primary"/>
+            <Label fx:id="resultLabel" styleClass="status-ok" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </VBox>
+</VBox>
