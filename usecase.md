@@ -211,18 +211,18 @@
 | **Hậu điều kiện** | Tạo ra danh sách đơn hàng con sẵn sàng để gửi (UC008); hoặc ghi nhận lỗi nếu không đủ hàng |
 | **Quan hệ** | `<<include>>` UC006; `<<extend>>` UC008 |
 
+**Phạm vi triển khai:** **Một yêu cầu nhập hàng (REQ) mỗi lần tách đơn** — không gộp nhiều REQ. (Gộp đa REQ / Workspace / Time Window: ngoài phạm vi phiên bản hiện tại.)
+
 **Luồng sự kiện chính:**
 
-1. Định kỳ theo tần suất vận hành của bộ phận, người dùng truy cập vào Không gian làm việc (Workspace) và thiết lập các tham số vận hành trên thanh công cụ cấu hình:
-   - **Ngày bắt đầu tính toán (Calculation Start Date):** Mặc định hiển thị ngày hệ thống hiện tại (`Current_Date`), cho phép người dùng tùy chỉnh bằng bộ chọn ngày (Date Picker).
-   - **Khung thời gian gom (Time Window):** Nhập số ngày gộp đơn thông qua ô nhập số hoặc danh sách chọn sẵn.
-2. Người dùng khởi động chức năng tách đơn cho yêu cầu đang xử lý.
-3. Hệ thống tự động gộp số lượng của các mặt hàng trùng mã từ các yêu cầu đã chọn để tạo thành Tổng nhu cầu. Hệ thống xác định **Ngày nhận đích (Target Date)** của lô hàng bằng **Ngày sớm nhất** trong các yêu cầu được gộp.
-4. Với từng mặt hàng, hệ thống thực hiện thuật toán phân bổ (xem chi tiết bên dưới).
+1. Người dùng chọn **một** yêu cầu ở trạng thái **Đang xử lý** (đã hoàn tất truy vấn tồn kho UC006 + phản hồi UC011).
+2. Người dùng chọn **Ngày bắt đầu tính toán (Calculation Start Date)** — mặc định ngày hiện tại, dùng tính ETA (`StartDate + số ngày vận chuyển`).
+3. Trong **cùng REQ**, nếu có nhiều dòng trùng mã hàng: hệ thống cộng số lượng và lấy **Ngày nhận đích** = **ngày sớm nhất** trong các dòng đó (Earliest Date Rule **trong một REQ**).
+4. Với **từng mã hàng** (sau bước 3), hệ thống chạy thuật toán phân bổ một lần (xem chi tiết bên dưới).
 5. Hệ thống tổng hợp kết quả: danh sách `[Site | Mã hàng | Số lượng | Phương tiện]`.
 6. Hệ thống hiển thị kết quả tách đơn cho người dùng xem xét.
 7. Người dùng xác nhận hoặc điều chỉnh thủ công nếu cần.
-8. Hệ thống lưu các đơn hàng con với trạng thái **Chờ gửi**.
+8. Hệ thống lưu các đơn hàng con (gắn `request_id` của REQ đó) với trạng thái **Chờ gửi**.
 
 **Nguyên tắc (theo đề bài):**
 

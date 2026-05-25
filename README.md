@@ -63,4 +63,5 @@ Ordering_System/
 ## Ghi chú
 
 - UI chính: **JavaFX + FXML** (`mvn javafx:run`).
+- **UC007 tách đơn:** một yêu cầu (`request_id`) mỗi lần; mỗi mã hàng trong REQ chạy thuật toán phân bổ một lần.
 - Module kho (warehouse) trên UI là placeholder; UC013/UC014 chưa triển khai đầy đủ.

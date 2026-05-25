@@ -146,15 +146,14 @@ BẮT ĐẦU
   │
   ▼
   ┌──────────────────────────────────────────────────────┐
-  │ BƯỚC 0 – Gom lô (Batch Aggregation / Time Window)    │
-  │ - Lọc các YCNH đang chờ xử lý theo Khung thời gian.  │
-  │ - Gộp các YCNH có cùng Mã mặt hàng (M).              │
-  │ - Tổng cầu (Q) = SUM(Số lượng các YCNH).             │
-  │ - Ngày đích (D) = MIN(Ngày mong muốn) (Earliest Date)│
+  │ Chọn MỘT YCNH (request_id) trạng thái Đang xử lý   │
+  │ Ngày bắt đầu tính toán (StartDate) — mặc định hôm nay│
+  │ Trong REQ: dòng trùng mã M → Q = SUM, D = MIN(ngày) │
+  │ (Không gộp nhiều REQ — mỗi phiếu một luồng tách đơn)│
   └────────────────────────────┬─────────────────────────┘
                                │
   ▼
-Đọc Tệp thông tin kho + Tệp thông tin site (số ngày vận chuyển)
+Đọc tồn kho của REQ đó + thông tin vận chuyển Site
   │
   ▼
 Với mỗi mặt hàng M cần đặt (số lượng Q, ngày nhận D):
@@ -207,24 +206,14 @@ KẾT THÚC
 
 **Ví dụ minh họa chạy thuật toán**
 
-**1. Bối cảnh & Cấu hình đầu vào**
-Ngày bắt đầu tính toán (Today): 2025-11-01
-Khung thời gian gom: 14 ngày (Hệ thống chỉ lấy các đơn có ngày mong muốn từ 2025-11-01 đến 2025-11-15).
-
-**2. Danh sách Yêu cầu nhập hàng (YCNH) chờ xử lý**
-YCNH #1: Tivi (T001), 100 cái, ngày nhận: 2025-11-10
-YCNH #2: Tivi (T001), 50 cái, ngày nhận: 2025-11-12
-YCNH #3: Tủ lạnh (R001), 250 cái, ngày nhận: 2025-11-08
-YCNH #4: Máy giặt (W001), 50 cái, ngày nhận: 2025-11-20 (Bị bỏ qua vì > 2025-11-15, chờ đợt gom sau).
-
-**3. Kết quả Gộp đơn hàng (Batching)**
-
-Lô 1 (T001): Cần 150 đơn vị (100+50). Ngày đích = MIN(10, 12) = 2025-11-10
-Lô 2 (R001): Cần 250 đơn vị. Ngày đích = 2025-11-08
+**1. Bối cảnh**
+- Một YCNH: `REQ-20251101-001`, trạng thái Đang xử lý, đã có tồn kho từ UC006/011.
+- Ngày bắt đầu tính toán (Today): 2025-11-01.
+- Trong REQ có hai dòng Tivi (T001) — hệ thống gộp **trong REQ**: Q = 150, D = 2025-11-10; và một dòng Tủ lạnh (R001): Q = 250, D = 2025-11-08.
 
 **CHI TIẾT TRACE LOG THUẬT TOÁN PHÂN BỔ**
 
-**Lô hàng 1**
+**Mặt hàng T001 (trong REQ)**
 
 ```
 Mặt hàng: T001 (Tivi), cần 150 đơn vị, ngày nhận đích: 2025-11-10
@@ -245,7 +234,7 @@ Bước 3 (phân bổ):
   [S01 | T001 | 150 | unit | ship delivery]
 ```
 
-**Lô hàng 2**
+**Mặt hàng R001 (trong REQ)**
 
 ```
 Mặt hàng: R001 (Tủ lạnh), cần 250 đơn vị, ngày nhận đích: 2025-11-08
@@ -289,9 +278,7 @@ Greedy “sắp xếp tàu rồi lấy lần lượt” cũng ra B nếu S2, S3 
 greedy KHÔNG đảm bảo ít Site trong mọi trường hợp → bước 2b bắt buộc tìm tập Site tối thiểu.
 ```
 
-**4. Đợt chạy thuật toán tiếp theo**
-Ngày bắt đầu tính toán (Today): 2025-11-08
-Khung thời gian gom: 14 ngày (Hệ thống chỉ lấy các đơn có ngày mong muốn từ 2025-11-08 đến 2025-11-23).
+YCNH khác (ví dụ máy giặt ngày nhận muộn) được tách đơn trong **lần chọn REQ khác**, không gộp chung với REQ trên.
 
 ---
 

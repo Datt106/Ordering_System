@@ -244,7 +244,7 @@ Hệ thống cung cấp 6 nhóm chức năng chính:
 
 | Mã | Yêu cầu |
 |---|---|
-| FR-06.1 | Hệ thống cho phép chọn nhiều yêu cầu chờ xử lý để gộp chung. Các mặt hàng trùng mã được cộng dồn. **Ngày nhận đích** = ngày sớm nhất trong nhóm (Earliest Date Rule). |
+| FR-06.1 | Mỗi lần tách đơn xử lý **một** yêu cầu (`request_id`). Trong REQ, các dòng trùng mã hàng được cộng dồn; **Ngày nhận đích** = ngày sớm nhất trong các dòng đó. Không gộp nhiều REQ trong phiên bản hiện tại. |
 | FR-06.2 | Hệ thống phải **xử lý từng mặt hàng độc lập**. Nếu một Site không đủ số lượng, được phép nhập từ **nhiều Site**; tổng lấy từ một Site không vượt tồn kho tại Site đó. |
 | FR-06.3 | Với mỗi mặt hàng, `ETA = Ngày chốt đơn + Số ngày vận chuyển` (riêng cho tàu và hàng không). Chỉ giữ phương án `(Site, mode)` có `ETA ≤ Ngày nhận đích`. |
 | FR-06.4 | Chọn Site theo thứ tự ưu tiên **giảm dần** (so sánh lexicographic — cấp sau chỉ khi cấp trước ngang hàng): **(1) Tàu hơn hàng không** (tối đa hóa số lượng đi tàu) → **(2) Site có tồn kho lớn** (tie-break) → **(3) Số Site được chọn nhỏ nhất** (đếm theo mã Site). |

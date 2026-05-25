@@ -24,7 +24,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * UC007 — Tách đơn: mỗi <strong>mã hàng</strong> trong yêu cầu chạy thuật toán phân bổ một lần.
+ * UC007 — Tách đơn theo <strong>một yêu cầu</strong> ({@code requestId}).
+ * Mỗi <strong>mã hàng</strong> trong REQ chạy thuật toán phân bổ một lần
+ * (các dòng trùng mã trong cùng REQ được cộng Q, D = ngày nhận sớm nhất).
+ * Không gộp nhiều REQ.
  */
 public class OrderSplitService {
 
