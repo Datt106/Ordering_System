@@ -52,6 +52,15 @@ public class PurchaseOrderRepository extends BaseRepository {
                 .getResultList());
     }
 
+    /** UC007 — tách đơn lại: xóa đơn con nháp của yêu cầu. */
+    public void deleteByRequestId(String requestId) {
+        inTransaction(em -> {
+            em.createQuery("DELETE FROM PurchaseOrder o WHERE o.requestId = :requestId")
+                    .setParameter("requestId", requestId)
+                    .executeUpdate();
+        });
+    }
+
     public List<PurchaseOrder> findByStatus(OrderStatus status) {
         return query(em -> em.createQuery(
                         "SELECT o FROM PurchaseOrder o WHERE o.status = :status "

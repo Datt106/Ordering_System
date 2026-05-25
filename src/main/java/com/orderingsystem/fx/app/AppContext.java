@@ -9,6 +9,7 @@ import com.orderingsystem.uc005.ImportRequestAcceptanceService;
 import com.orderingsystem.uc006.InventoryQueryService;
 import com.orderingsystem.uc009.SiteMerchandiseService;
 import com.orderingsystem.uc010.SiteShippingService;
+import com.orderingsystem.uc007.OrderSplitService;
 import com.orderingsystem.uc011.SiteInventoryResponseService;
 
 /**
@@ -26,6 +27,7 @@ public final class AppContext {
     private final SiteMerchandiseService siteMerchandiseService;
     private final SiteShippingService siteShippingService;
     private final SiteInventoryResponseService siteInventoryResponseService;
+    private final OrderSplitService orderSplitService;
 
     public AppContext() {
         this.authService = new AuthService();
@@ -38,6 +40,7 @@ public final class AppContext {
         this.siteMerchandiseService = new SiteMerchandiseService();
         this.siteShippingService = new SiteShippingService();
         this.siteInventoryResponseService = new SiteInventoryResponseService();
+        this.orderSplitService = new OrderSplitService();
     }
 
     public AuthService auth() {
@@ -78,5 +81,9 @@ public final class AppContext {
 
     public SiteInventoryResponseService siteInventoryResponses() {
         return siteInventoryResponseService;
+    }
+
+    public OrderSplitService orderSplit() {
+        return orderSplitService;
     }
 }
