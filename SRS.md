@@ -44,7 +44,7 @@ Hệ thống Đặt hàng Nhập khẩu (sau đây gọi tắt là **hệ thốn
 
 - Tiếp nhận và quản lý yêu cầu nhập hàng từ Bộ phận Bán hàng.
 - Truy vấn thông tin tồn kho và vận chuyển từ các Site nhập khẩu nước ngoài.
-- Tự động phân bổ và tách đơn hàng theo thuật toán ưu tiên.
+- Tự động phân bổ và tách đơn hàng theo thuật toán ưu tiên lexicographic: tàu → tồn lớn → ít Site.
 - Phát hành đơn hàng tới các Site đối tác.
 - Cung cấp thông tin đơn hàng cho Bộ phận Quản lý kho phục vụ đối chiếu khi hàng về.
 
@@ -125,7 +125,7 @@ Hệ thống cung cấp 6 nhóm chức năng chính:
 | 1 | Quản lý yêu cầu nhập hàng | Tạo, theo dõi trạng thái yêu cầu |
 | 2 | Quản lý đối tác Site | Thêm/sửa/xóa Site, mặt hàng, thông tin vận chuyển |
 | 3 | Truy vấn tồn kho | Gửi truy vấn và thu thập phản hồi tồn kho từ Site |
-| 4 | Xử lý và tách đơn | Thuật toán phân bổ đơn hàng tự động theo tiêu chí ưu tiên |
+| 4 | Xử lý và tách đơn | Thuật toán phân bổ: tàu → tồn lớn → ít Site (lexicographic) |
 | 5 | Phát hành đơn hàng | Gửi đơn tới Site, Site xác nhận |
 | 6 | Quản lý nhập kho | Xem đơn hàng sắp về, đối chiếu và ghi nhận sai lệch |
 
@@ -244,14 +244,13 @@ Hệ thống cung cấp 6 nhóm chức năng chính:
 
 | Mã | Yêu cầu |
 |---|---|
-| FR-06.1| Hệ thống cho phép chọn nhiều yêu cầu chờ xử lý để gộp chung. Các mặt hàng trùng mã sẽ được cộng dồn số lượng. Ngày nhận đích (Target Date) của lô hàng áp dụng **Quy tắc ngày sớm nhất (Earliest Date Rule)** trong nhóm. |
-| FR-06.1 | Hệ thống phải xử lý từng mặt hàng độc lập trong yêu cầu |
-| FR-06.2 | Với mỗi mặt hàng, hệ thống tính toán **Ngày về dự kiến (ETA)**: `ETA = Ngày chốt đơn + Số ngày vận chuyển` (áp dụng riêng cho Tàu và Máy bay). |
-| FR-06.3 | Hệ thống chỉ lọc ra danh sách Site có `ETA ≤ Ngày nhận đích`. |
-| FR-06.4 | Hệ thống phải sắp xếp các Site theo thứ tự ưu tiên: **(1) Ưu tiên tàu hơn hàng không → (2) Ưu tiên tồn kho lớn hơn** |
-| FR-06.5 | Hệ thống phải phân bổ số lượng theo thứ tự ưu tiên, chọn số lượng Site nhỏ nhất có thể để đủ số lượng yêu cầu |
-| FR-06.6 | Nếu tổng tồn kho khả dụng nhỏ hơn số lượng yêu cầu, hệ thống phải ghi nhận lỗi "Không đủ hàng" kèm số lượng còn thiếu |
-| FR-06.7 | Nếu không có Site nào đáp ứng ngày nhận mong muốn, hệ thống phải thông báo lỗi và đề xuất nới rộng ngày nhận |
+| FR-06.1 | Hệ thống cho phép chọn nhiều yêu cầu chờ xử lý để gộp chung. Các mặt hàng trùng mã được cộng dồn. **Ngày nhận đích** = ngày sớm nhất trong nhóm (Earliest Date Rule). |
+| FR-06.2 | Hệ thống phải **xử lý từng mặt hàng độc lập**. Nếu một Site không đủ số lượng, được phép nhập từ **nhiều Site**; tổng lấy từ một Site không vượt tồn kho tại Site đó. |
+| FR-06.3 | Với mỗi mặt hàng, `ETA = Ngày chốt đơn + Số ngày vận chuyển` (riêng cho tàu và hàng không). Chỉ giữ phương án `(Site, mode)` có `ETA ≤ Ngày nhận đích`. |
+| FR-06.4 | Chọn Site theo thứ tự ưu tiên **giảm dần** (so sánh lexicographic — cấp sau chỉ khi cấp trước ngang hàng): **(1) Tàu hơn hàng không** (tối đa hóa số lượng đi tàu) → **(2) Site có tồn kho lớn** (tie-break) → **(3) Số Site được chọn nhỏ nhất** (đếm theo mã Site). |
+| FR-06.5 | Phân bổ số lượng trên tập Site đã chọn: ưu tiên lấy từ Site tồn lớn trước trong cùng phương tiện; mỗi Site một pool tồn dùng chung cho tàu/bay. |
+| FR-06.6 | Nếu tổng tồn khả dụng (sau lọc ETA) < số lượng yêu cầu → lỗi **"Không đủ hàng"** kèm số lượng thiếu. |
+| FR-06.7 | Nếu không có `(Site, mode)` nào thỏa ETA → lỗi không đáp ứng ngày nhận, đề xuất nới ngày. |
 | FR-06.8 | Hệ thống phải hiển thị kết quả tách đơn để người dùng xem xét trước khi xác nhận |
 | FR-06.9 | Người dùng có thể điều chỉnh thủ công kết quả tách đơn trước khi xác nhận |
 
@@ -499,7 +498,7 @@ Site          1 ──── N  PurchaseOrder
 | C02 | Định dạng dữ liệu đầu ra gửi cho Site phải tuân đúng: `[Site code \| Merchandise code \| Quantity ordered \| Unit \| Delivery means]` |
 | C03 | Giá trị Delivery means chỉ được là "ship delivery" hoặc "air delivery" |
 | C04 | Tệp thông tin site và Tệp thông tin kho phải tuân đúng định dạng quy định trong phần mô tả hiện trạng |
-| C05 | Thuật toán tách đơn phải tuân thứ tự ưu tiên: tàu > hàng không → tồn kho lớn → số Site ít nhất |
+| C05 | Thuật toán tách đơn (UC007) phải tuân **thứ tự ưu tiên lexicographic** của đề bài: **(1) tàu > hàng không** → **(2) Site tồn lớn** (tie-break) → **(3) số Site ít nhất**. Không thay bằng greedy “sắp xếp một lần” (chi tiết trong `usecase.md` / `flow.md`). |
 
 ### 8.2 Giả định
 

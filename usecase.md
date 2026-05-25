@@ -206,7 +206,7 @@
 | **Mã UC** | UC007 |
 | **Tên** | Xử lý yêu cầu và Tách đơn hàng |
 | **Actor chính** | Bộ phận Đặt hàng quốc tế |
-| **Mô tả** | Áp dụng thuật toán phân bổ để quyết định nhập bao nhiêu từ Site nào, tạo ra các đơn hàng con |
+| **Mô tả** | Dựa trên tồn kho và số ngày vận chuyển, quyết định nhập bao nhiêu từ Site nào (từng mặt hàng độc lập); ưu tiên tàu → tồn lớn → ít Site; tạo đơn hàng con |
 | **Tiền điều kiện** | Tệp thông tin kho đã được cập nhật đầy đủ (UC006 + UC011 hoàn tất) |
 | **Hậu điều kiện** | Tạo ra danh sách đơn hàng con sẵn sàng để gửi (UC008); hoặc ghi nhận lỗi nếu không đủ hàng |
 | **Quan hệ** | `<<include>>` UC006; `<<extend>>` UC008 |
@@ -224,32 +224,64 @@
 7. Người dùng xác nhận hoặc điều chỉnh thủ công nếu cần.
 8. Hệ thống lưu các đơn hàng con với trạng thái **Chờ gửi**.
 
+**Nguyên tắc (theo đề bài):**
+
+- Xử lý **từng mặt hàng độc lập**.
+- Chỉ xét Site **đáp ứng ngày nhận** (`ETA ≤ Ngày nhận đích`).
+- Một Site không đủ hàng → **được phép** lấy từ nhiều Site; tổng lấy từ một Site không vượt tồn kho thực tế tại Site đó.
+- Không đủ tổng tồn khả dụng → **báo lỗi** (không tách đơn cho mặt hàng đó).
+- Chọn Site theo **thứ tự ưu tiên giảm dần** (so sánh **từng cấp**, cấp sau chỉ áp dụng khi cấp trước **bằng nhau**):
+  1. **Ưu tiên phương tiện tàu** hơn hàng không (tối đa hóa số lượng đi tàu trong phương án).
+  2. **Ưu tiên Site có tồn kho lớn** (tie-break khi cùng số Site và cùng mức dùng tàu/bay).
+  3. **Số Site được chọn nhỏ nhất có thể** (đếm theo **mã Site**, không đếm số dòng đơn).
+
 **Thuật toán phân bổ (cho từng mặt hàng):**
 
 ```
-INPUT: merchandise M, total_quantity Q, target_delivery_date D, calculation_start_date StartDate
+INPUT: merchandise M, total_quantity Q, target_delivery_date D,
+       calculation_start_date StartDate
 
-BƯỚC 1 – Tính ETA & Lọc Site khả dụng:
-  Với mỗi Site S có in-stock quantity > 0 cho M:
-    Tính ETA_Ship = StartDate + ship_days[S]
-    Tính ETA_Air  = StartDate + air_days[S]
-    LỌC: Chỉ giữ lại phương án (S, mode) nếu ETA_mode <= D (Ngày nhận đích)
+BƯỚC 1 – Tính ETA & lọc phương án (Site, mode):
+  Với mỗi Site S có in_stock[S] > 0 cho M:
+    ETA_Ship = StartDate + ship_days[S]
+    ETA_Air  = StartDate + air_days[S]
+    Nếu ETA_Ship ≤ D → thêm phương án (S, ship), capacity = in_stock[S]
+    Nếu ETA_Air  ≤ D → thêm phương án (S, air),  capacity = in_stock[S]
+  (Cùng một Site dùng chung một pool tồn: tổng số lượng lấy từ S ≤ in_stock[S].)
 
-BƯỚC 2 – Sắp xếp theo ưu tiên:
-  Tiêu chí 1: mode = "ship" (Tàu) trước "air" (Hàng không)
-  Tiêu chí 2 (cùng mode): in-stock quantity giảm dần
+BƯỚC 2 – Chọn phương án tối ưu theo thứ tự ưu tiên (lexicographic):
 
-BƯỚC 3 – Phân bổ số lượng (Greedy):
-  remaining = Q
-  Lần lượt chọn Site theo thứ tự ưu tiên:
-    allocate = min(in_stock[S], remaining)
+  2a. Tối đa hóa lượng hàng đi TÀU:
+      Trên tập phương án mode = ship, tìm phân bổ (có thể nhiều Site)
+      sao cho tổng qty_ship càng lớn càng tốt (tối đa min(Q, tổng tồn tàu-eligible)).
+
+  2b. Trong các phương án có cùng qty_ship tối đa, chọn phương án có
+      **số Site (mã Site) nhỏ nhất** vẫn đạt được qty_ship đó
+      (bài toán tập Site tối thiểu — có thể dùng DP vì tối đa ~50 Site).
+
+  2c. Nếu qty_ship < Q: bổ sung phương án AIR cho phần còn thiếu
+      (remaining = Q − qty_ship), lại áp dụng **ít Site nhất** trên pool
+      tồn còn lại của từng Site; chỉ dùng air khi cần.
+
+  2d. Tie-break (cùng qty_ship, cùng số Site): ưu tiên tập Site có
+      in_stock lớn hơn (sắp xếp Site theo tồn giảm dần khi phân bổ
+      trong từng phương án).
+
+  → Kết quả bước 2: tập các dòng [Site | mode | qty] thỏa Q và
+    thỏa thứ tự ưu tiên đề bài.
+
+BƯỚC 3 – Phân bổ số lượng cụ thể trên tập Site đã chọn:
+  Với mỗi mode (ship trước, air sau), sắp Site theo in_stock giảm dần:
+    allocate = min(tồn còn lại tại S, remaining)
     remaining -= allocate
-    Nếu remaining == 0: dừng
-  
+    Ghi đơn con: [S | M | allocate | mode]
+
 BƯỚC 4 – Kiểm tra:
-  Nếu remaining > 0: Ghi lỗi "Không đủ hàng cho M"
-  Số Site được chọn phải là nhỏ nhất có thể
+  Nếu không tồn tại phương án đủ Q sau bước 2 → lỗi "Không đủ hàng cho M"
+  Nếu không có (S, mode) nào thỏa ETA ≤ D → lỗi "Không có Site đáp ứng ngày nhận"
 ```
+
+**Lưu ý:** Không dùng “sắp xếp rồi greedy một lần” thay cho bước 2b–2c — cách đó có thể vi phạm tiêu chí **ít Site nhất** hoặc **tối đa tàu** (xem ví dụ trong `flow.md`).
 
 **Ngoại lệ:**
 

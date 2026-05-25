@@ -169,19 +169,20 @@ Với mỗi mặt hàng M cần đặt (số lượng Q, ngày nhận D):
   └────────────────────────────┬────────────────────────┘
                                │
   ┌────────────────────────────▼────────────────────────┐
-  │ BƯỚC 2 – Sắp xếp ưu tiên                            │
-  │   Ưu tiên 1: Tàu (ship) trước Hàng không (air)      │
-  │   Ưu tiên 2: Tồn kho lớn hơn trước                  │
+  │ BƯỚC 2 – Chọn phương án (lexicographic — đề bài)    │
+  │   Cấp 1: Tối đa hóa số lượng đi TÀU (ship)          │
+  │   Cấp 2: Cùng mức tàu → ít mã Site nhất (DP/ tối  │
+  │           thiểu tập Site, ≤ 50 Site)              │
+  │   Cấp 3: Tie-break → ưu tiên Site tồn lớn         │
+  │   Thiếu Q sau tàu → bổ sung AIR, lại ít Site nhất │
+  │   Mỗi Site: pool tồn chung, tổng lấy ≤ stock[S]  │
   └────────────────────────────┬────────────────────────┘
                                │
   ┌────────────────────────────▼────────────────────────┐
-  │ BƯỚC 3 – Phân bổ số lượng (Greedy)                  │
-  │   remaining = Q                                     │
-  │   For Site S theo thứ tự ưu tiên:                   │
-  │     allocate = min(stock[S], remaining)             │
-  │     remaining -= allocate                           │
-  │     Ghi: [S | M | allocate | mode]                  │
-  │     If remaining == 0: STOP                         │
+  │ BƯỚC 3 – Phân bổ số lượng trên tập đã chọn          │
+  │   Ship trước, air sau; trong cùng mode: Site tồn  │
+  │   giảm dần → allocate = min(stock còn, remaining)  │
+  │   Ghi: [S | M | allocate | mode]                    │
   └────────────────────────────┬────────────────────────┘
                                │
                     ┌──────────▼──────────┐
@@ -234,13 +235,11 @@ Site | Tồn kho | Tàu (ngày) | Ngày về tàu | Air (ngày) | Ngày về air
  S01 |   150   |     5      |  2025-11-06 |     2      |  2025-11-03 |  Tàu ✓
  S02 |    80   |    10      |  2025-11-11 |     4      |  2025-11-05 |  Air ✓ (Tàu trễ)
 
-Sau sắp xếp (ưu tiên tàu, tồn kho lớn):
-  1. S01 – tàu – 150 đơn vị
-  2. S02 – air – 80 đơn vị
+Bước 2 (chọn phương án):
+  Chỉ cần tàu: S01 ship đủ 150 → 1 Site, qty_ship = 150 = Q (tối đa tàu, ít Site nhất).
 
-Phân bổ:
-  remaining = 150
-  → S01: allocate = min(150, 150) = 150, remaining = 0  ✓
+Bước 3 (phân bổ):
+  → S01 | ship | 150
 
 Đơn con tạo ra:
   [S01 | T001 | 150 | unit | ship delivery]
@@ -257,19 +256,39 @@ Site | Tồn kho | Tàu (ngày) | Ngày về tàu | Air (ngày) | Ngày về air
  S01 |   100   |     5      |  2025-11-06 |     2      |  2025-11-03 |  Tàu ✓
  S03 |   200   |    12      |  2025-11-13 |     6      |  2025-11-07 |  Air ✓ (Tàu trễ)
 
-Sau sắp xếp (ưu tiên tàu, tồn kho lớn):
-  1. S01 – tàu – 100 đơn vị
-  2. S03 – air – 200 đơn vị
+Bước 2 (chọn phương án):
+  Tàu: chỉ S01 ship (100). Cần thêm 150 → bổ sung air: S03 air (200) — tối thiểu 2 Site
+  (không thể 1 Site vì S03 tồn 200 < 250). qty_ship tối đa = 100; số Site = 2.
 
-Phân bổ:
-  remaining = 250
-  → S01: allocate = min(100, 250) = 100, remaining = 150
-  → S03: allocate = min(200, 150) = 150, remaining = 0  ✓
+Bước 3 (phân bổ):
+  → S01 ship 100, S03 air 150
 
 Đơn con tạo ra:
   [S01 | R001 | 100 | unit | ship delivery]
   [S03 | R001 | 150 | unit | air delivery]
 ```
+
+**Lô minh họa — ưu tiên tàu cao hơn “ít Site” (cùng đủ Q)**
+
+```
+Mặt hàng: X99, cần 100, ngày nhận đích: đủ cho cả tàu và bay
+Today: 2025-11-01
+
+Site | Tồn | Tàu đáp ứng? | Bay đáp ứng?
+-----|-----|--------------|-------------
+ S1  | 100 | Không        | Có
+ S2  |  60 | Có           | Có
+ S3  |  60 | Có           | Có
+
+So sánh phương án:
+  A) S1 bay 100        → 1 Site, toàn bay (qty_ship = 0)
+  B) S2 tàu 60 + S3 tàu 40 → 2 Site, qty_ship = 100
+
+Theo đề bài (tàu → tồn lớn → ít Site): chọn B — cấp 1 (tàu) thắng dù nhiều Site hơn A.
+Greedy “sắp xếp tàu rồi lấy lần lượt” cũng ra B nếu S2, S3 tồn bằng nhau; nhưng
+greedy KHÔNG đảm bảo ít Site trong mọi trường hợp → bước 2b bắt buộc tìm tập Site tối thiểu.
+```
+
 **4. Đợt chạy thuật toán tiếp theo**
 Ngày bắt đầu tính toán (Today): 2025-11-08
 Khung thời gian gom: 14 ngày (Hệ thống chỉ lấy các đơn có ngày mong muốn từ 2025-11-08 đến 2025-11-23).
