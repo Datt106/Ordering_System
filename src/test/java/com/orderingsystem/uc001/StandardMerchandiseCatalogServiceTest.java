@@ -2,9 +2,9 @@ package com.orderingsystem.uc001;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
-import com.orderingsystem.infrastructure.repository.MerchandiseCatalogRepository;
+import com.orderingsystem.infrastructure.database.MerchandiseCatalogRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
-import com.orderingsystem.uc001.dto.StandardMerchandiseDto;
+import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

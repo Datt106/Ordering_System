@@ -1,6 +1,6 @@
 package com.orderingsystem.auth;
 
-import com.orderingsystem.domain.auth.UserRole;
+import com.orderingsystem.core.domain.UserRole;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import org.junit.jupiter.api.AfterAll;

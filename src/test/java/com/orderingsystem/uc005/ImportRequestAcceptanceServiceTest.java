@@ -1,12 +1,12 @@
 package com.orderingsystem.uc005;
 
 import com.orderingsystem.auth.AuthService;
-import com.orderingsystem.domain.request.RequestStatus;
+import com.orderingsystem.core.domain.RequestStatus;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc002.ImportRequestService;
-import com.orderingsystem.uc002.dto.CreateImportRequestLineInput;
-import com.orderingsystem.uc002.dto.ImportRequestDto;
+import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
+import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

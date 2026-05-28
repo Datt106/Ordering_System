@@ -2,13 +2,13 @@ package com.orderingsystem.uc006;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
-import com.orderingsystem.infrastructure.repository.SiteMerchandiseRepository;
+import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc002.ImportRequestService;
-import com.orderingsystem.uc002.dto.CreateImportRequestLineInput;
-import com.orderingsystem.uc002.dto.ImportRequestDto;
+import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
+import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
 import com.orderingsystem.uc005.ImportRequestAcceptanceService;
-import com.orderingsystem.uc006.dto.InventoryQueryDispatchResultDto;
+import com.orderingsystem.uc006.boundary.dto.InventoryQueryDispatchResultDto;
 import com.orderingsystem.uc009.SiteMerchandiseService;
 import com.orderingsystem.uc010.SiteShippingService;
 import org.junit.jupiter.api.AfterAll;

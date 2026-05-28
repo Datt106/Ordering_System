@@ -1,7 +1,7 @@
 package com.orderingsystem.fx.presentation.overseas;
 
-import com.orderingsystem.uc002.dto.ImportRequestDto;
-import com.orderingsystem.uc006.dto.InventoryQueryDispatchResultDto;
+import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
+import com.orderingsystem.uc006.boundary.dto.InventoryQueryDispatchResultDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
@@ -64,7 +64,7 @@ public class OverseasInventoryController extends BaseViewController {
         String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang gửi truy vấn…",
-                () -> app.inventoryQueries().dispatchInventoryQueries(requestId),
+                () -> app.uc006().dispatchInventoryQueries(requestId),
                 this::showResult,
                 "Truy vấn đã gửi."
         );
@@ -79,7 +79,7 @@ public class OverseasInventoryController extends BaseViewController {
         String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang tải trạng thái…",
-                () -> app.inventoryQueries().getInventoryQueryStatus(requestId),
+                () -> app.uc006().getInventoryQueryStatus(requestId),
                 this::showResult,
                 "Trạng thái đã cập nhật."
         );
@@ -103,8 +103,8 @@ public class OverseasInventoryController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang xử lý timeout…",
                 () -> {
-                    int updated = app.inventoryQueries().applyTimeoutAsZeroStock(requestId);
-                    InventoryQueryDispatchResultDto status = app.inventoryQueries().getInventoryQueryStatus(requestId);
+                    int updated = app.uc006().applyTimeoutAsZeroStock(requestId);
+                    InventoryQueryDispatchResultDto status = app.uc006().getInventoryQueryStatus(requestId);
                     return new TimeoutResult(updated, status);
                 },
                 result -> {
@@ -126,7 +126,7 @@ public class OverseasInventoryController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải…",
-                () -> app.acceptance().listProcessingRequests(),
+                () -> app.uc005().listProcessingRequests(),
                 this::applyProcessingList,
                 "Danh sách sẵn sàng."
         );

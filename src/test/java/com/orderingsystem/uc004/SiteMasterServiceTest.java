@@ -1,10 +1,10 @@
 package com.orderingsystem.uc004;
 
 import com.orderingsystem.auth.AuthService;
-import com.orderingsystem.domain.site.ShippingStatus;
+import com.orderingsystem.core.domain.ShippingStatus;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
-import com.orderingsystem.uc004.dto.SiteDto;
+import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

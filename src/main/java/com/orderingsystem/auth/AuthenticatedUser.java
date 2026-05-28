@@ -1,7 +1,7 @@
 package com.orderingsystem.auth;
 
-import com.orderingsystem.domain.auth.User;
-import com.orderingsystem.domain.auth.UserRole;
+import com.orderingsystem.core.domain.User;
+import com.orderingsystem.core.domain.UserRole;
 
 /**
  * Thông tin user sau đăng nhập — không chứa mật khẩu (an toàn cho Session / UI).

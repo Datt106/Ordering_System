@@ -1,7 +1,7 @@
 package com.orderingsystem.fx.presentation.site;
 
-import com.orderingsystem.uc001.dto.StandardMerchandiseDto;
-import com.orderingsystem.uc009.dto.SiteMerchandiseDto;
+import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
+import com.orderingsystem.uc009.boundary.dto.SiteMerchandiseDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
@@ -45,7 +45,7 @@ public class SiteMerchandiseController extends BaseViewController {
     private void loadCatalog() {
         UiTasks.runWithStatus(
                 "Đang tải danh mục…",
-                () -> app.catalog().listCatalogForBrowsing(),
+                () -> app.uc001().listCatalogForBrowsing(),
                 this::applyCatalogCodes,
                 "Danh mục chuẩn sẵn sàng."
         );
@@ -74,7 +74,7 @@ public class SiteMerchandiseController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang thêm…",
                 () -> {
-                    app.siteMerchandise().addMerchandise(code);
+                    app.uc009().addMerchandise(code);
                     return code;
                 },
                 addedCode -> {
@@ -100,7 +100,7 @@ public class SiteMerchandiseController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang xóa…",
                 () -> {
-                    app.siteMerchandise().removeMerchandise(code);
+                    app.uc009().removeMerchandise(code);
                     return code;
                 },
                 removedCode -> {
@@ -114,7 +114,7 @@ public class SiteMerchandiseController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải…",
-                () -> app.siteMerchandise().listMyMerchandise(),
+                () -> app.uc009().listMyMerchandise(),
                 this::applyMerchandiseList,
                 "Sẵn sàng."
         );

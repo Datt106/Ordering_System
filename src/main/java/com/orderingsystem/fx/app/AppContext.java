@@ -1,89 +1,89 @@
 package com.orderingsystem.fx.app;
 
 import com.orderingsystem.auth.AuthService;
-import com.orderingsystem.uc001.StandardMerchandiseCatalogService;
-import com.orderingsystem.uc002.ImportRequestService;
-import com.orderingsystem.uc003.ImportRequestTrackingService;
-import com.orderingsystem.uc004.SiteMasterService;
-import com.orderingsystem.uc005.ImportRequestAcceptanceService;
-import com.orderingsystem.uc006.InventoryQueryService;
-import com.orderingsystem.uc009.SiteMerchandiseService;
-import com.orderingsystem.uc010.SiteShippingService;
-import com.orderingsystem.uc007.OrderSplitService;
-import com.orderingsystem.uc011.SiteInventoryResponseService;
+import com.orderingsystem.uc001.controller.CatalogController;
+import com.orderingsystem.uc002.controller.RequestCreateController;
+import com.orderingsystem.uc003.controller.RequestTrackController;
+import com.orderingsystem.uc004.controller.SiteMasterController;
+import com.orderingsystem.uc005.controller.RequestAcceptController;
+import com.orderingsystem.uc006.controller.StockQueryController;
+import com.orderingsystem.uc007.controller.OrderSplitController;
+import com.orderingsystem.uc009.controller.SiteMchController;
+import com.orderingsystem.uc010.controller.SiteShipController;
+import com.orderingsystem.uc011.controller.StockReplyController;
 
 /**
- * Composition root (DIP): UI chỉ phụ thuộc một điểm cấp phụ thuộc, không tự {@code new} service trong controller.
+ * Composition root: UI (boundary) gọi controller từng UC — không {@code new} repository trong JavaFX controller.
  */
 public final class AppContext {
 
     private final AuthService authService;
-    private final StandardMerchandiseCatalogService catalogService;
-    private final ImportRequestService importRequestService;
-    private final ImportRequestTrackingService trackingService;
-    private final SiteMasterService siteMasterService;
-    private final ImportRequestAcceptanceService acceptanceService;
-    private final InventoryQueryService inventoryQueryService;
-    private final SiteMerchandiseService siteMerchandiseService;
-    private final SiteShippingService siteShippingService;
-    private final SiteInventoryResponseService siteInventoryResponseService;
-    private final OrderSplitService orderSplitService;
+    private final CatalogController uc001;
+    private final RequestCreateController uc002;
+    private final RequestTrackController uc003;
+    private final SiteMasterController uc004;
+    private final RequestAcceptController uc005;
+    private final StockQueryController uc006;
+    private final OrderSplitController uc007;
+    private final SiteMchController uc009;
+    private final SiteShipController uc010;
+    private final StockReplyController uc011;
 
     public AppContext() {
         this.authService = new AuthService();
-        this.catalogService = new StandardMerchandiseCatalogService();
-        this.importRequestService = new ImportRequestService();
-        this.trackingService = new ImportRequestTrackingService();
-        this.siteMasterService = new SiteMasterService();
-        this.acceptanceService = new ImportRequestAcceptanceService();
-        this.inventoryQueryService = new InventoryQueryService();
-        this.siteMerchandiseService = new SiteMerchandiseService();
-        this.siteShippingService = new SiteShippingService();
-        this.siteInventoryResponseService = new SiteInventoryResponseService();
-        this.orderSplitService = new OrderSplitService();
+        this.uc001 = new CatalogController();
+        this.uc002 = new RequestCreateController();
+        this.uc003 = new RequestTrackController();
+        this.uc004 = new SiteMasterController();
+        this.uc005 = new RequestAcceptController();
+        this.uc006 = new StockQueryController();
+        this.uc007 = new OrderSplitController();
+        this.uc009 = new SiteMchController();
+        this.uc010 = new SiteShipController();
+        this.uc011 = new StockReplyController();
     }
 
     public AuthService auth() {
         return authService;
     }
 
-    public StandardMerchandiseCatalogService catalog() {
-        return catalogService;
+    public CatalogController uc001() {
+        return uc001;
     }
 
-    public ImportRequestService importRequests() {
-        return importRequestService;
+    public RequestCreateController uc002() {
+        return uc002;
     }
 
-    public ImportRequestTrackingService tracking() {
-        return trackingService;
+    public RequestTrackController uc003() {
+        return uc003;
     }
 
-    public SiteMasterService sites() {
-        return siteMasterService;
+    public SiteMasterController uc004() {
+        return uc004;
     }
 
-    public ImportRequestAcceptanceService acceptance() {
-        return acceptanceService;
+    public RequestAcceptController uc005() {
+        return uc005;
     }
 
-    public InventoryQueryService inventoryQueries() {
-        return inventoryQueryService;
+    public StockQueryController uc006() {
+        return uc006;
     }
 
-    public SiteMerchandiseService siteMerchandise() {
-        return siteMerchandiseService;
+    public OrderSplitController uc007() {
+        return uc007;
     }
 
-    public SiteShippingService siteShipping() {
-        return siteShippingService;
+    public SiteMchController uc009() {
+        return uc009;
     }
 
-    public SiteInventoryResponseService siteInventoryResponses() {
-        return siteInventoryResponseService;
+    public SiteShipController uc010() {
+        return uc010;
     }
 
-    public OrderSplitService orderSplit() {
-        return orderSplitService;
+    public StockReplyController uc011() {
+        return uc011;
     }
 }

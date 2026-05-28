@@ -8,14 +8,14 @@
     <persistence-unit name="orderingPU" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>com.orderingsystem.domain.auth.User</class>
-        <class>com.orderingsystem.domain.site.Site</class>
-        <class>com.orderingsystem.domain.site.SiteMerchandise</class>
-        <class>com.orderingsystem.domain.catalog.StandardMerchandise</class>
-        <class>com.orderingsystem.domain.request.ImportRequest</class>
-        <class>com.orderingsystem.domain.request.ImportRequestItem</class>
-        <class>com.orderingsystem.domain.inventory.InventoryQuery</class>
-        <class>com.orderingsystem.domain.order.PurchaseOrder</class>
+        <class>com.orderingsystem.core.domain.User</class>
+        <class>com.orderingsystem.core.domain.Site</class>
+        <class>com.orderingsystem.core.domain.SiteMerchandise</class>
+        <class>com.orderingsystem.core.domain.StandardMerchandise</class>
+        <class>com.orderingsystem.core.domain.ImportRequest</class>
+        <class>com.orderingsystem.core.domain.ImportRequestItem</class>
+        <class>com.orderingsystem.core.domain.InventoryQuery</class>
+        <class>com.orderingsystem.core.domain.PurchaseOrder</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.sqlite.JDBC"/>

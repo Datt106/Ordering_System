@@ -1,6 +1,6 @@
 package com.orderingsystem.fx.navigation;
 
-import com.orderingsystem.domain.auth.UserRole;
+import com.orderingsystem.core.domain.UserRole;
 
 import java.util.List;
 

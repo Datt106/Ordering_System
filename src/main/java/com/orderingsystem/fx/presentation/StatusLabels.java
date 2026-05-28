@@ -1,7 +1,7 @@
 package com.orderingsystem.fx.presentation;
 
-import com.orderingsystem.domain.request.RequestStatus;
-import com.orderingsystem.domain.site.ShippingStatus;
+import com.orderingsystem.core.domain.RequestStatus;
+import com.orderingsystem.core.domain.ShippingStatus;
 
 public final class StatusLabels {
 

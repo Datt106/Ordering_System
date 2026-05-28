@@ -1,7 +1,7 @@
 package com.orderingsystem.fx.presentation.site;
 
-import com.orderingsystem.domain.site.ShippingStatus;
-import com.orderingsystem.uc004.dto.SiteDto;
+import com.orderingsystem.core.domain.ShippingStatus;
+import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
@@ -41,7 +41,7 @@ public class SiteShippingController extends BaseViewController {
         int airDays = airSpinner.getValue();
         UiTasks.<SiteDto>runWithStatus(
                 "Đang lưu...",
-                () -> app.siteShipping().updateMyShipping(shipDays, airDays),
+                () -> app.uc010().updateMyShipping(shipDays, airDays),
                 this::bindSiteAfterSave,
                 "Thông tin vận chuyển đã cập nhật."
         );
@@ -58,7 +58,7 @@ public class SiteShippingController extends BaseViewController {
     private void loadSite() {
         UiTasks.<SiteDto>runWithStatus(
                 "Đang tải...",
-                () -> app.siteShipping().getMySite(),
+                () -> app.uc010().getMySite(),
                 this::bindSite,
                 "Sẵn sàng."
         );

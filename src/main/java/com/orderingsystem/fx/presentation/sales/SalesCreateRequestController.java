@@ -1,7 +1,7 @@
 package com.orderingsystem.fx.presentation.sales;
 
-import com.orderingsystem.uc002.dto.CreateImportRequestLineInput;
-import com.orderingsystem.uc002.dto.ImportRequestDto;
+import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
+import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
@@ -150,7 +150,7 @@ public class SalesCreateRequestController extends BaseViewController {
                 .toList();
         UiTasks.runWithStatus(
                 "Đang gửi yêu cầu…",
-                () -> app.importRequests().createImportRequest(inputs),
+                () -> app.uc002().createImportRequest(inputs),
                 created -> {
                     lines.clear();
                     refreshTable();

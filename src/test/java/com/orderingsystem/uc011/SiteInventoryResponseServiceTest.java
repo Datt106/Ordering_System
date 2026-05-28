@@ -1,9 +1,9 @@
 package com.orderingsystem.uc011;
 
 import com.orderingsystem.auth.AuthService;
-import com.orderingsystem.domain.inventory.InventoryQuery;
+import com.orderingsystem.core.domain.InventoryQuery;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
-import com.orderingsystem.infrastructure.repository.InventoryQueryRepository;
+import com.orderingsystem.infrastructure.database.InventoryQueryRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

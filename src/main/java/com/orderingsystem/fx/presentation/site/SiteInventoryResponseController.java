@@ -1,6 +1,6 @@
 package com.orderingsystem.fx.presentation.site;
 
-import com.orderingsystem.uc006.dto.InventoryQueryDto;
+import com.orderingsystem.uc006.boundary.dto.InventoryQueryDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
@@ -64,7 +64,7 @@ public class SiteInventoryResponseController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang gửi phản hồi…",
                 () -> {
-                    app.siteInventoryResponses().respond(queryId, qty);
+                    app.uc011().respond(queryId, qty);
                     return qty;
                 },
                 ignored -> {
@@ -79,7 +79,7 @@ public class SiteInventoryResponseController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải truy vấn…",
-                () -> app.siteInventoryResponses().listMyPendingQueries(),
+                () -> app.uc011().listMyPendingQueries(),
                 this::applyQueryList,
                 "Danh sách đã cập nhật."
         );

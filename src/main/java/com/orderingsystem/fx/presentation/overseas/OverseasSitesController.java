@@ -1,6 +1,6 @@
 package com.orderingsystem.fx.presentation.overseas;
 
-import com.orderingsystem.uc004.dto.SiteDto;
+import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
@@ -85,7 +85,7 @@ public class OverseasSitesController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang đăng ký Site…",
                 () -> {
-                    app.sites().registerSite(code, name, other);
+                    app.uc004().registerSite(code, name, other);
                     return code;
                 },
                 savedCode -> {
@@ -111,7 +111,7 @@ public class OverseasSitesController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang cập nhật…",
                 () -> {
-                    app.sites().updateMaster(code, name, other);
+                    app.uc004().updateMaster(code, name, other);
                     return code;
                 },
                 savedCode -> {
@@ -138,7 +138,7 @@ public class OverseasSitesController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang xóa Site…",
                 () -> {
-                    app.sites().deleteSite(code);
+                    app.uc004().deleteSite(code);
                     return code;
                 },
                 deletedCode -> {
@@ -152,7 +152,7 @@ public class OverseasSitesController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải Site…",
-                () -> app.sites().listAllSites(),
+                () -> app.uc004().listAllSites(),
                 this::applySiteList,
                 "Danh sách Site sẵn sàng."
         );

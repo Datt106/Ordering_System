@@ -1,6 +1,6 @@
 package com.orderingsystem.infrastructure.jpa;
 
-import com.orderingsystem.domain.site.Site;
+import com.orderingsystem.core.domain.Site;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

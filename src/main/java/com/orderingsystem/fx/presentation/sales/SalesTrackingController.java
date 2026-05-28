@@ -1,8 +1,8 @@
 package com.orderingsystem.fx.presentation.sales;
 
-import com.orderingsystem.domain.request.RequestStatus;
-import com.orderingsystem.uc003.dto.ImportRequestListItemDto;
-import com.orderingsystem.uc003.dto.ImportRequestTrackingDetailDto;
+import com.orderingsystem.core.domain.RequestStatus;
+import com.orderingsystem.uc003.boundary.dto.ImportRequestListItemDto;
+import com.orderingsystem.uc003.boundary.dto.ImportRequestTrackingDetailDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
@@ -93,7 +93,7 @@ public class SalesTrackingController extends BaseViewController {
         LocalDate to = toPicker.getValue();
         UiTasks.runWithStatus(
                 "Đang tìm…",
-                () -> app.tracking().listRequests(status, from, to),
+                () -> app.uc003().listRequests(status, from, to),
                 this::applySearchResults,
                 "Danh sách đã cập nhật."
         );
@@ -117,7 +117,7 @@ public class SalesTrackingController extends BaseViewController {
         String requestId = id.trim();
         UiTasks.runWithStatus(
                 "Đang tải chi tiết…",
-                () -> app.tracking().getRequestDetail(requestId),
+                () -> app.uc003().getRequestDetail(requestId),
                 detail -> applyDetailResult(requestId, detail),
                 "Chi tiết đã hiển thị."
         );

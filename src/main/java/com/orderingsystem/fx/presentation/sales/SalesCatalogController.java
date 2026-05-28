@@ -1,6 +1,6 @@
 package com.orderingsystem.fx.presentation.sales;
 
-import com.orderingsystem.uc001.dto.StandardMerchandiseDto;
+import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
@@ -84,7 +84,7 @@ public class SalesCatalogController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang thêm mặt hàng…",
                 () -> {
-                    app.catalog().registerMerchandise(code, name, desc);
+                    app.uc001().registerMerchandise(code, name, desc);
                     return code;
                 },
                 savedCode -> {
@@ -111,7 +111,7 @@ public class SalesCatalogController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang cập nhật…",
                 () -> {
-                    app.catalog().updateMerchandise(code, name, desc);
+                    app.uc001().updateMerchandise(code, name, desc);
                     return code;
                 },
                 savedCode -> {
@@ -139,7 +139,7 @@ public class SalesCatalogController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang xóa…",
                 () -> {
-                    app.catalog().deleteMerchandise(code);
+                    app.uc001().deleteMerchandise(code);
                     return code;
                 },
                 deletedCode -> {
@@ -157,7 +157,7 @@ public class SalesCatalogController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải danh mục…",
-                () -> app.catalog().listAll(),
+                () -> app.uc001().listAll(),
                 this::applyCatalogList,
                 "Danh mục đã tải."
         );

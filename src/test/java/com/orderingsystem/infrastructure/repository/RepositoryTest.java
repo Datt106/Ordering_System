@@ -1,12 +1,12 @@
-package com.orderingsystem.infrastructure.repository;
+package com.orderingsystem.infrastructure.database;
 
-import com.orderingsystem.domain.auth.User;
-import com.orderingsystem.domain.auth.UserRole;
-import com.orderingsystem.domain.request.ImportRequest;
-import com.orderingsystem.domain.request.ImportRequestItem;
-import com.orderingsystem.domain.request.RequestStatus;
-import com.orderingsystem.domain.site.ShippingStatus;
-import com.orderingsystem.domain.site.Site;
+import com.orderingsystem.core.domain.User;
+import com.orderingsystem.core.domain.UserRole;
+import com.orderingsystem.core.domain.ImportRequest;
+import com.orderingsystem.core.domain.ImportRequestItem;
+import com.orderingsystem.core.domain.RequestStatus;
+import com.orderingsystem.core.domain.ShippingStatus;
+import com.orderingsystem.core.domain.Site;
 import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

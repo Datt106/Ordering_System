@@ -1,6 +1,6 @@
 package com.orderingsystem.fx.presentation.overseas;
 
-import com.orderingsystem.uc002.dto.ImportRequestDto;
+import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
@@ -75,7 +75,7 @@ public class OverseasPendingController extends BaseViewController {
         String requestId = selected.requestId();
         UiTasks.runWithStatus(
                 "Đang tiếp nhận…",
-                () -> app.acceptance().acceptRequest(requestId),
+                () -> app.uc005().acceptRequest(requestId),
                 accepted -> {
                     setScreenStatus("Đã tiếp nhận " + accepted.requestId());
                     UiTasks.showInfo(
@@ -92,7 +92,7 @@ public class OverseasPendingController extends BaseViewController {
     private void refresh() {
         UiTasks.runWithStatus(
                 "Đang tải…",
-                () -> app.acceptance().listPendingRequests(),
+                () -> app.uc005().listPendingRequests(),
                 this::applyPendingList,
                 "Danh sách đã cập nhật."
         );
@@ -113,7 +113,7 @@ public class OverseasPendingController extends BaseViewController {
         String requestId = summary.requestId();
         UiTasks.runWithStatus(
                 "Đang tải chi tiết…",
-                () -> app.acceptance().getRequest(requestId).orElse(summary),
+                () -> app.uc005().getRequest(requestId).orElse(summary),
                 full -> detailArea.setText(formatDetailText(full)),
                 "Chi tiết đã hiển thị."
         );

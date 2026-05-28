@@ -1,8 +1,8 @@
 package com.orderingsystem.auth;
 
-import com.orderingsystem.domain.auth.User;
-import com.orderingsystem.domain.auth.UserRole;
-import com.orderingsystem.infrastructure.repository.UserRepository;
+import com.orderingsystem.core.domain.User;
+import com.orderingsystem.core.domain.UserRole;
+import com.orderingsystem.infrastructure.database.UserRepository;
 
 import java.util.Optional;
 

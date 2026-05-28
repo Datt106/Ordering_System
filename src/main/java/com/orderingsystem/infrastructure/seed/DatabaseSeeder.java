@@ -1,13 +1,13 @@
 package com.orderingsystem.infrastructure.seed;
 
 import com.orderingsystem.auth.PasswordHasher;
-import com.orderingsystem.domain.auth.User;
-import com.orderingsystem.domain.auth.UserRole;
-import com.orderingsystem.domain.catalog.StandardMerchandise;
-import com.orderingsystem.domain.site.Site;
-import com.orderingsystem.infrastructure.repository.MerchandiseCatalogRepository;
-import com.orderingsystem.infrastructure.repository.SiteRepository;
-import com.orderingsystem.infrastructure.repository.UserRepository;
+import com.orderingsystem.core.domain.User;
+import com.orderingsystem.core.domain.UserRole;
+import com.orderingsystem.core.domain.StandardMerchandise;
+import com.orderingsystem.core.domain.Site;
+import com.orderingsystem.infrastructure.database.MerchandiseCatalogRepository;
+import com.orderingsystem.infrastructure.database.SiteRepository;
+import com.orderingsystem.infrastructure.database.UserRepository;
 
 import java.util.List;
 
