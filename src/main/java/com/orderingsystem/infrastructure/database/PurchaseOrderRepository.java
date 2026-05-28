@@ -97,6 +97,40 @@ public class PurchaseOrderRepository extends BaseRepository {
                 }));
     }
 
+
+    public List<PurchaseOrder> findBySiteCodeAndStatuses(String siteCode, Set<OrderStatus> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = statuses.stream().map(s -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT * FROM purchase_orders WHERE site_code = ? AND status IN (" + placeholders + ") ORDER BY request_id, merchandise_code";
+        Object[] params = new Object[statuses.size() + 1];
+        params[0] = siteCode;
+        int idx = 1;
+        for (OrderStatus s : statuses) {
+            params[idx++] = s.name();
+        }
+        return jdbcQuery(connection -> executeQuery(connection,
+                sql,
+                bind(params),
+                rs -> {
+                    List<PurchaseOrder> list = new ArrayList<>();
+                    while (rs.next()) list.add(mapOrder(rs));
+                    return list;
+                }));
+    }
+
+    public List<PurchaseOrder> findAll() {
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM purchase_orders ORDER BY request_id, site_code, merchandise_code",
+                null,
+                rs -> {
+                    List<PurchaseOrder> list = new ArrayList<>();
+                    while (rs.next()) list.add(mapOrder(rs));
+                    return list;
+                }));
+    }
+
     public List<PurchaseOrder> findByStatuses(Set<OrderStatus> statuses) {
         if (statuses == null || statuses.isEmpty()) {
             return List.of();

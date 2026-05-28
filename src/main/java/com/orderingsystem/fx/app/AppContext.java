@@ -12,6 +12,9 @@ import com.orderingsystem.uc008.controller.OrderDispatchController;
 import com.orderingsystem.uc009.controller.SiteMchController;
 import com.orderingsystem.uc010.controller.SiteShipController;
 import com.orderingsystem.uc011.controller.StockReplyController;
+import com.orderingsystem.uc012.controller.SiteOrderConfirmController;
+import com.orderingsystem.uc013.controller.WarehouseOrderViewController;
+import com.orderingsystem.uc014.controller.WarehouseReconcileController;
 
 /**
  * Composition root: UI (boundary) gọi controller từng UC — không {@code new} repository trong JavaFX controller.
@@ -30,6 +33,9 @@ public final class AppContext {
     private final SiteMchController uc009;
     private final SiteShipController uc010;
     private final StockReplyController uc011;
+    private final SiteOrderConfirmController uc012;
+    private final WarehouseOrderViewController uc013;
+    private final WarehouseReconcileController uc014;
 
     public AppContext() {
         this.authService = new AuthService();
@@ -44,6 +50,9 @@ public final class AppContext {
         this.uc009 = new SiteMchController();
         this.uc010 = new SiteShipController();
         this.uc011 = new StockReplyController();
+        this.uc012 = new SiteOrderConfirmController();
+        this.uc013 = new WarehouseOrderViewController();
+        this.uc014 = new WarehouseReconcileController();
     }
 
     public AuthService auth() {
@@ -92,5 +101,17 @@ public final class AppContext {
 
     public StockReplyController uc011() {
         return uc011;
+    }
+
+    public SiteOrderConfirmController uc012() {
+        return uc012;
+    }
+
+    public WarehouseOrderViewController uc013() {
+        return uc013;
+    }
+
+    public WarehouseReconcileController uc014() {
+        return uc014;
     }
 }
