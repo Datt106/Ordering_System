@@ -8,6 +8,7 @@ import com.orderingsystem.uc004.controller.SiteMasterController;
 import com.orderingsystem.uc005.controller.RequestAcceptController;
 import com.orderingsystem.uc006.controller.StockQueryController;
 import com.orderingsystem.uc007.controller.OrderSplitController;
+import com.orderingsystem.uc008.controller.OrderDispatchController;
 import com.orderingsystem.uc009.controller.SiteMchController;
 import com.orderingsystem.uc010.controller.SiteShipController;
 import com.orderingsystem.uc011.controller.StockReplyController;
@@ -25,6 +26,7 @@ public final class AppContext {
     private final RequestAcceptController uc005;
     private final StockQueryController uc006;
     private final OrderSplitController uc007;
+    private final OrderDispatchController uc008;
     private final SiteMchController uc009;
     private final SiteShipController uc010;
     private final StockReplyController uc011;
@@ -38,6 +40,7 @@ public final class AppContext {
         this.uc005 = new RequestAcceptController();
         this.uc006 = new StockQueryController();
         this.uc007 = new OrderSplitController();
+        this.uc008 = new OrderDispatchController();
         this.uc009 = new SiteMchController();
         this.uc010 = new SiteShipController();
         this.uc011 = new StockReplyController();
@@ -73,6 +76,10 @@ public final class AppContext {
 
     public OrderSplitController uc007() {
         return uc007;
+    }
+
+    public OrderDispatchController uc008() {
+        return uc008;
     }
 
     public SiteMchController uc009() {
