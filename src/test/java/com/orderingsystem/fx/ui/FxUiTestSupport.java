@@ -3,7 +3,8 @@ package com.orderingsystem.fx.ui;
 import com.orderingsystem.auth.Session;
 import com.orderingsystem.fx.app.AppContext;
 import com.orderingsystem.fx.navigation.Navigator;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Label;
@@ -33,7 +34,8 @@ abstract class FxUiTestSupport extends ApplicationTest {
 
     @Override
     public void start(Stage stage) throws Exception {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
         AppContext appContext = new AppContext();
         navigator = new Navigator(appContext);

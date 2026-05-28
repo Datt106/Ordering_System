@@ -1,7 +1,8 @@
 package com.orderingsystem.auth;
 
 import com.orderingsystem.core.domain.UserRole;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -21,7 +22,8 @@ class AuthServiceTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -32,7 +34,7 @@ class AuthServiceTest {
 
     @AfterAll
     static void shutDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

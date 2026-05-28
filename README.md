@@ -56,7 +56,6 @@ Ordering_System/
     ├── main/resources/
     │   ├── fxml/                  # Giao diện theo vai trò
     │   ├── css/app.css
-    │   └── META-INF/persistence.xml
     └── test/java/
 ```
 

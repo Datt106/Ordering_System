@@ -1,7 +1,8 @@
 package com.orderingsystem.uc001;
 
 import com.orderingsystem.auth.AuthService;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.MerchandiseCatalogRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
@@ -23,7 +24,8 @@ class StandardMerchandiseCatalogServiceTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -39,7 +41,7 @@ class StandardMerchandiseCatalogServiceTest {
 
     @AfterAll
     static void shutDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

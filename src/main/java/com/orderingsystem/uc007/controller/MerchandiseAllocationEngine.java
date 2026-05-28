@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Thuật toán phân bổ UC007 — lexicographic: tàu → ít Site → tồn lớn (tie-break).
+ * Thuật toán phân bổ UC007 theo đề bài ITSS:
+ * (1) ưu tiên tàu hơn hàng không → (2) ưu tiên Site có tồn kho lớn → (3) dùng ít Site nhất có thể.
  */
 public final class MerchandiseAllocationEngine {
 
@@ -53,7 +54,7 @@ public final class MerchandiseAllocationEngine {
         int totalShipCap = shipPools.stream().mapToInt(SitePool::stock).sum();
         int shipTarget = Math.min(quantityNeeded, totalShipCap);
         Map<String, Integer> shipBySite = shipTarget > 0
-                ? allocateWithMinSites(shipPools, shipTarget)
+                ? allocateForMode(shipPools, shipTarget)
                 : Map.of();
 
         int shipTaken = shipBySite.values().stream().mapToInt(Integer::intValue).sum();
@@ -71,7 +72,7 @@ public final class MerchandiseAllocationEngine {
             if (airRemaining.isEmpty()) {
                 return Plan.shortfall(remaining);
             }
-            airBySite = allocateWithMinSites(airRemaining, remaining);
+            airBySite = allocateForMode(airRemaining, remaining);
             int airTaken = airBySite.values().stream().mapToInt(Integer::intValue).sum();
             if (airTaken < remaining) {
                 return Plan.shortfall(remaining - airTaken);
@@ -92,8 +93,10 @@ public final class MerchandiseAllocationEngine {
         return Plan.ok(lines);
     }
 
-    /** Chọn ít Site nhất để đạt {@code target}, phân bổ ưu tiên Site tồn lớn. */
-    static Map<String, Integer> allocateWithMinSites(List<SitePool> pools, int target) {
+    /**
+     * Chọn tập Site và số lượng lấy từ mỗi Site cho một phương tiện (tàu hoặc bay).
+     */
+    static Map<String, Integer> allocateForMode(List<SitePool> pools, int target) {
         if (target <= 0 || pools.isEmpty()) {
             return Map.of();
         }
@@ -104,59 +107,64 @@ public final class MerchandiseAllocationEngine {
                 .toList();
 
         int n = sorted.size();
-        int maxSum = sorted.stream().mapToInt(SitePool::stock).sum();
-        int cap = Math.min(target, maxSum);
+        List<Integer>[] bestStockRank = new List[1];
+        int[] bestSiteCount = {Integer.MAX_VALUE};
+        List<SitePool>[] bestChosen = new List[1];
 
-        int minSiteCount = minSiteCountToReach(sorted, cap);
-        if (minSiteCount == Integer.MAX_VALUE) {
+        for (int siteCount = 1; siteCount <= n; siteCount++) {
+            int k = siteCount;
+            combine(sorted, k, 0, new ArrayList<>(), chosen -> {
+                int capacity = chosen.stream().mapToInt(SitePool::stock).sum();
+                if (capacity < target) {
+                    return;
+                }
+                Map<String, Integer> allocation = distributeQuantities(chosen, target);
+                int taken = allocation.values().stream().mapToInt(Integer::intValue).sum();
+                if (taken < target) {
+                    return;
+                }
+                List<Integer> stockRank = stockPriorityVector(chosen, allocation);
+                int cmp = compareStockPriority(stockRank, bestStockRank[0]);
+                if (cmp > 0 || (cmp == 0 && k < bestSiteCount[0])) {
+                    bestStockRank[0] = stockRank;
+                    bestSiteCount[0] = k;
+                    bestChosen[0] = List.copyOf(chosen);
+                }
+            });
+        }
+
+        if (bestChosen[0] == null) {
             return Map.of();
         }
-
-        List<SitePool> chosen = selectSitesWithCount(sorted, minSiteCount, cap);
-        return distributeQuantities(chosen, cap);
+        return distributeQuantities(bestChosen[0], target);
     }
 
-    private static int minSiteCountToReach(List<SitePool> sortedByStockDesc, int target) {
-        int n = sortedByStockDesc.size();
-        boolean[][] reachable = new boolean[target + 1][n + 1];
-        reachable[0][0] = true;
-
-        for (SitePool pool : sortedByStockDesc) {
-            int siteCap = Math.min(target, pool.stock());
-            for (int sum = target; sum >= 0; sum--) {
-                for (int count = n; count >= 0; count--) {
-                    if (!reachable[sum][count]) {
-                        continue;
-                    }
-                    int nextSum = Math.min(target, sum + siteCap);
-                    reachable[nextSum][count + 1] = true;
-                }
-            }
-        }
-
-        for (int count = 1; count <= n; count++) {
-            if (reachable[target][count]) {
-                return count;
-            }
-        }
-        return Integer.MAX_VALUE;
+    /**
+     * Mức “ưu tiên tồn lớn”: danh sách mức tồn kho (giảm dần) của các Site thực sự được lấy hàng.
+     */
+    private static List<Integer> stockPriorityVector(List<SitePool> chosen, Map<String, Integer> allocation) {
+        return chosen.stream()
+                .filter(p -> allocation.getOrDefault(p.siteCode(), 0) > 0)
+                .sorted(Comparator.comparingInt(SitePool::stock).reversed()
+                        .thenComparing(SitePool::siteCode))
+                .map(SitePool::stock)
+                .toList();
     }
 
-    /** Tập Site cỡ {@code siteCount} đạt tổng tồn ≥ target; tie-break tổng tồn lớn nhất. */
-    private static List<SitePool> selectSitesWithCount(List<SitePool> sorted, int siteCount, int target) {
-        List<SitePool>[] bestHolder = new List[1];
-        int[] bestStockSum = {-1};
-        combine(sorted, siteCount, 0, new ArrayList<>(), chosen -> {
-            int sum = chosen.stream().mapToInt(SitePool::stock).sum();
-            if (sum >= target && sum > bestStockSum[0]) {
-                bestStockSum[0] = sum;
-                bestHolder[0] = List.copyOf(chosen);
-            }
-        });
-        if (bestHolder[0] != null) {
-            return bestHolder[0];
+    /** So sánh mức ưu tiên tồn: phần tử đầu lớn hơn thì phương án tốt hơn. */
+    private static int compareStockPriority(List<Integer> candidate, List<Integer> best) {
+        if (best == null) {
+            return 1;
         }
-        return sorted.subList(0, Math.min(siteCount, sorted.size()));
+        int len = Math.max(candidate.size(), best.size());
+        for (int i = 0; i < len; i++) {
+            int c = i < candidate.size() ? candidate.get(i) : 0;
+            int b = i < best.size() ? best.get(i) : 0;
+            if (c != b) {
+                return Integer.compare(c, b);
+            }
+        }
+        return 0;
     }
 
     private static void combine(
@@ -177,6 +185,7 @@ public final class MerchandiseAllocationEngine {
         }
     }
 
+    /** Trên tập Site đã chọn: lấy từ Site tồn lớn trước. */
     private static Map<String, Integer> distributeQuantities(List<SitePool> chosen, int target) {
         List<SitePool> order = chosen.stream()
                 .sorted(Comparator.comparingInt(SitePool::stock).reversed()

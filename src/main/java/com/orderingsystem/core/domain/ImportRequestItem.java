@@ -37,6 +37,10 @@ public class ImportRequestItem {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public ImportRequest getRequest() {
         return request;
     }

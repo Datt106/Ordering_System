@@ -2,7 +2,8 @@ package com.orderingsystem.uc004;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.ShippingStatus;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +21,8 @@ class SiteMasterServiceTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -31,7 +33,7 @@ class SiteMasterServiceTest {
 
     @AfterAll
     static void shutDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

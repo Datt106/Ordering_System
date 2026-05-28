@@ -4,7 +4,8 @@ import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.InventoryQuery;
 import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.ItemStatus;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.InventoryQueryRepository;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
@@ -45,13 +46,14 @@ class OrderSplitServiceTest {
 
     @BeforeAll
     static void initDatabase() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
     @AfterAll
     static void shutdown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @BeforeEach

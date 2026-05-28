@@ -168,13 +168,12 @@ Với mỗi mặt hàng M cần đặt (số lượng Q, ngày nhận D):
   └────────────────────────────┬────────────────────────┘
                                │
   ┌────────────────────────────▼────────────────────────┐
-  │ BƯỚC 2 – Chọn phương án (lexicographic — đề bài)    │
-  │   Cấp 1: Tối đa hóa số lượng đi TÀU (ship)          │
-  │   Cấp 2: Cùng mức tàu → ít mã Site nhất (DP/ tối  │
-  │           thiểu tập Site, ≤ 50 Site)              │
-  │   Cấp 3: Tie-break → ưu tiên Site tồn lớn         │
-  │   Thiếu Q sau tàu → bổ sung AIR, lại ít Site nhất │
-  │   Mỗi Site: pool tồn chung, tổng lấy ≤ stock[S]  │
+  │ BƯỚC 2 – Chọn phương án (theo đề bài)              │
+  │   Mức 1: Lấy tối đa số lượng đi TÀU               │
+  │   Mức 2: Ưu tiên Site có tồn kho lớn             │
+  │   Mức 3: Nếu vẫn ngang → dùng ít Site nhất       │
+  │   Thiếu Q sau tàu → bổ sung BAY, lặp lại 2→3     │
+  │   Mỗi Site: một kho chung, tổng lấy ≤ tồn[S]    │
   └────────────────────────────┬────────────────────────┘
                                │
   ┌────────────────────────────▼────────────────────────┐
@@ -273,9 +272,8 @@ So sánh phương án:
   A) S1 bay 100        → 1 Site, toàn bay (qty_ship = 0)
   B) S2 tàu 60 + S3 tàu 40 → 2 Site, qty_ship = 100
 
-Theo đề bài (tàu → tồn lớn → ít Site): chọn B — cấp 1 (tàu) thắng dù nhiều Site hơn A.
-Greedy “sắp xếp tàu rồi lấy lần lượt” cũng ra B nếu S2, S3 tồn bằng nhau; nhưng
-greedy KHÔNG đảm bảo ít Site trong mọi trường hợp → bước 2b bắt buộc tìm tập Site tối thiểu.
+Theo đề bài: chọn B — mức 1 (tàu) quan trọng hơn việc A chỉ dùng 1 Site nhưng toàn bay.
+Khi cùng mức tàu, hệ thống so sánh các tập Site khả thi (ưu tiên tồn lớn, rồi mới ít Site).
 ```
 
 YCNH khác (ví dụ máy giặt ngày nhận muộn) được tách đơn trong **lần chọn REQ khác**, không gộp chung với REQ trên.

@@ -3,10 +3,12 @@ package com.orderingsystem.infrastructure.database;
 import com.orderingsystem.core.domain.OrderStatus;
 import com.orderingsystem.core.domain.PurchaseOrder;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PurchaseOrderRepository extends BaseRepository {
 
@@ -18,78 +20,130 @@ public class PurchaseOrderRepository extends BaseRepository {
     );
 
     public void save(PurchaseOrder order) {
-        inTransaction(em -> {
-            if (em.find(PurchaseOrder.class, order.getOrderId()) == null) {
-                em.persist(order);
-            } else {
-                em.merge(order);
-            }
-        });
+        inJdbcTransaction(connection -> executeUpdate(connection,
+                "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                statement -> {
+                    statement.setString(1, order.getOrderId());
+                    statement.setString(2, order.getRequestId());
+                    statement.setString(3, order.getSiteCode());
+                    statement.setString(4, order.getMerchandiseCode());
+                    statement.setInt(5, order.getQuantityOrdered());
+                    statement.setString(6, order.getUnit());
+                    statement.setString(7, order.getDeliveryMeans().name());
+                    statement.setString(8, order.getStatus().name());
+                    JdbcSupport.setInstant(statement, 9, order.getSentAt());
+                    JdbcSupport.setInstant(statement, 10, order.getConfirmedAt());
+                    statement.setObject(11, order.getActualQuantity());
+                    statement.setObject(12, order.getQuantityDiff());
+                }));
     }
 
     public void saveAll(List<PurchaseOrder> orders) {
-        inTransaction(em -> {
+        inJdbcTransaction(connection -> {
             for (PurchaseOrder order : orders) {
-                if (em.find(PurchaseOrder.class, order.getOrderId()) == null) {
-                    em.persist(order);
-                } else {
-                    em.merge(order);
-                }
+                executeUpdate(connection,
+                        "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        statement -> {
+                            statement.setString(1, order.getOrderId());
+                            statement.setString(2, order.getRequestId());
+                            statement.setString(3, order.getSiteCode());
+                            statement.setString(4, order.getMerchandiseCode());
+                            statement.setInt(5, order.getQuantityOrdered());
+                            statement.setString(6, order.getUnit());
+                            statement.setString(7, order.getDeliveryMeans().name());
+                            statement.setString(8, order.getStatus().name());
+                            JdbcSupport.setInstant(statement, 9, order.getSentAt());
+                            JdbcSupport.setInstant(statement, 10, order.getConfirmedAt());
+                            statement.setObject(11, order.getActualQuantity());
+                            statement.setObject(12, order.getQuantityDiff());
+                        });
             }
+            return null;
         });
     }
 
     public Optional<PurchaseOrder> findById(String orderId) {
-        return query(em -> Optional.ofNullable(em.find(PurchaseOrder.class, orderId)));
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM purchase_orders WHERE order_id = ?",
+                bind(orderId),
+                rs -> rs.next() ? Optional.of(mapOrder(rs)) : Optional.empty()));
     }
 
     public List<PurchaseOrder> findByRequestId(String requestId) {
-        return query(em -> em.createQuery(
-                        "SELECT o FROM PurchaseOrder o WHERE o.requestId = :requestId "
-                                + "ORDER BY o.siteCode, o.merchandiseCode",
-                        PurchaseOrder.class)
-                .setParameter("requestId", requestId)
-                .getResultList());
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM purchase_orders WHERE request_id = ? ORDER BY site_code, merchandise_code",
+                bind(requestId),
+                rs -> {
+                    List<PurchaseOrder> list = new ArrayList<>();
+                    while (rs.next()) list.add(mapOrder(rs));
+                    return list;
+                }));
     }
 
-    /** UC007 — tách đơn lại: xóa đơn con nháp của yêu cầu. */
     public void deleteByRequestId(String requestId) {
-        inTransaction(em -> {
-            em.createQuery("DELETE FROM PurchaseOrder o WHERE o.requestId = :requestId")
-                    .setParameter("requestId", requestId)
-                    .executeUpdate();
-        });
+        inJdbcTransaction(connection -> executeUpdate(connection,
+                "DELETE FROM purchase_orders WHERE request_id = ?",
+                bind(requestId)));
     }
 
     public List<PurchaseOrder> findByStatus(OrderStatus status) {
-        return query(em -> em.createQuery(
-                        "SELECT o FROM PurchaseOrder o WHERE o.status = :status "
-                                + "ORDER BY o.sentAt DESC",
-                        PurchaseOrder.class)
-                .setParameter("status", status)
-                .getResultList());
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM purchase_orders WHERE status = ? ORDER BY sent_at DESC",
+                bind(status.name()),
+                rs -> {
+                    List<PurchaseOrder> list = new ArrayList<>();
+                    while (rs.next()) list.add(mapOrder(rs));
+                    return list;
+                }));
     }
 
     public List<PurchaseOrder> findByStatuses(Set<OrderStatus> statuses) {
-        return query(em -> em.createQuery(
-                        "SELECT o FROM PurchaseOrder o WHERE o.status IN :statuses "
-                                + "ORDER BY o.requestId, o.siteCode",
-                        PurchaseOrder.class)
-                .setParameter("statuses", statuses)
-                .getResultList());
+        if (statuses == null || statuses.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = statuses.stream().map(s -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT * FROM purchase_orders WHERE status IN (" + placeholders + ") ORDER BY request_id, site_code";
+        Object[] params = statuses.stream().map(Enum::name).toArray();
+        return jdbcQuery(connection -> executeQuery(connection,
+                sql,
+                bind(params),
+                rs -> {
+                    List<PurchaseOrder> list = new ArrayList<>();
+                    while (rs.next()) list.add(mapOrder(rs));
+                    return list;
+                }));
     }
 
-    /** UC004 — từ chối xóa Site nếu còn đơn chưa hoàn tất. */
     public boolean hasActiveOrdersForSite(String siteCode) {
-        return query(em -> {
-            Long count = em.createQuery(
-                            "SELECT COUNT(o) FROM PurchaseOrder o "
-                                    + "WHERE o.siteCode = :siteCode AND o.status IN :statuses",
-                            Long.class)
-                    .setParameter("siteCode", siteCode)
-                    .setParameter("statuses", ACTIVE_ORDER_STATUSES)
-                    .getSingleResult();
-            return count > 0;
-        });
+        String placeholders = ACTIVE_ORDER_STATUSES.stream().map(s -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT COUNT(*) FROM purchase_orders WHERE site_code = ? AND status IN (" + placeholders + ")";
+        Object[] params = new Object[ACTIVE_ORDER_STATUSES.size() + 1];
+        params[0] = siteCode;
+        int idx = 1;
+        for (OrderStatus s : ACTIVE_ORDER_STATUSES) {
+            params[idx++] = s.name();
+        }
+        return jdbcQuery(connection -> executeQuery(connection, sql, bind(params), rs -> {
+            rs.next();
+            return rs.getLong(1) > 0;
+        }));
+    }
+
+    private static PurchaseOrder mapOrder(java.sql.ResultSet rs) throws java.sql.SQLException {
+        PurchaseOrder order = new PurchaseOrder(
+                rs.getString("order_id"),
+                rs.getString("request_id"),
+                rs.getString("site_code"),
+                rs.getString("merchandise_code"),
+                rs.getInt("quantity_ordered"),
+                rs.getString("unit"),
+                JdbcSupport.getDeliveryMeans(rs, "delivery_means")
+        );
+        order.setStatus(JdbcSupport.getOrderStatus(rs, "status"));
+        order.setSentAt(JdbcSupport.getInstant(rs, "sent_at"));
+        order.setConfirmedAt(JdbcSupport.getInstant(rs, "confirmed_at"));
+        order.setActualQuantity((Integer) rs.getObject("actual_quantity"));
+        order.setQuantityDiff((Integer) rs.getObject("quantity_diff"));
+        return order;
     }
 }

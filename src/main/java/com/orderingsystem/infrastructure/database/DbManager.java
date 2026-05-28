@@ -1,28 +1,25 @@
 package com.orderingsystem.infrastructure.database;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * Singleton — quản lý kết nối JDBC tới PostgreSQL (không dùng DataSource pool).
+ * Singleton — quản lý kết nối JDBC (SQLite mặc định cho dev/demo).
  * <p>
- * Cấu hình qua system properties (ưu tiên) hoặc giá trị mặc định:
+ * Cấu hình qua system properties:
  * <ul>
- *   <li>{@code ordering.db.url} — jdbc:postgresql://localhost:5432/ordering_system</li>
- *   <li>{@code ordering.db.user} — ordering</li>
- *   <li>{@code ordering.db.password} — ordering</li>
+ *   <li>{@code ordering.db.url} — mặc định {@code jdbc:sqlite:data/ordering.db}</li>
+ *   <li>{@code ordering.db.user} / {@code ordering.db.password} — thường để trống với SQLite</li>
  * </ul>
- * Gọi {@link #init()} một lần khi khởi động app; {@link #shutdown()} khi thoát.
  */
 public final class DbManager {
 
-    private static final String DEFAULT_URL =
-            "jdbc:postgresql://localhost:5432/ordering_system";
-    private static final String DEFAULT_USER = "ordering";
-    private static final String DEFAULT_PASSWORD = "ordering";
-
+    private static final String DEFAULT_URL = "jdbc:sqlite:data/ordering.db";
     private static final String PROP_URL = "ordering.db.url";
     private static final String PROP_USER = "ordering.db.user";
     private static final String PROP_PASSWORD = "ordering.db.password";
@@ -40,7 +37,7 @@ public final class DbManager {
         this.password = password;
     }
 
-    /** Khởi tạo singleton và nạp driver PostgreSQL. */
+    /** Khởi tạo singleton, tạo thư mục {@code data/} nếu dùng SQLite file. */
     public static void init() {
         if (initialized) {
             return;
@@ -49,10 +46,11 @@ public final class DbManager {
             if (initialized) {
                 return;
             }
-            loadDriver();
             String url = System.getProperty(PROP_URL, DEFAULT_URL);
-            String user = System.getProperty(PROP_USER, DEFAULT_USER);
-            String password = System.getProperty(PROP_PASSWORD, DEFAULT_PASSWORD);
+            ensureSqliteParentDirectory(url);
+            loadDriver(url);
+            String user = System.getProperty(PROP_USER, "");
+            String password = System.getProperty(PROP_PASSWORD, "");
             instance = new DbManager(url, user, password);
             initialized = true;
         }
@@ -63,7 +61,8 @@ public final class DbManager {
         Objects.requireNonNull(username, "username");
         Objects.requireNonNull(password, "password");
         synchronized (DbManager.class) {
-            loadDriver();
+            ensureSqliteParentDirectory(jdbcUrl);
+            loadDriver(jdbcUrl);
             instance = new DbManager(jdbcUrl, username, password);
             initialized = true;
         }
@@ -76,12 +75,11 @@ public final class DbManager {
         }
     }
 
-    /**
-     * Mở một {@link Connection} mới (caller phải {@link Connection#close()}).
-     * Mặc định {@code autoCommit = true}; {@link BaseRepository} tắt khi cần transaction.
-     */
     public static Connection getConnection() throws SQLException {
         ensureInitialized();
+        if (instance.username == null || instance.username.isBlank()) {
+            return DriverManager.getConnection(instance.jdbcUrl);
+        }
         Connection connection = DriverManager.getConnection(
                 instance.jdbcUrl,
                 instance.username,
@@ -96,20 +94,50 @@ public final class DbManager {
         return instance.jdbcUrl;
     }
 
+    public static Path databasePath() {
+        String url = configuredUrl();
+        if (url.startsWith("jdbc:sqlite:")) {
+            String path = url.substring("jdbc:sqlite:".length());
+            return Path.of(path).toAbsolutePath();
+        }
+        return Path.of(url);
+    }
+
     private static void ensureInitialized() {
         if (!initialized || instance == null) {
             throw new IllegalStateException("Gọi DbManager.init() trước khi dùng database.");
         }
     }
 
-    private static void loadDriver() {
+    private static void ensureSqliteParentDirectory(String jdbcUrl) {
+        if (!jdbcUrl.startsWith("jdbc:sqlite:")) {
+            return;
+        }
+        String file = jdbcUrl.substring("jdbc:sqlite:".length());
+        if (file.isBlank() || ":memory:".equals(file)) {
+            return;
+        }
         try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(
-                    "Thiếu PostgreSQL JDBC driver. Thêm dependency org.postgresql:postgresql vào pom.xml.",
-                    e
-            );
+            Path parent = Path.of(file).getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("Không tạo được thư mục chứa file SQLite.", ex);
+        }
+    }
+
+    private static void loadDriver(String jdbcUrl) {
+        try {
+            if (jdbcUrl.startsWith("jdbc:sqlite:")) {
+                Class.forName("org.sqlite.JDBC");
+            } else if (jdbcUrl.startsWith("jdbc:postgresql:")) {
+                Class.forName("org.postgresql.Driver");
+            } else {
+                throw new IllegalArgumentException("Chỉ hỗ trợ SQLite hoặc PostgreSQL URL: " + jdbcUrl);
+            }
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException("Thiếu JDBC driver cho URL: " + jdbcUrl, ex);
         }
     }
 }

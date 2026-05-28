@@ -3,7 +3,8 @@ package com.orderingsystem.integration;
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.RequestStatus;
 import com.orderingsystem.core.domain.ShippingStatus;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc001.StandardMerchandiseCatalogService;
@@ -54,7 +55,8 @@ class ImportRequestFlowE2ETest {
 
     @BeforeAll
     static void initDatabase() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -66,7 +68,7 @@ class ImportRequestFlowE2ETest {
 
     @AfterAll
     static void shutdown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

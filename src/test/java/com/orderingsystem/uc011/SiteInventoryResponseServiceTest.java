@@ -2,7 +2,8 @@ package com.orderingsystem.uc011;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.InventoryQuery;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.InventoryQueryRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import org.junit.jupiter.api.AfterAll;
@@ -20,13 +21,14 @@ class SiteInventoryResponseServiceTest {
 
     @BeforeAll
     static void initDb() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
     @AfterAll
     static void shutdown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

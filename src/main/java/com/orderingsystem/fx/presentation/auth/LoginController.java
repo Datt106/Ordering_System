@@ -5,7 +5,7 @@ import com.orderingsystem.fx.navigation.Navigator;
 import com.orderingsystem.fx.navigation.RoleMenuFactory;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -76,7 +76,7 @@ public class LoginController extends BaseViewController {
     private void onShowSystemInfo() {
         UiTasks.showInfo(
                 "Thông tin hệ thống",
-                "Cơ sở dữ liệu cục bộ:\n" + JpaBootstrap.databasePath()
+                "Cơ sở dữ liệu cục bộ:\n" + DbManager.databasePath()
                         + "\n\nPhiên bản demo — dùng cho phát triển và kiểm thử."
         );
     }

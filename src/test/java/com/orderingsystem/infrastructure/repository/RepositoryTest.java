@@ -7,7 +7,8 @@ import com.orderingsystem.core.domain.ImportRequestItem;
 import com.orderingsystem.core.domain.RequestStatus;
 import com.orderingsystem.core.domain.ShippingStatus;
 import com.orderingsystem.core.domain.Site;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,12 +28,13 @@ class RepositoryTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
     }
 
     @AfterAll
     static void tearDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

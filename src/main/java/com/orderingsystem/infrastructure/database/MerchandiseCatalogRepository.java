@@ -2,88 +2,106 @@ package com.orderingsystem.infrastructure.database;
 
 import com.orderingsystem.core.domain.StandardMerchandise;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class MerchandiseCatalogRepository extends BaseRepository {
 
     public void save(StandardMerchandise item) {
-        inTransaction(em -> {
-            if (em.find(StandardMerchandise.class, item.getMerchandiseCode()) == null) {
-                em.persist(item);
+        inJdbcTransaction(connection -> {
+            if (existsByCode(item.getMerchandiseCode())) {
+                executeUpdate(connection,
+                        "UPDATE standard_merchandise SET merchandise_name = ?, description = ? WHERE merchandise_code = ?",
+                        bind(item.getMerchandiseName(), item.getDescription(), item.getMerchandiseCode()));
             } else {
-                em.merge(item);
+                executeUpdate(connection,
+                        "INSERT INTO standard_merchandise (merchandise_code, merchandise_name, description) VALUES (?, ?, ?)",
+                        bind(item.getMerchandiseCode(), item.getMerchandiseName(), item.getDescription()));
             }
+            return null;
         });
     }
 
     public Optional<StandardMerchandise> findByCode(String merchandiseCode) {
-        return query(em -> Optional.ofNullable(em.find(StandardMerchandise.class, merchandiseCode)));
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM standard_merchandise WHERE merchandise_code = ?",
+                bind(merchandiseCode),
+                rs -> rs.next() ? Optional.of(mapMerchandise(rs)) : Optional.empty()));
     }
 
     public void updateInfo(String merchandiseCode, String merchandiseName, String description) {
-        inTransaction(em -> {
-            StandardMerchandise item = em.find(StandardMerchandise.class, merchandiseCode);
-            if (item == null) {
-                throw new IllegalArgumentException("Mã hàng không tồn tại trong danh mục chuẩn: " + merchandiseCode);
-            }
-            item.setMerchandiseName(merchandiseName);
-            item.setDescription(description);
-        });
+        int updated = inJdbcTransaction(connection -> executeUpdate(connection,
+                "UPDATE standard_merchandise SET merchandise_name = ?, description = ? WHERE merchandise_code = ?",
+                bind(merchandiseName, description, merchandiseCode)));
+        if (updated == 0) {
+            throw new IllegalArgumentException("Mã hàng không tồn tại trong danh mục chuẩn: " + merchandiseCode);
+        }
     }
 
     public boolean existsByCode(String merchandiseCode) {
-        return query(em -> em.find(StandardMerchandise.class, merchandiseCode) != null);
+        return findByCode(merchandiseCode).isPresent();
     }
 
     public List<StandardMerchandise> findAllOrderByCode() {
-        return query(em -> em.createQuery(
-                        "SELECT m FROM StandardMerchandise m ORDER BY m.merchandiseCode",
-                        StandardMerchandise.class)
-                .getResultList());
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT * FROM standard_merchandise ORDER BY merchandise_code",
+                null,
+                rs -> {
+                    List<StandardMerchandise> items = new ArrayList<>();
+                    while (rs.next()) {
+                        items.add(mapMerchandise(rs));
+                    }
+                    return items;
+                }));
     }
 
     public void deleteByCode(String merchandiseCode) {
-        inTransaction(em -> {
-            StandardMerchandise item = em.find(StandardMerchandise.class, merchandiseCode);
-            if (item != null) {
-                em.remove(item);
-            }
-        });
+        inJdbcTransaction(connection -> executeUpdate(connection,
+                "DELETE FROM standard_merchandise WHERE merchandise_code = ?",
+                bind(merchandiseCode)));
     }
 
     public boolean isReferenced(String merchandiseCode) {
-        return query(em -> {
-            Long inRequests = em.createQuery(
-                            "SELECT COUNT(i) FROM ImportRequestItem i WHERE i.merchandiseCode = :code",
-                            Long.class)
-                    .setParameter("code", merchandiseCode)
-                    .getSingleResult();
-            if (inRequests > 0) {
-                return true;
-            }
-            Long atSites = em.createQuery(
-                            "SELECT COUNT(sm) FROM SiteMerchandise sm WHERE sm.merchandiseCode = :code",
-                            Long.class)
-                    .setParameter("code", merchandiseCode)
-                    .getSingleResult();
-            if (atSites > 0) {
-                return true;
-            }
-            Long inOrders = em.createQuery(
-                            "SELECT COUNT(o) FROM PurchaseOrder o WHERE o.merchandiseCode = :code",
-                            Long.class)
-                    .setParameter("code", merchandiseCode)
-                    .getSingleResult();
-            if (inOrders > 0) {
-                return true;
-            }
-            Long inInventory = em.createQuery(
-                            "SELECT COUNT(q) FROM InventoryQuery q WHERE q.merchandiseCode = :code",
-                            Long.class)
-                    .setParameter("code", merchandiseCode)
-                    .getSingleResult();
+        return jdbcQuery(connection -> {
+            Long inRequests = executeQuery(connection,
+                    "SELECT COUNT(*) FROM import_request_items WHERE merchandise_code = ?",
+                    bind(merchandiseCode), rs -> {
+                        rs.next();
+                        return rs.getLong(1);
+                    });
+            if (inRequests > 0) return true;
+            Long atSites = executeQuery(connection,
+                    "SELECT COUNT(*) FROM site_merchandise WHERE merchandise_code = ?",
+                    bind(merchandiseCode), rs -> {
+                        rs.next();
+                        return rs.getLong(1);
+                    });
+            if (atSites > 0) return true;
+            Long inOrders = executeQuery(connection,
+                    "SELECT COUNT(*) FROM purchase_orders WHERE merchandise_code = ?",
+                    bind(merchandiseCode), rs -> {
+                        rs.next();
+                        return rs.getLong(1);
+                    });
+            if (inOrders > 0) return true;
+            Long inInventory = executeQuery(connection,
+                    "SELECT COUNT(*) FROM inventory_queries WHERE merchandise_code = ?",
+                    bind(merchandiseCode), rs -> {
+                        rs.next();
+                        return rs.getLong(1);
+                    });
             return inInventory > 0;
         });
+    }
+
+    private static StandardMerchandise mapMerchandise(ResultSet rs) throws SQLException {
+        return new StandardMerchandise(
+                rs.getString("merchandise_code"),
+                rs.getString("merchandise_name"),
+                rs.getString("description")
+        );
     }
 }

@@ -2,7 +2,8 @@ package com.orderingsystem.uc002;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.RequestStatus;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
 import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
@@ -25,7 +26,8 @@ class ImportRequestServiceTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -36,7 +38,7 @@ class ImportRequestServiceTest {
 
     @AfterAll
     static void shutDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test

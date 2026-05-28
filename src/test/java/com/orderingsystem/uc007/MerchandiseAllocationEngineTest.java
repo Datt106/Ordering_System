@@ -62,6 +62,39 @@ class MerchandiseAllocationEngineTest {
     }
 
     @Test
+    void prefersLargeStockSiteOverMoreSmallSites() {
+        var plan = MerchandiseAllocationEngine.allocate(
+                100,
+                List.of(
+                        new MerchandiseAllocationEngine.SitePool("S1", 100),
+                        new MerchandiseAllocationEngine.SitePool("S2", 60),
+                        new MerchandiseAllocationEngine.SitePool("S3", 60)
+                ),
+                List.of()
+        );
+        assertEquals(100, plan.lines().stream().mapToInt(MerchandiseAllocationEngine.AllocationLine::quantity).sum());
+        assertEquals(1, plan.lines().size());
+        assertEquals("S1", plan.lines().get(0).siteCode());
+    }
+
+    @Test
+    void whenSameStockLevel_prefersFewerSites() {
+        var plan = MerchandiseAllocationEngine.allocate(
+                100,
+                List.of(
+                        new MerchandiseAllocationEngine.SitePool("S1", 80),
+                        new MerchandiseAllocationEngine.SitePool("S2", 80),
+                        new MerchandiseAllocationEngine.SitePool("S3", 30)
+                ),
+                List.of()
+        );
+        assertEquals(100, plan.lines().stream().mapToInt(MerchandiseAllocationEngine.AllocationLine::quantity).sum());
+        assertEquals(2, plan.lines().size());
+        assertTrue(plan.lines().stream().anyMatch(l -> l.siteCode().equals("S1")));
+        assertTrue(plan.lines().stream().anyMatch(l -> l.siteCode().equals("S2")));
+    }
+
+    @Test
     void shortfallWhenInsufficientStock() {
         var plan = MerchandiseAllocationEngine.allocate(
                 100,

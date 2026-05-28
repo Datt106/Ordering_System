@@ -4,7 +4,8 @@ import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.RequestStatus;
-import com.orderingsystem.infrastructure.jpa.JpaBootstrap;
+import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc002.ImportRequestService;
@@ -34,7 +35,8 @@ class ImportRequestTrackingServiceTest {
 
     @BeforeAll
     static void setUp() {
-        JpaBootstrap.init();
+        DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
+        SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
     }
 
@@ -45,7 +47,7 @@ class ImportRequestTrackingServiceTest {
 
     @AfterAll
     static void shutDown() {
-        JpaBootstrap.shutdown();
+        DbManager.shutdown();
     }
 
     @Test
