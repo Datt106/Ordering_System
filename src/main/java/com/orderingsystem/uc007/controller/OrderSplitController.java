@@ -12,16 +12,20 @@ import com.orderingsystem.infrastructure.database.ImportRequestRepository;
 import com.orderingsystem.infrastructure.database.InventoryQueryRepository;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SiteRepository;
+import com.orderingsystem.uc007.boundary.dto.ManualSplitLineInput;
+import com.orderingsystem.uc007.boundary.dto.ManualSplitValidationResultDto;
 import com.orderingsystem.uc007.boundary.dto.MerchandiseSplitPlanDto;
 import com.orderingsystem.uc007.boundary.dto.OrderSplitLineDto;
 import com.orderingsystem.uc007.boundary.dto.OrderSplitResultDto;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * UC007 — Tách đơn theo <strong>một yêu cầu</strong> ({@code requestId}).
@@ -67,7 +71,7 @@ public class OrderSplitController {
         return buildSplitPlan(requireRequestId(requestId), requireStartDate(calculationStartDate), false);
     }
 
-    /** Xác nhận tách đơn — lưu đơn con trạng thái Chờ gửi. */
+    /** Xác nhận tách đơn theo phương án tự động — lưu đơn con trạng thái Chờ gửi. */
     public OrderSplitResultDto confirmSplit(String requestId, LocalDate calculationStartDate) {
         authService.requireRole(com.orderingsystem.core.domain.UserRole.OVERSEAS);
         String id = requireRequestId(requestId);
@@ -80,23 +84,47 @@ public class OrderSplitController {
         if (!preview.allMerchandiseSucceeded()) {
             throw new IllegalStateException("Không thể xác nhận: còn mặt hàng không đủ hàng hoặc không đáp ứng ngày nhận.");
         }
-
-        purchaseOrderRepository.deleteByRequestId(id);
-        List<PurchaseOrder> orders = new ArrayList<>();
-        int seq = 1;
-        for (OrderSplitLineDto line : preview.allLines()) {
-            orders.add(new PurchaseOrder(
-                    buildOrderId(id, seq++),
-                    id,
-                    line.siteCode(),
-                    line.merchandiseCode(),
-                    line.quantity(),
-                    line.unit(),
-                    line.deliveryMeans()
-            ));
-        }
-        purchaseOrderRepository.saveAll(orders);
+        persistPurchaseOrders(id, preview.allLines());
         return preview;
+    }
+
+    /** Kiểm tra phương án do nhân viên chỉnh tay trước khi xác nhận (FR-06.9). */
+    public ManualSplitValidationResultDto validateManualSplit(
+            String requestId,
+            LocalDate calculationStartDate,
+            List<ManualSplitLineInput> lines
+    ) {
+        authService.requireRole(com.orderingsystem.core.domain.UserRole.OVERSEAS);
+        SplitPlanContext context = loadSplitPlanContext(requireRequestId(requestId), requireStartDate(calculationStartDate));
+        List<String> errors = ManualSplitPlanValidator.validate(
+                context.requestId(),
+                context.startDate(),
+                context.inventoryReady(),
+                context.demandSnapshots(),
+                context.sitesByCode(),
+                context.stockBySiteMerchandise(),
+                lines != null ? lines : List.of()
+        );
+        if (!errors.isEmpty()) {
+            return ManualSplitValidationResultDto.invalid(errors);
+        }
+        return ManualSplitValidationResultDto.ok(buildResultFromManualLines(context, lines));
+    }
+
+    /** Xác nhận phương án đã chỉnh tay sau khi validate. */
+    public OrderSplitResultDto confirmManualSplit(
+            String requestId,
+            LocalDate calculationStartDate,
+            List<ManualSplitLineInput> lines
+    ) {
+        authService.requireRole(com.orderingsystem.core.domain.UserRole.OVERSEAS);
+        ManualSplitValidationResultDto validation = validateManualSplit(requestId, calculationStartDate, lines);
+        if (!validation.valid()) {
+            throw new IllegalStateException(String.join("\n", validation.errors()));
+        }
+        String id = requireRequestId(requestId);
+        persistPurchaseOrders(id, validation.preview().allLines());
+        return validation.preview();
     }
 
     private OrderSplitResultDto buildSplitPlan(
@@ -255,6 +283,127 @@ public class OrderSplitController {
         for (Long itemId : demand.itemIds()) {
             importRequestRepository.updateItemStatus(itemId, ItemStatus.LOI_KHONG_DU_HANG);
         }
+    }
+
+    private void persistPurchaseOrders(String requestId, List<OrderSplitLineDto> lines) {
+        purchaseOrderRepository.deleteByRequestId(requestId);
+        List<PurchaseOrder> orders = new ArrayList<>();
+        int seq = 1;
+        for (OrderSplitLineDto line : lines) {
+            orders.add(new PurchaseOrder(
+                    buildOrderId(requestId, seq++),
+                    requestId,
+                    line.siteCode(),
+                    line.merchandiseCode(),
+                    line.quantity(),
+                    line.unit(),
+                    line.deliveryMeans()
+            ));
+        }
+        purchaseOrderRepository.saveAll(orders);
+    }
+
+    private SplitPlanContext loadSplitPlanContext(String requestId, LocalDate startDate) {
+        ImportRequest request = importRequestRepository.findByIdWithItems(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Yêu cầu không tồn tại: " + requestId));
+        if (request.getStatus() != RequestStatus.DANG_XU_LY) {
+            throw new IllegalStateException(
+                    "Chỉ tách đơn khi yêu cầu ở trạng thái Đang xử lý. Hiện tại: " + request.getStatus());
+        }
+
+        long pending = inventoryQueryRepository.countByRequestId(requestId)
+                - inventoryQueryRepository.countRespondedByRequestId(requestId);
+        boolean inventoryReady = pending == 0 && inventoryQueryRepository.countByRequestId(requestId) > 0;
+
+        Map<String, MerchandiseDemand> demands = aggregateDemands(request.getItems());
+        Map<String, ManualSplitPlanValidator.DemandSnapshot> demandSnapshots = demands.values().stream()
+                .collect(Collectors.toMap(
+                        MerchandiseDemand::merchandiseCode,
+                        d -> new ManualSplitPlanValidator.DemandSnapshot(
+                                d.merchandiseCode(),
+                                d.quantityNeeded(),
+                                d.targetDate(),
+                                d.unit(),
+                                d.skippedNoSite()
+                        ),
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+
+        Map<String, Site> sitesByCode = new HashMap<>();
+        Map<String, Map<String, ManualSplitPlanValidator.StockSnapshot>> stockBySiteMerchandise = new HashMap<>();
+        for (InventoryQuery row : inventoryQueryRepository.findByRequestId(requestId)) {
+            siteRepository.findByCode(row.getSiteCode()).ifPresent(site -> sitesByCode.put(site.getSiteCode(), site));
+            stockBySiteMerchandise
+                    .computeIfAbsent(row.getSiteCode(), k -> new HashMap<>())
+                    .put(row.getMerchandiseCode(), new ManualSplitPlanValidator.StockSnapshot(
+                            row.getInStockQuantity(),
+                            row.getUnit(),
+                            row.getRespondedAt() != null
+                    ));
+        }
+
+        return new SplitPlanContext(requestId, startDate, inventoryReady, demandSnapshots, sitesByCode, stockBySiteMerchandise);
+    }
+
+    private OrderSplitResultDto buildResultFromManualLines(SplitPlanContext context, List<ManualSplitLineInput> lines) {
+        Map<String, List<OrderSplitLineDto>> grouped = new LinkedHashMap<>();
+        for (ManualSplitLineInput line : lines) {
+            String merchandiseCode = line.merchandiseCode().trim();
+            ManualSplitPlanValidator.DemandSnapshot demand = context.demandSnapshots().get(merchandiseCode);
+            grouped.computeIfAbsent(merchandiseCode, k -> new ArrayList<>())
+                    .add(OrderSplitLineDto.of(
+                            line.siteCode().trim(),
+                            merchandiseCode,
+                            line.quantity(),
+                            demand.unit(),
+                            line.deliveryMeans()
+                    ));
+        }
+
+        List<MerchandiseSplitPlanDto> plans = new ArrayList<>();
+        List<OrderSplitLineDto> allLines = new ArrayList<>();
+        for (ManualSplitPlanValidator.DemandSnapshot demand : context.demandSnapshots().values()) {
+            List<OrderSplitLineDto> planLines = grouped.getOrDefault(demand.merchandiseCode(), List.of());
+            if (demand.skippedNoSite()) {
+                plans.add(new MerchandiseSplitPlanDto(
+                        demand.merchandiseCode(),
+                        demand.quantityNeeded(),
+                        demand.targetDate(),
+                        List.of(),
+                        "Mặt hàng đã đánh dấu không có Site kinh doanh (UC006).",
+                        0
+                ));
+            } else {
+                plans.add(new MerchandiseSplitPlanDto(
+                        demand.merchandiseCode(),
+                        demand.quantityNeeded(),
+                        demand.targetDate(),
+                        planLines,
+                        null,
+                        0
+                ));
+                allLines.addAll(planLines);
+            }
+        }
+
+        return new OrderSplitResultDto(
+                context.requestId(),
+                context.startDate(),
+                plans,
+                allLines,
+                context.inventoryReady()
+        );
+    }
+
+    private record SplitPlanContext(
+            String requestId,
+            LocalDate startDate,
+            boolean inventoryReady,
+            Map<String, ManualSplitPlanValidator.DemandSnapshot> demandSnapshots,
+            Map<String, Site> sitesByCode,
+            Map<String, Map<String, ManualSplitPlanValidator.StockSnapshot>> stockBySiteMerchandise
+    ) {
     }
 
     private static Map<String, MerchandiseDemand> aggregateDemands(List<ImportRequestItem> items) {

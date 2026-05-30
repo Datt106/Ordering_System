@@ -40,7 +40,11 @@ public final class RoleMenuFactory {
                     new ScreenDefinition(
                             "Truy vấn tồn kho",
                             "/fxml/overseas/InventoryQueryView.fxml",
-                            "Chọn yêu cầu Đang xử lý → Gửi truy vấn. Site phản hồi trên màn Xác nhận tồn kho. Timeout → 0 chỉ khi Site không trả lời.")
+                            "Chọn yêu cầu Đang xử lý → Gửi truy vấn. Site phản hồi trên màn Xác nhận tồn kho. Timeout → 0 chỉ khi Site không trả lời."),
+                    new ScreenDefinition(
+                            "Tách đơn hàng",
+                            "/fxml/overseas/OrderSplitView.fxml",
+                            "Sinh phương án tự động, chỉnh tay từng dòng Site/mã hàng/số lượng/vận chuyển, kiểm tra rồi xác nhận tạo đơn con Chờ gửi.")
             );
             case SITE -> List.of(
                     new ScreenDefinition(

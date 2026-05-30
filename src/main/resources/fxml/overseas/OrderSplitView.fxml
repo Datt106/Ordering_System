@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.orderingsystem.fx.presentation.overseas.OverseasOrderSplitController"
+      spacing="16" styleClass="screen" maxWidth="Infinity">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Tách đơn hàng" styleClass="screen-title"/>
+    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
+
+    <VBox styleClass="content-card" maxWidth="Infinity">
+        <Label text="Yêu cầu đang xử lý" styleClass="section-heading"/>
+        <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
+            <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+            <Button text="Sinh phương án tự động" onAction="#onGeneratePlan" styleClass="btn-primary"/>
+        </HBox>
+        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
+        <VBox styleClass="table-container" maxWidth="Infinity">
+            <TableView fx:id="processingTable" styleClass="catalog-table" minHeight="160" maxWidth="Infinity">
+                <columns>
+                    <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
+                    <TableColumn fx:id="byCol" text="Tiếp nhận bởi" sortable="true"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </VBox>
+
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <Label text="Phương án phân bổ (chỉnh tay)" styleClass="section-heading"/>
+        <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
+            <Button text="Kiểm tra phương án" onAction="#onValidatePlan" styleClass="btn-secondary"/>
+            <Button fx:id="confirmButton" text="Xác nhận tách đơn" onAction="#onConfirmPlan" styleClass="btn-primary"/>
+            <Button text="Xóa dòng" onAction="#onRemoveLine" styleClass="btn-danger"/>
+        </HBox>
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+            <TableView fx:id="planTable" styleClass="catalog-table" editable="true" VBox.vgrow="ALWAYS"
+                       minHeight="200" maxWidth="Infinity">
+                <columns>
+                    <TableColumn fx:id="siteCol" text="Site" editable="true"/>
+                    <TableColumn fx:id="merchCol" text="Mã hàng" editable="true"/>
+                    <TableColumn fx:id="qtyCol" text="Số lượng" editable="true"/>
+                    <TableColumn fx:id="meansCol" text="Vận chuyển" editable="true"/>
+                </columns>
+            </TableView>
+        </VBox>
+        <GridPane hgap="12" vgap="12" styleClass="toolbar">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints minWidth="80" prefWidth="100"/>
+                <ColumnConstraints minWidth="140" prefWidth="160"/>
+                <ColumnConstraints minWidth="80" prefWidth="100"/>
+            </columnConstraints>
+            <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="Site" styleClass="field-label"/>
+                <TextField fx:id="addSiteField" promptText="S01"/>
+            </VBox>
+            <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Mã hàng" styleClass="field-label"/>
+                <TextField fx:id="addMerchField" promptText="P001"/>
+            </VBox>
+            <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <Label text="Số lượng" styleClass="field-label"/>
+                <Spinner fx:id="addQtySpinner" editable="true"/>
+            </VBox>
+            <VBox spacing="4" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                <Label text="Phương tiện" styleClass="field-label"/>
+                <ChoiceBox fx:id="addMeansChoice"/>
+            </VBox>
+            <VBox spacing="4" GridPane.columnIndex="4" GridPane.rowIndex="0" alignment="BOTTOM_LEFT">
+                <Button text="Thêm dòng" onAction="#onAddLine" styleClass="btn-secondary"/>
+            </VBox>
+        </GridPane>
+        <Label text="Kết quả kiểm tra" styleClass="section-heading"/>
+        <TextArea fx:id="validationArea" prefRowCount="5" editable="false" wrapText="true" maxWidth="Infinity"/>
+    </VBox>
+</VBox>
