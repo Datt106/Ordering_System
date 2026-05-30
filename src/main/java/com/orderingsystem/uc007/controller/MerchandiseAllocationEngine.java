@@ -43,7 +43,7 @@ public final class MerchandiseAllocationEngine {
      * @param shipPools      Site đáp ứng ETA tàu (tồn &gt; 0)
      * @param airPools       Site đáp ứng ETA bay (tồn &gt; 0, có thể trùng mã với ship)
      */
-    static Plan allocate(int quantityNeeded, List<SitePool> shipPools, List<SitePool> airPools) {
+    public static Plan allocate(int quantityNeeded, List<SitePool> shipPools, List<SitePool> airPools) {
         if (quantityNeeded <= 0) {
             return Plan.ok(List.of());
         }

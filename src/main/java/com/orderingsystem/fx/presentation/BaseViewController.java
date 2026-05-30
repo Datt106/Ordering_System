@@ -20,10 +20,10 @@ public abstract class BaseViewController implements ViewController, Initializabl
     protected AppContext app;
 
     @FXML
-    private Label screenStatusLabel;
+    protected Label screenStatusLabel;
 
     @FXML
-    private Label emptyStateLabel;
+    protected Label emptyStateLabel;
 
     @Override
     public final void initialize(URL location, ResourceBundle resources) {

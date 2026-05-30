@@ -16,7 +16,7 @@
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Phản hồi tồn kho" styleClass="section-heading"/>
-        <HBox spacing="12" alignment="BOTTOM_LEFT" wrapText="true">
+        <HBox spacing="12" alignment="BOTTOM_LEFT">
             <VBox spacing="6">
                 <Label text="Số lượng tồn" styleClass="field-label"/>
                 <Spinner fx:id="stockSpinner" prefWidth="120"/>

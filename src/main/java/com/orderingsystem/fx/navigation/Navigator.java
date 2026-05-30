@@ -49,7 +49,7 @@ public final class Navigator {
             try {
                 showLogin();
             } catch (IOException e) {
-                throw new IllegalStateException(e);
+                throw new IllegalStateException("Không quay lại màn đăng nhập.", e);
             }
         });
         setScene(root, "Ordering — " + RoleMenuFactory.roleTitle(user.role()));

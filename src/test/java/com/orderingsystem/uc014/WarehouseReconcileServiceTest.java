@@ -63,4 +63,30 @@ class WarehouseReconcileServiceTest {
         authService.login("sales", "sales123");
         assertThrows(SecurityException.class, () -> warehouseReconcileService.recordInbound("PO-X", 1));
     }
+
+    @Test
+    void warehouseReconcile_rejectsNegativeQuantity() {
+        var anyOrder = purchaseOrderRepository.findAll().stream().findFirst().orElseThrow();
+        anyOrder.setStatus(OrderStatus.DA_XAC_NHAN);
+        purchaseOrderRepository.save(anyOrder);
+
+        authService.logout();
+        authService.login("warehouse", "wh123");
+        assertThrows(IllegalArgumentException.class,
+                () -> warehouseReconcileService.recordInbound(anyOrder.getOrderId(), -1));
+        authService.logout();
+    }
+
+    @Test
+    void warehouseReconcile_rejectsWrongOrderStatus() {
+        var anyOrder = purchaseOrderRepository.findAll().stream().findFirst().orElseThrow();
+        anyOrder.setStatus(OrderStatus.CHO_GUI);
+        purchaseOrderRepository.save(anyOrder);
+
+        authService.logout();
+        authService.login("warehouse", "wh123");
+        assertThrows(IllegalStateException.class,
+                () -> warehouseReconcileService.recordInbound(anyOrder.getOrderId(), 1));
+        authService.logout();
+    }
 }

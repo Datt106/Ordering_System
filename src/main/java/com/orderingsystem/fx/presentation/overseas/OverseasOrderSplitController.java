@@ -9,6 +9,7 @@ import com.orderingsystem.uc007.boundary.dto.OrderSplitResultDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -31,7 +32,7 @@ import java.util.List;
 public class OverseasOrderSplitController extends BaseViewController {
 
     private static final double[] REQUEST_COL_RATIOS = {0.45, 0.55};
-    private static final double[] PLAN_COL_RATIOS = {0.18, 0.18, 0.14, 0.35, 0.15};
+    private static final double[] PLAN_COL_RATIOS = {0.18, 0.22, 0.14, 0.46};
 
     @FXML
     private TableView<ImportRequestDto> processingTable;
@@ -100,7 +101,7 @@ public class OverseasOrderSplitController extends BaseViewController {
         bindEmptyTable(processingTable, "Không có yêu cầu Đang xử lý.");
         bindEmptyTable(planTable, "Chọn yêu cầu rồi bấm Sinh phương án tự động.");
         confirmButton.setDisable(true);
-        refreshRequests();
+        Platform.runLater(this::refreshRequests);
     }
 
     @FXML

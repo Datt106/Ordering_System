@@ -1,4 +1,4 @@
-package com.orderingsystem.infrastructure.database;
+package com.orderingsystem.infrastructure.repository;
 
 import com.orderingsystem.core.domain.User;
 import com.orderingsystem.core.domain.UserRole;
@@ -8,7 +8,10 @@ import com.orderingsystem.core.domain.RequestStatus;
 import com.orderingsystem.core.domain.ShippingStatus;
 import com.orderingsystem.core.domain.Site;
 import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.ImportRequestRepository;
 import com.orderingsystem.infrastructure.database.SchemaInitializer;
+import com.orderingsystem.infrastructure.database.SiteRepository;
+import com.orderingsystem.infrastructure.database.UserRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -6,6 +6,7 @@ import com.orderingsystem.fx.navigation.ScreenDefinition;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.UiFeedback;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,7 +15,9 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class AppShellController extends BaseViewController {
 
@@ -61,19 +64,22 @@ public class AppShellController extends BaseViewController {
         }
     }
 
-    @FXML
-    private void initialize() {
+    @Override
+    protected void initializeView(URL location, ResourceBundle resources) {
         logoutButton.setOnAction(e -> onLogoutClicked());
     }
 
+    @FXML
     private void onLogoutClicked() {
         if (!UiTasks.confirm("Đăng xuất", "Kết thúc phiên làm việc?", "Bạn có thể đăng nhập lại bất cứ lúc nào.")) {
             return;
         }
-        if (onLogout != null) {
-            UiFeedback.clear();
-            onLogout.run();
+        if (onLogout == null) {
+            UiTasks.showError(new IllegalStateException("Chưa cấu hình đăng xuất. Khởi động lại ứng dụng."));
+            return;
         }
+        UiFeedback.clear();
+        onLogout.run();
     }
 
     private void showScreen(int index) {
@@ -84,9 +90,19 @@ public class AppShellController extends BaseViewController {
                 () -> {
                     try {
                         FxmlLoaderFactory loader = new FxmlLoaderFactory(app);
-                        contentPane.getChildren().setAll(loader.load(screen.fxmlClasspath()));
+                        contentPane.getChildren().setAll(loader.loadView(screen.fxmlClasspath()));
+                        Platform.runLater(() -> {
+                            try {
+                                loader.initLastController();
+                            } catch (Exception initEx) {
+                                UiTasks.showError(initEx);
+                            }
+                        });
                     } catch (IOException ex) {
-                        throw new IllegalStateException("Không tải được màn hình. Thử chọn lại menu.", ex);
+                        throw new IllegalStateException(
+                                "Không tải được màn hình. Thử chọn lại menu.",
+                                ex
+                        );
                     }
                 },
                 "Đang xem: " + screen.label()

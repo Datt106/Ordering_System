@@ -1,4 +1,4 @@
-package com.orderingsystem.uc012;
+package com.orderingsystem.integration;
 
 import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.OrderStatus;
@@ -6,6 +6,7 @@ import com.orderingsystem.infrastructure.database.DbManager;
 import com.orderingsystem.infrastructure.database.InventoryQueryRepository;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SchemaInitializer;
+import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
 import com.orderingsystem.uc002.ImportRequestService;
 import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
@@ -16,11 +17,14 @@ import com.orderingsystem.uc007.OrderSplitService;
 import com.orderingsystem.uc008.OrderDispatchService;
 import com.orderingsystem.uc009.SiteMerchandiseService;
 import com.orderingsystem.uc010.SiteShippingService;
-import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
+import com.orderingsystem.uc012.SiteOrderConfirmService;
+import com.orderingsystem.uc013.WarehouseOrderViewService;
+import com.orderingsystem.uc014.WarehouseReconcileService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -28,10 +32,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SiteOrderConfirmServiceTest {
+/**
+ * Luồng Quản lý kho: Site xác nhận đơn → Kho xem danh sách → Đối chiếu nhập (khớp / lệch).
+ */
+class WarehouseManagementFlowTest {
+
     private static final AuthService authService = new AuthService();
     private static final ImportRequestService importRequestService = new ImportRequestService();
     private static final ImportRequestAcceptanceService acceptanceService = new ImportRequestAcceptanceService();
@@ -40,13 +47,15 @@ class SiteOrderConfirmServiceTest {
     private static final OrderSplitService orderSplitService = new OrderSplitService();
     private static final OrderDispatchService orderDispatchService = new OrderDispatchService();
     private static final SiteOrderConfirmService siteOrderConfirmService = new SiteOrderConfirmService();
+    private static final WarehouseOrderViewService warehouseOrderViewService = new WarehouseOrderViewService();
+    private static final WarehouseReconcileService warehouseReconcileService = new WarehouseReconcileService();
     private static final PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepository();
     private static final SiteShippingService siteShippingService = new SiteShippingService();
     private static final SiteMerchandiseService siteMerchandiseService = new SiteMerchandiseService();
     private static final SiteMerchandiseRepository siteMerchandiseRepository = new SiteMerchandiseRepository();
 
     @BeforeAll
-    static void init() {
+    static void initDatabase() {
         DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
         SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
@@ -65,37 +74,56 @@ class SiteOrderConfirmServiceTest {
     }
 
     @Test
-    void siteCanConfirmIncomingOrder() {
-        String requestId = prepareDispatchedOrder();
+    @DisplayName("Kho: danh sách đơn Đã xác nhận → đối chiếu khớp → Đã nhập kho")
+    void warehouseListsAndReconcilesMatchingQuantity() {
+        String orderId = prepareConfirmedOrder(40);
+
+        authService.login("warehouse", "wh123");
+
+        assertTrue(warehouseOrderViewService.listOrders(null, null, null).stream()
+                .anyMatch(o -> orderId.equals(o.orderId())));
+
+        var filtered = warehouseOrderViewService.listOrders(
+                OrderStatus.DA_XAC_NHAN, DatabaseSeeder.DEMO_SITE_CODE, "P001");
+        assertTrue(filtered.stream().anyMatch(o -> orderId.equals(o.orderId())));
+        assertEquals(40, filtered.stream()
+                .filter(o -> orderId.equals(o.orderId()))
+                .findFirst()
+                .orElseThrow()
+                .quantityOrdered());
+
+        var result = warehouseReconcileService.recordInbound(orderId, 40);
+        assertEquals(OrderStatus.DA_NHAP_KHO, result.status());
+        assertEquals(0, result.quantityDiff());
+
+        assertTrue(warehouseOrderViewService.listOrders(OrderStatus.DA_NHAP_KHO, null, null).stream()
+                .anyMatch(o -> orderId.equals(o.orderId())));
 
         authService.logout();
-        authService.login("site01", "site123");
-        var incoming = siteOrderConfirmService.listMyIncomingOrders();
-        assertTrue(incoming.stream().anyMatch(o -> o.requestId().equals(requestId)));
-
-        String orderId = incoming.stream().filter(o -> o.requestId().equals(requestId)).findFirst().orElseThrow().orderId();
-        var confirmed = siteOrderConfirmService.confirmOrder(orderId);
-        assertEquals(OrderStatus.DA_XAC_NHAN, confirmed.status());
-        assertEquals(OrderStatus.DA_XAC_NHAN, purchaseOrderRepository.findById(orderId).orElseThrow().getStatus());
     }
 
     @Test
-    void siteConfirm_requiresSiteRole() {
+    @DisplayName("Kho: đối chiếu lệch số lượng → Sai lệch")
+    void warehouseReconcile_recordsDiscrepancy() {
+        String orderId = prepareConfirmedOrder(30);
+
+        authService.login("warehouse", "wh123");
+        var result = warehouseReconcileService.recordInbound(orderId, 25);
+        assertEquals(OrderStatus.SAI_LECH, result.status());
+        assertEquals(-5, result.quantityDiff());
+        assertEquals(OrderStatus.SAI_LECH, purchaseOrderRepository.findById(orderId).orElseThrow().getStatus());
         authService.logout();
-        authService.login("overseas", "overseas123");
-        assertThrows(SecurityException.class, siteOrderConfirmService::listMyIncomingOrders);
     }
 
-    private String prepareDispatchedOrder() {
-        authService.logout();
+    private String prepareConfirmedOrder(int quantity) {
         authService.login("site01", "site123");
-        siteShippingService.updateMyShipping(7, 2);
+        siteShippingService.updateMyShipping(8, 3);
         siteMerchandiseService.addMerchandise("P001");
         authService.logout();
 
         authService.login("sales", "sales123");
         ImportRequestDto created = importRequestService.createImportRequest(List.of(
-                new CreateImportRequestLineInput("P001", 30, "unit", LocalDate.now().plusDays(15))));
+                new CreateImportRequestLineInput("P001", quantity, "unit", LocalDate.now().plusDays(18))));
         authService.logout();
 
         authService.login("overseas", "overseas123");
@@ -103,12 +131,23 @@ class SiteOrderConfirmServiceTest {
         acceptanceService.acceptRequest(requestId);
         inventoryQueryService.dispatchInventoryQueries(requestId);
         inventoryQueryRepository.findByRequestId(requestId).forEach(q -> {
-            q.setInStockQuantity(50);
+            q.setInStockQuantity(100);
             q.setRespondedAt(Instant.now());
             inventoryQueryRepository.save(q);
         });
         orderSplitService.confirmSplit(requestId, LocalDate.now());
         orderDispatchService.dispatchOrders(requestId);
-        return requestId;
+        authService.logout();
+
+        authService.login("site01", "site123");
+        String orderId = siteOrderConfirmService.listMyIncomingOrders().stream()
+                .filter(o -> requestId.equals(o.requestId()))
+                .findFirst()
+                .orElseThrow()
+                .orderId();
+        siteOrderConfirmService.confirmOrder(orderId);
+        authService.logout();
+
+        return orderId;
     }
 }

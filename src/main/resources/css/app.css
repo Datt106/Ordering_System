@@ -8,6 +8,24 @@
     -fx-font-size: 14px;
     -fx-background-color: #0c1210;
     -fx-text-fill: #eef6f3;
+    /* Modena: tránh chữ đen mặc định trên control */
+    -fx-base: #151f1c;
+    -fx-background: #101916;
+    -fx-control-inner-background: #151f1c;
+    -fx-accent: #14b8a6;
+    -fx-focus-color: #14b8a6;
+    -fx-faint-focus-color: rgba(20, 184, 166, 0.25);
+    -fx-default-button: #0d9488;
+    -fx-text-background-color: #eef6f3;
+}
+
+/* Chữ mặc định sáng (Label/Text không gán styleClass riêng) */
+Label {
+    -fx-text-fill: #eef6f3;
+}
+
+Text {
+    -fx-fill: #eef6f3;
 }
 
 .login-root {
@@ -33,7 +51,7 @@
 }
 
 .sidebar-title {
-    -fx-text-fill: #8aa89c;
+    -fx-text-fill: #c8ddd6;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 8 12 8 12;
@@ -84,13 +102,13 @@
 }
 
 .section-heading {
-    -fx-text-fill: #8aa89c;
+    -fx-text-fill: #c8ddd6;
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
 
 .subtitle {
-    -fx-text-fill: #8aa89c;
+    -fx-text-fill: #c8ddd6;
     -fx-font-size: 13px;
 }
 
@@ -101,7 +119,7 @@
 }
 
 .hint {
-    -fx-text-fill: #5f7a72;
+    -fx-text-fill: #a8bfb6;
     -fx-font-size: 13px;
 }
 
@@ -145,7 +163,7 @@
 }
 
 .help-banner {
-    -fx-text-fill: #8aa89c;
+    -fx-text-fill: #c8ddd6;
     -fx-font-size: 12px;
     -fx-background-color: #122018;
     -fx-background-radius: 8;
@@ -158,7 +176,7 @@
 }
 
 .global-status {
-    -fx-text-fill: #8aa89c;
+    -fx-text-fill: #c8ddd6;
     -fx-font-size: 13px;
 }
 
@@ -177,7 +195,7 @@
 }
 
 .empty-state {
-    -fx-text-fill: #5f7a72;
+    -fx-text-fill: #a8bfb6;
     -fx-font-size: 14px;
     -fx-padding: 24 16;
     -fx-alignment: center;
@@ -232,7 +250,7 @@
 .text-field, .password-field, .text-area, .combo-box, .date-picker, .spinner {
     -fx-background-color: #151f1c;
     -fx-text-fill: #eef6f3;
-    -fx-prompt-text-fill: #5f7a72;
+    -fx-prompt-text-fill: #9cb5ad;
     -fx-border-color: #2a3d36;
     -fx-border-radius: 8;
     -fx-border-width: 1;
@@ -263,10 +281,13 @@
 
 .table-view .column-header {
     -fx-background-color: #152820;
-    -fx-text-fill: #8aa89c;
     -fx-font-weight: bold;
     -fx-font-size: 13px;
     -fx-padding: 12 8;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #c8ddd6;
 }
 
 .table-view .table-row-cell {
@@ -352,4 +373,78 @@
 
 .busy-indicator {
     -fx-progress-color: #14b8a6;
+}
+
+/* ComboBox / popup — Modena hay để chữ đen */
+.combo-box-base {
+    -fx-text-fill: #eef6f3;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #151f1c;
+    -fx-text-fill: #eef6f3;
+}
+
+.combo-box .list-cell:filled:hover,
+.combo-box .list-cell:filled:selected {
+    -fx-background-color: #1f3d34;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #151f1c;
+    -fx-border-color: #2a3d36;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #1f3d34;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #c8ddd6;
+}
+
+.text-area {
+    -fx-control-inner-background: #151f1c;
+}
+
+.text-area .content {
+    -fx-background-color: #151f1c;
+}
+
+.check-box {
+    -fx-text-fill: #eef6f3;
+}
+
+.check-box .box {
+    -fx-background-color: #151f1c;
+    -fx-border-color: #2a3d36;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: #1f3d34;
+}
+
+.spinner .increment-arrow,
+.spinner .decrement-arrow {
+    -fx-background-color: #c8ddd6;
+}
+
+.date-picker-popup {
+    -fx-background-color: #151f1c;
+}
+
+.date-picker-popup .day-cell {
+    -fx-text-fill: #eef6f3;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #1f3d34;
+}
+
+.tooltip {
+    -fx-background-color: #1f3d34;
+    -fx-text-fill: #eef6f3;
+    -fx-font-size: 12px;
 }

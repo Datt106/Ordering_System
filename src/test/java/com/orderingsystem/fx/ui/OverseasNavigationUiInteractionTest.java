@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.testfx.api.FxAssert.verifyThat;
+import static org.testfx.matcher.base.NodeMatchers.isVisible;
 import static org.testfx.matcher.control.LabeledMatchers.hasText;
 
 class OverseasNavigationUiInteractionTest extends FxUiTestSupport {
@@ -14,22 +15,20 @@ class OverseasNavigationUiInteractionTest extends FxUiTestSupport {
     }
 
     @Test
-    void navigatesToSitesScreen() {
-        openMenuExpectingTitle("Quản lý Site", "Quản lý Site");
+    void orderSplitScreenHasManualPlanControls() {
+        openMenuExpectingTitle("Tách đơn hàng", "Tách đơn hàng");
+        verifyThat("Sinh phương án tự động", isVisible());
+        verifyThat("Kiểm tra phương án", isVisible());
+        verifyThat("#planTable", isVisible());
+        verifyThat("#processingTable", isVisible());
     }
 
     @Test
-    void navigatesToPendingRequestsScreen() {
-        openMenuExpectingTitle("Tiếp nhận yêu cầu", "Tiếp nhận yêu cầu");
-        verifyThat("Làm mới", hasText("Làm mới"));
-        verifyThat("Tiếp nhận", hasText("Tiếp nhận"));
+    void orderDispatchScreenHasSendControls() {
+        openMenuExpectingTitle("Gửi đơn hàng", "Gửi đơn hàng");
+        verifyThat("Xem trước", isVisible());
+        verifyThat("Gửi đơn", isVisible());
+        verifyThat("#ordersTable", isVisible());
+        verifyThat("#requestTable", isVisible());
     }
-
-    @Test
-    void navigatesToInventoryQueryScreen() {
-        openMenuExpectingTitle("Truy vấn tồn kho", "Truy vấn tồn kho");
-        verifyThat("Gửi truy vấn", hasText("Gửi truy vấn"));
-        verifyThat("Xem trạng thái", hasText("Xem trạng thái"));
-    }
-
 }

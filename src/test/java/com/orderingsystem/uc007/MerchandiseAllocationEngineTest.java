@@ -1,6 +1,7 @@
-package com.orderingsystem.uc007.controller;
+package com.orderingsystem.uc007;
 
 import com.orderingsystem.core.domain.DeliveryMeans;
+import com.orderingsystem.uc007.controller.MerchandiseAllocationEngine;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

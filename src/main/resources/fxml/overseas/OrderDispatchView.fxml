@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.orderingsystem.fx.presentation.overseas.OverseasOrderDispatchController"
+      spacing="16" styleClass="screen" maxWidth="Infinity">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Gửi đơn hàng" styleClass="screen-title"/>
+    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
+
+    <VBox styleClass="content-card" maxWidth="Infinity">
+        <Label text="Thao tác" styleClass="section-heading"/>
+        <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
+            <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+            <Button text="Xem trước" onAction="#onPreview" styleClass="btn-secondary"/>
+            <Button text="Gửi đơn" onAction="#onDispatch" styleClass="btn-primary"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <Label text="Yêu cầu đang xử lý" styleClass="section-heading"/>
+        <SplitPane dividerPositions="0.35" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+            <VBox spacing="8" maxWidth="Infinity">
+                <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
+                <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+                    <TableView fx:id="requestTable" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="160" maxWidth="Infinity">
+                        <columns>
+                            <TableColumn fx:id="reqIdCol" text="Mã YC" sortable="true"/>
+                            <TableColumn fx:id="reqByCol" text="Tiếp nhận bởi" sortable="true"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+            <VBox spacing="8" styleClass="detail-panel" maxWidth="Infinity">
+                <padding>
+                    <Insets top="8" right="8" bottom="8" left="16"/>
+                </padding>
+                <Label text="Tóm tắt" styleClass="section-heading"/>
+                <TextArea fx:id="summaryArea" prefRowCount="6" editable="false" wrapText="true" maxWidth="Infinity"/>
+            </VBox>
+        </SplitPane>
+        <Label text="Đơn con" styleClass="section-heading"/>
+        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+            <TableView fx:id="ordersTable" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="200" maxWidth="Infinity">
+                <columns>
+                    <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
+                    <TableColumn fx:id="siteCol" text="Site" sortable="true"/>
+                    <TableColumn fx:id="codeCol" text="Mã hàng" sortable="true"/>
+                    <TableColumn fx:id="qtyCol" text="SL" sortable="true"/>
+                    <TableColumn fx:id="statusCol" text="Trạng thái" sortable="true"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </VBox>
+</VBox>

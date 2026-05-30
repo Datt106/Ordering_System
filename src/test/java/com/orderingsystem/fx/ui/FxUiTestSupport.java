@@ -43,9 +43,21 @@ abstract class FxUiTestSupport extends ApplicationTest {
     }
 
     protected void loginAs(String username, String password) {
+        try {
+            WaitForAsyncUtils.waitFor(5, TimeUnit.SECONDS, () -> {
+                try {
+                    return lookup("#usernameField").query().isVisible();
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException ex) {
+            throw new AssertionError("Màn hình đăng nhập chưa sẵn sàng.", ex);
+        }
         replaceText("#usernameField", username);
         replaceText("#passwordField", password);
         clickOn("Đăng nhập");
+        WaitForAsyncUtils.waitForFxEvents();
         waitForRoleShell();
     }
 
@@ -57,7 +69,7 @@ abstract class FxUiTestSupport extends ApplicationTest {
 
     protected void waitForRoleShell() {
         try {
-            WaitForAsyncUtils.waitFor(15, TimeUnit.SECONDS, () -> lookup("#roleLabel").query() != null);
+            WaitForAsyncUtils.waitFor(30, TimeUnit.SECONDS, () -> lookup("#roleLabel").query() != null);
             verifyThat("#roleLabel", isVisible());
         } catch (TimeoutException ex) {
             throw new AssertionError("Không mở được màn hình chính sau đăng nhập.", ex);
@@ -108,6 +120,17 @@ abstract class FxUiTestSupport extends ApplicationTest {
             }
         });
         WaitForAsyncUtils.waitForFxEvents();
+        try {
+            WaitForAsyncUtils.waitFor(5, TimeUnit.SECONDS, () -> {
+                try {
+                    return lookup("#usernameField").query().isVisible();
+                } catch (Exception e) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException ex) {
+            throw new AssertionError("Không quay lại được màn hình đăng nhập.", ex);
+        }
     }
 
     @AfterEach

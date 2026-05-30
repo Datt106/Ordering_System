@@ -10,9 +10,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 
 /**
- * Nạp FXML theo chuẩn {@link FXMLLoader}: inject {@code @FXML}, gọi {@link javafx.fxml.Initializable},
- * rồi inject {@link AppContext} qua {@link ViewController#init}.
- * <p>Phải gọi {@link #load} trên JavaFX Application Thread vì tạo {@link Parent}.
+ * Nạp FXML theo chuẩn {@link FXMLLoader}.
+ * <p>
+ * {@link #load(String)} — nạp + {@link ViewController#init} ngay (màn shell, login).
+ * {@link #loadView(String)} — chỉ nạp FXML; gọi {@link #initLastController()} sau khi đã {@code setAll} vào scene.
  */
 public final class FxmlLoaderFactory {
 
@@ -23,7 +24,28 @@ public final class FxmlLoaderFactory {
         this.appContext = Objects.requireNonNull(appContext);
     }
 
+    /** Nạp FXML và inject {@link AppContext} ngay (dùng cho login, shell). */
     public Parent load(String classpathFxml) throws IOException {
+        Parent root = loadFxml(classpathFxml);
+        initLastController();
+        return root;
+    }
+
+    /**
+     * Chỉ nạp FXML — {@link ViewController#init} phải gọi sau khi node đã trên scene graph
+     * (tránh lỗi binding bảng / ComboBox khi mở menu con trong shell).
+     */
+    public Parent loadView(String classpathFxml) throws IOException {
+        return loadFxml(classpathFxml);
+    }
+
+    public void initLastController() {
+        if (lastController instanceof ViewController viewController) {
+            viewController.init(appContext);
+        }
+    }
+
+    private Parent loadFxml(String classpathFxml) throws IOException {
         URL url = Objects.requireNonNull(
                 getClass().getResource(classpathFxml),
                 "Không tìm thấy FXML: " + classpathFxml
@@ -31,9 +53,6 @@ public final class FxmlLoaderFactory {
         FXMLLoader loader = new FXMLLoader(url);
         Parent root = loader.load();
         lastController = loader.getController();
-        if (lastController instanceof ViewController viewController) {
-            viewController.init(appContext);
-        }
         return root;
     }
 

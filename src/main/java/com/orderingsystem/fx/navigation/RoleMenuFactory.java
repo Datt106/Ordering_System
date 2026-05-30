@@ -44,7 +44,11 @@ public final class RoleMenuFactory {
                     new ScreenDefinition(
                             "Tách đơn hàng",
                             "/fxml/overseas/OrderSplitView.fxml",
-                            "Sinh phương án tự động, chỉnh tay từng dòng Site/mã hàng/số lượng/vận chuyển, kiểm tra rồi xác nhận tạo đơn con Chờ gửi.")
+                            "Chọn yêu cầu Đang xử lý → Sinh phương án tự động → chỉnh tay từng dòng → Kiểm tra → Xác nhận tạo đơn con Chờ gửi."),
+                    new ScreenDefinition(
+                            "Gửi đơn hàng",
+                            "/fxml/overseas/OrderDispatchView.fxml",
+                            "Chọn yêu cầu đã tách đơn → Xem trước danh sách đơn con → Gửi đơn tới Site.")
             );
             case SITE -> List.of(
                     new ScreenDefinition(
@@ -58,13 +62,21 @@ public final class RoleMenuFactory {
                     new ScreenDefinition(
                             "Xác nhận tồn kho",
                             "/fxml/site/InventoryResponseView.fxml",
-                            "Chọn dòng chờ phản hồi, nhập số lượng tồn (≥ 0), bấm Gửi phản hồi.")
+                            "Chọn dòng chờ phản hồi, nhập số lượng tồn (≥ 0), bấm Gửi phản hồi."),
+                    new ScreenDefinition(
+                            "Tiếp nhận đơn hàng",
+                            "/fxml/site/SiteOrderConfirmView.fxml",
+                            "Đơn Đã gửi từ Overseas: Xác nhận hoặc Từ chối từng dòng.")
             );
             case WAREHOUSE -> List.of(
                     new ScreenDefinition(
-                            "Tổng quan",
-                            "/fxml/warehouse/WarehouseHomeView.fxml",
-                            "Module kho (xem đơn, đối chiếu nhập) sẽ bổ sung khi backend UC013–UC014 sẵn sàng.")
+                            "Danh sách đơn hàng",
+                            "/fxml/warehouse/WarehouseOrdersView.fxml",
+                            "Lọc theo trạng thái, Site hoặc mã hàng. Theo dõi đơn đã gửi và đã xác nhận từ Site."),
+                    new ScreenDefinition(
+                            "Đối chiếu nhập kho",
+                            "/fxml/warehouse/WarehouseReconcileView.fxml",
+                            "Chọn đơn, nhập số lượng thực nhận và ghi nhận nhập kho hoặc sai lệch.")
             );
         };
     }

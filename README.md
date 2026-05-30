@@ -59,8 +59,14 @@ Ordering_System/
     └── test/java/
 ```
 
+## Luồng demo (gợi ý)
+
+1. **sales** — Danh mục → Tạo yêu cầu → Theo dõi  
+2. **overseas** — Tiếp nhận → Truy vấn tồn kho → Tách đơn → Gửi đơn  
+3. **site01** — Vận chuyển → Mặt hàng KD → Xác nhận tồn kho → Tiếp nhận đơn  
+4. **warehouse** — Danh sách đơn → Đối chiếu nhập kho  
+
 ## Ghi chú
 
-- UI chính: **JavaFX + FXML** (`mvn javafx:run`).
-- **UC007 tách đơn:** một yêu cầu (`request_id`) mỗi lần; mỗi mã hàng trong REQ chạy thuật toán phân bổ một lần.
-- Module kho (warehouse) trên UI là placeholder; UC013/UC014 chưa triển khai đầy đủ.
+- UI: **JavaFX + FXML**; FE gọi `app.uc001()` … `app.uc014()` (controller boundary từng UC).
+- **UC007:** một `request_id` mỗi lần tách; mỗi mã hàng trong REQ chạy thuật toán phân bổ một lần.
