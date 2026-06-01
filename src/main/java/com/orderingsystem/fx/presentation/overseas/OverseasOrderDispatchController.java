@@ -133,12 +133,12 @@ public class OverseasOrderDispatchController extends BaseViewController {
     private void refresh() {
         UiTasks.<List<ImportRequestDto>>runWithStatus(
                 "Đang tải...",
-                () -> app.uc005().listProcessingRequests(),
+                () -> app.uc005().listRequestsReadyForDispatch(),
                 items -> {
                     requestTable.setItems(FXCollections.observableArrayList(items));
                     setScreenStatus(items.isEmpty()
-                            ? "Chưa có yêu cầu."
-                            : items.size() + " yêu cầu — chọn yêu cầu đã tách đơn.");
+                            ? "Chưa có yêu cầu sẵn sàng gửi — hoàn tất Tách đơn trước."
+                            : items.size() + " yêu cầu có đơn Chờ gửi.");
                 },
                 "Danh sách đã cập nhật."
         );

@@ -69,6 +69,19 @@ public class PurchaseOrderRepository extends BaseRepository {
                 rs -> rs.next() ? Optional.of(mapOrder(rs)) : Optional.empty()));
     }
 
+    public List<String> findDistinctRequestIdsByStatus(OrderStatus status) {
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT DISTINCT request_id FROM purchase_orders WHERE status = ? ORDER BY request_id",
+                bind(status.name()),
+                rs -> {
+                    List<String> ids = new ArrayList<>();
+                    while (rs.next()) {
+                        ids.add(rs.getString("request_id"));
+                    }
+                    return ids;
+                }));
+    }
+
     public List<PurchaseOrder> findByRequestId(String requestId) {
         return jdbcQuery(connection -> executeQuery(connection,
                 "SELECT * FROM purchase_orders WHERE request_id = ? ORDER BY site_code, merchandise_code",

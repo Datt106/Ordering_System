@@ -5,6 +5,7 @@ import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.auth.AuthenticatedUser;
 import com.orderingsystem.auth.Session;
 import com.orderingsystem.infrastructure.database.ImportRequestRepository;
+import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 
 /** @deprecated Dùng RequestAcceptController (BCE). */
 @Deprecated
@@ -15,7 +16,7 @@ public class ImportRequestAcceptanceService extends RequestAcceptController {
     }
 
     public ImportRequestAcceptanceService(AuthService authService, ImportRequestRepository importRequestRepository) {
-        super(authService, importRequestRepository);
+        super(authService, importRequestRepository, new PurchaseOrderRepository());
     }
 
 }

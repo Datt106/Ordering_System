@@ -5,6 +5,7 @@ import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
 import com.orderingsystem.infrastructure.database.SiteRepository;
+import com.orderingsystem.infrastructure.database.UserRepository;
 
 /** @deprecated Dùng SiteMasterController (BCE). */
 @Deprecated
@@ -18,7 +19,7 @@ public class SiteMasterService extends SiteMasterController {
             SiteRepository siteRepository,
             PurchaseOrderRepository purchaseOrderRepository,
             SiteMerchandiseRepository siteMerchandiseRepository) {
-        super(authService, siteRepository, purchaseOrderRepository, siteMerchandiseRepository);
+        super(authService, siteRepository, purchaseOrderRepository, siteMerchandiseRepository, new UserRepository());
     }
 
 }

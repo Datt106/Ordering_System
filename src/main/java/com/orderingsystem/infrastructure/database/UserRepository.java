@@ -62,6 +62,25 @@ public class UserRepository extends BaseRepository {
         return findByUsername(username).isPresent();
     }
 
+    public boolean existsBySiteCode(String siteCode) {
+        if (siteCode == null || siteCode.isBlank()) {
+            return false;
+        }
+        return jdbcQuery(connection -> executeQuery(connection,
+                "SELECT 1 FROM users WHERE role = ? AND site_code = ? LIMIT 1",
+                bind(UserRole.SITE.name(), siteCode.trim()),
+                ResultSet::next));
+    }
+
+    public void deleteBySiteCode(String siteCode) {
+        if (siteCode == null || siteCode.isBlank()) {
+            return;
+        }
+        inJdbcTransaction(connection -> executeUpdate(connection,
+                "DELETE FROM users WHERE role = ? AND site_code = ?",
+                bind(UserRole.SITE.name(), siteCode.trim())));
+    }
+
     private static User mapUser(ResultSet rs) throws SQLException {
         User user = new User(
                 rs.getString("username"),

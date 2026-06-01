@@ -89,7 +89,10 @@ public class OverseasSitesController extends BaseViewController {
                     return code;
                 },
                 savedCode -> {
-                    UiTasks.showInfo("Đã lưu", "Site " + savedCode + " đã được đăng ký.");
+                    UiTasks.showInfo(
+                            "Đã lưu",
+                            "Site " + savedCode + " đã được thêm.\n"
+                                    + "Đại diện Site dùng màn Đăng ký tài khoản (từ màn đăng nhập) để tạo user gắn mã này.");
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."

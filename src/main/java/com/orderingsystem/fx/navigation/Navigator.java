@@ -6,6 +6,7 @@ import com.orderingsystem.fx.framework.FxmlLoaderFactory;
 import com.orderingsystem.fx.presentation.ViewController;
 import com.orderingsystem.fx.presentation.shell.AppShellController;
 import com.orderingsystem.fx.presentation.auth.LoginController;
+import com.orderingsystem.fx.presentation.auth.SiteRegisterController;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -38,6 +39,13 @@ public final class Navigator {
         LoginController controller = fxmlLoader.getLastController();
         controller.setNavigator(this);
         setScene(root, "Đăng nhập — Ordering System");
+    }
+
+    public void showSiteRegister() throws IOException {
+        Parent root = fxmlLoader.load("/fxml/auth/SiteRegisterView.fxml");
+        SiteRegisterController controller = fxmlLoader.getLastController();
+        controller.setNavigator(this);
+        setScene(root, "Đăng ký Site — Ordering System");
     }
 
     public void showDashboard(AuthenticatedUser user) throws IOException {

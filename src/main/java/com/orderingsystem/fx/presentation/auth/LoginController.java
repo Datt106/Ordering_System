@@ -73,6 +73,15 @@ public class LoginController extends BaseViewController {
     }
 
     @FXML
+    private void onGoToSiteRegister() {
+        try {
+            navigator.showSiteRegister();
+        } catch (Exception ex) {
+            UiTasks.showError(new IllegalStateException("Không mở màn đăng ký Site.", ex));
+        }
+    }
+
+    @FXML
     private void onShowSystemInfo() {
         UiTasks.showInfo(
                 "Thông tin hệ thống",

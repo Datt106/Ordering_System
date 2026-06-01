@@ -1,6 +1,7 @@
 package com.orderingsystem.fx.app;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.auth.SiteRegistrationService;
 import com.orderingsystem.uc001.controller.CatalogController;
 import com.orderingsystem.uc002.controller.RequestCreateController;
 import com.orderingsystem.uc003.controller.RequestTrackController;
@@ -22,6 +23,7 @@ import com.orderingsystem.uc014.controller.WarehouseReconcileController;
 public final class AppContext {
 
     private final AuthService authService;
+    private final SiteRegistrationService siteRegistration;
     private final CatalogController uc001;
     private final RequestCreateController uc002;
     private final RequestTrackController uc003;
@@ -39,6 +41,7 @@ public final class AppContext {
 
     public AppContext() {
         this.authService = new AuthService();
+        this.siteRegistration = new SiteRegistrationService();
         this.uc001 = new CatalogController();
         this.uc002 = new RequestCreateController();
         this.uc003 = new RequestTrackController();
@@ -57,6 +60,10 @@ public final class AppContext {
 
     public AuthService auth() {
         return authService;
+    }
+
+    public SiteRegistrationService siteRegistration() {
+        return siteRegistration;
     }
 
     public CatalogController uc001() {

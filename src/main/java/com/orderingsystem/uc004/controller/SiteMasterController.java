@@ -6,6 +6,7 @@ import com.orderingsystem.core.domain.Site;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SiteMerchandiseRepository;
 import com.orderingsystem.infrastructure.database.SiteRepository;
+import com.orderingsystem.infrastructure.database.UserRepository;
 import com.orderingsystem.uc004.boundary.dto.SiteDto;
 
 import java.util.List;
@@ -20,21 +21,30 @@ public class SiteMasterController {
     private final SiteRepository siteRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final SiteMerchandiseRepository siteMerchandiseRepository;
+    private final UserRepository userRepository;
 
     public SiteMasterController() {
-        this(new AuthService(), new SiteRepository(), new PurchaseOrderRepository(), new SiteMerchandiseRepository());
+        this(
+                new AuthService(),
+                new SiteRepository(),
+                new PurchaseOrderRepository(),
+                new SiteMerchandiseRepository(),
+                new UserRepository()
+        );
     }
 
     public SiteMasterController(
             AuthService authService,
             SiteRepository siteRepository,
             PurchaseOrderRepository purchaseOrderRepository,
-            SiteMerchandiseRepository siteMerchandiseRepository
+            SiteMerchandiseRepository siteMerchandiseRepository,
+            UserRepository userRepository
     ) {
         this.authService = authService;
         this.siteRepository = siteRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.siteMerchandiseRepository = siteMerchandiseRepository;
+        this.userRepository = userRepository;
     }
 
     public SiteDto registerSite(String siteCode, String siteName, String otherInfo) {
@@ -68,6 +78,10 @@ public class SiteMasterController {
         }
         if (purchaseOrderRepository.hasActiveOrdersForSite(code)) {
             throw new IllegalStateException("Không thể xóa Site đang có đơn hàng chưa hoàn tất.");
+        }
+        if (userRepository.existsBySiteCode(code)) {
+            throw new IllegalStateException(
+                    "Không thể xóa Site đã có tài khoản đăng nhập. Site cần ngừng dùng hệ thống trước khi xóa hồ sơ.");
         }
         siteMerchandiseRepository.deleteAllBySiteCode(code);
         siteRepository.delete(code);

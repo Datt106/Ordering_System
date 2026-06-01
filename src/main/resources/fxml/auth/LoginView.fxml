@@ -17,6 +17,7 @@
         <Label text="Mật khẩu *"/>
         <PasswordField fx:id="passwordField" onAction="#onLogin" promptText="••••••••"/>
         <Button fx:id="loginButton" text="Đăng nhập" onAction="#onLogin" defaultButton="true" styleClass="btn-primary"/>
+        <Button text="Đăng ký tài khoản Site…" onAction="#onGoToSiteRegister" styleClass="btn-link"/>
         <Button text="Thông tin hệ thống…" onAction="#onShowSystemInfo" styleClass="btn-link"/>
     </VBox>
     <Label fx:id="hintLabel" styleClass="help-banner" wrapText="true" maxWidth="480"/>

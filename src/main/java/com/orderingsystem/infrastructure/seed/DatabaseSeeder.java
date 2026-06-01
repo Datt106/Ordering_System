@@ -18,6 +18,9 @@ public final class DatabaseSeeder {
 
     public static final String DEMO_SITE_CODE = "S01";
 
+    /** Site thứ hai — chưa có user, dùng thử luồng đăng ký Site. */
+    public static final String DEMO_SITE_CODE_2 = "S02";
+
     public static final List<String> DEMO_MERCHANDISE_CODES = List.of("P001", "P002", "P003");
 
     private static final String[][] DEMO_CATALOG = {
@@ -70,6 +73,9 @@ public final class DatabaseSeeder {
     private void seedDemoSite() {
         if (!siteRepository.existsByCode(DEMO_SITE_CODE)) {
             siteRepository.save(new Site(DEMO_SITE_CODE, "Demo Import Site Tokyo", "Seed data"));
+        }
+        if (!siteRepository.existsByCode(DEMO_SITE_CODE_2)) {
+            siteRepository.save(new Site(DEMO_SITE_CODE_2, "Demo Import Site Osaka", "Chưa có user — thử Đăng ký Site"));
         }
     }
 

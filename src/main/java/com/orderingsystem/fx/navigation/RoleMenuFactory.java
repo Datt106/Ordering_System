@@ -92,8 +92,8 @@ public final class RoleMenuFactory {
 
     public static String loginHelpText() {
         return """
-                Đăng nhập theo vai trò công việc. Mỗi vai trò chỉ thấy menu phù hợp.
-                Tài khoản demo: sales · overseas · site01 · warehouse (mật khẩu xem gợi ý dưới form).
+                Nội bộ (tài khoản cố định): sales / sales123 · overseas / overseas123 · warehouse / wh123
+                Site demo: site01 / site123 (Site S01). Site mới: Overseas thêm mã Site → Đăng ký tài khoản Site.
                 """;
     }
 }
