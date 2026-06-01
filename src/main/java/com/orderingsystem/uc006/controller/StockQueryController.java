@@ -1,6 +1,7 @@
 package com.orderingsystem.uc006.controller;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.core.RequestStatusEvaluator;
 import com.orderingsystem.core.domain.InventoryQuery;
 import com.orderingsystem.core.domain.ImportRequest;
 import com.orderingsystem.core.domain.ImportRequestItem;
@@ -73,6 +74,7 @@ public class StockQueryController {
                     "Chỉ truy vấn tồn kho khi yêu cầu ở trạng thái Đang xử lý. Hiện tại: " + request.getStatus());
         }
 
+        RequestStatusEvaluator.clearErrorStatusIfProcessing(importRequestRepository, id);
         inventoryQueryRepository.deleteByRequestId(id);
         for (ImportRequestItem item : request.getItems()) {
             importRequestRepository.updateItemStatus(item.getId(), ItemStatus.OK);
@@ -112,6 +114,7 @@ public class StockQueryController {
             }
         }
 
+        RequestStatusEvaluator.markErrorIfAllItemsUnfulfillable(importRequestRepository, id);
         return buildDispatchResult(id, created, errors);
     }
 

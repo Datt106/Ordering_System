@@ -76,7 +76,7 @@ public final class RoleMenuFactory {
                     new ScreenDefinition(
                             "Đối chiếu nhập kho",
                             "/fxml/warehouse/WarehouseReconcileView.fxml",
-                            "Chọn đơn, nhập số lượng thực nhận và ghi nhận nhập kho hoặc sai lệch.")
+                            "Chọn đơn ở trạng thái Đã gửi hoặc Đã xác nhận, nhập SL thực nhận, ghi nhận nhập kho hoặc sai lệch.")
             );
         };
     }

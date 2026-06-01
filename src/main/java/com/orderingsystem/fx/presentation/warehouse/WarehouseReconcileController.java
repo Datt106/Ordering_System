@@ -55,7 +55,7 @@ public class WarehouseReconcileController extends BaseViewController {
             }
         });
 
-        bindEmptyTable(table, "Không có đơn cần đối chiếu — Site phải xác nhận đơn trước.");
+        bindEmptyTable(table, "Không có đơn Đã gửi hoặc Đã xác nhận — hoàn tất Gửi đơn (Overseas) trước.");
         Platform.runLater(this::refresh);
     }
 

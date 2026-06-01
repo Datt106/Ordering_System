@@ -147,7 +147,13 @@ public class SalesTrackingController extends BaseViewController {
         if (!d.childOrders().isEmpty()) {
             sb.append("Đơn con:\n");
             d.childOrders().forEach(o -> sb.append("  - ").append(o.orderId())
-                    .append(" @ ").append(o.siteCode()).append('\n'));
+                    .append(" | ").append(o.siteCode())
+                    .append(" | ").append(o.merchandiseCode())
+                    .append(" × ").append(o.quantityOrdered())
+                    .append(' ').append(o.unit())
+                    .append(" | ").append(o.deliveryMeansLabel())
+                    .append(" | ").append(StatusLabels.orderStatus(o.orderStatus()))
+                    .append('\n'));
         } else {
             sb.append("\n(Chưa có đơn con — yêu cầu có thể vẫn đang xử lý.)");
         }

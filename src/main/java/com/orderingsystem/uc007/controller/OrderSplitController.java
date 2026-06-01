@@ -1,6 +1,7 @@
 package com.orderingsystem.uc007.controller;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.core.RequestStatusEvaluator;
 import com.orderingsystem.core.domain.InventoryQuery;
 import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.ImportRequest;
@@ -164,6 +165,9 @@ public class OrderSplitController {
                 allLines.addAll(plan.lines());
             }
         }
+
+        RequestStatusEvaluator.markErrorIfNoMerchandiseCanBeSplit(
+                importRequestRepository, requestId, inventoryReady, plans);
 
         return new OrderSplitResultDto(
                 requestId,

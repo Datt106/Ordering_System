@@ -133,6 +133,11 @@ class OrderSplitServiceTest {
     @Test
     void aggregatesSameMerchandiseLines() {
         authService.logout();
+        authService.login("site01", "site123");
+        siteShippingService.updateMyShipping(10, 3);
+        siteMerchandiseService.addMerchandise("P001");
+        authService.logout();
+
         authService.login("sales", "sales123");
         ImportRequestDto created = importRequestService.createImportRequest(List.of(
                 new CreateImportRequestLineInput("P001", 40, "unit", LocalDate.now().plusDays(20)),
