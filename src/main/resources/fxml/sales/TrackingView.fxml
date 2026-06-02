@@ -62,7 +62,7 @@
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <VBox spacing="6" HBox.hgrow="ALWAYS">
                         <Label text="Mã yêu cầu" styleClass="field-label"/>
-                        <TextField fx:id="detailIdField" promptText="Mã yêu cầu" maxWidth="Infinity"/>
+                        <TextField fx:id="detailIdField" promptText="Mã yêu cầu" onAction="#onShowDetail" maxWidth="Infinity"/>
                     </VBox>
                     <VBox spacing="6" alignment="BOTTOM_LEFT">
                         <Label text=" " styleClass="field-label"/>

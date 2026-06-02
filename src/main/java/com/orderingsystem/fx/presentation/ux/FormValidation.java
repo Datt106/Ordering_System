@@ -4,6 +4,7 @@ import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputControl;
 
 import java.util.Arrays;
@@ -54,5 +55,9 @@ public final class FormValidation {
                 deps
         );
         button.disableProperty().bind(allFilled.not());
+    }
+
+    public static void bindDisabledUntilTableSelection(Button button, TableView<?> table) {
+        button.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
     }
 }

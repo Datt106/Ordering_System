@@ -25,7 +25,7 @@
                 <Label text=" " styleClass="field-label"/>
                 <HBox spacing="8">
                     <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
-                    <Button text="Ghi nhận" onAction="#onReconcile" styleClass="btn-primary"/>
+                    <Button fx:id="reconcileButton" text="Ghi nhận" onAction="#onReconcile" styleClass="btn-primary"/>
                 </HBox>
             </VBox>
         </HBox>

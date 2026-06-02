@@ -19,9 +19,10 @@
         <Label text="Danh sách mặt hàng" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+            <Button text="Nhập mới" onAction="#onClearForm" styleClass="btn-secondary"/>
             <Button fx:id="addButton" text="Thêm" onAction="#onAdd" styleClass="btn-primary"/>
             <Button fx:id="updateButton" text="Cập nhật" onAction="#onUpdate" styleClass="btn-secondary"/>
-            <Button text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
+            <Button fx:id="deleteButton" text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
         </HBox>
         <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
         <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">

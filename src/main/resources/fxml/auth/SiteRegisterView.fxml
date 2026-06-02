@@ -19,9 +19,23 @@
         <Label text="Tên đăng nhập *"/>
         <TextField fx:id="usernameField" promptText="vd. site_tokyo"/>
         <Label text="Mật khẩu *"/>
-        <PasswordField fx:id="passwordField" promptText="Tối thiểu 6 ký tự"/>
+        <StackPane maxWidth="Infinity">
+            <PasswordField fx:id="passwordField" promptText="Tối thiểu 6 ký tự"
+                           maxWidth="Infinity" styleClass="password-with-eye"/>
+            <TextField fx:id="passwordVisibleField" promptText="Tối thiểu 6 ký tự"
+                       visible="false" managed="false" maxWidth="Infinity" styleClass="password-with-eye"/>
+            <Button fx:id="togglePasswordButton" text="○" onAction="#onTogglePasswordVisibility"
+                    styleClass="password-eye-button" focusTraversable="false" StackPane.alignment="CENTER_RIGHT"/>
+        </StackPane>
         <Label text="Nhập lại mật khẩu *"/>
-        <PasswordField fx:id="confirmPasswordField" onAction="#onRegister" promptText="••••••••"/>
+        <StackPane maxWidth="Infinity">
+            <PasswordField fx:id="confirmPasswordField" onAction="#onRegister" promptText="••••••••"
+                           maxWidth="Infinity" styleClass="password-with-eye"/>
+            <TextField fx:id="confirmPasswordVisibleField" onAction="#onRegister" promptText="••••••••"
+                       visible="false" managed="false" maxWidth="Infinity" styleClass="password-with-eye"/>
+            <Button fx:id="toggleConfirmPasswordButton" text="○" onAction="#onToggleConfirmPasswordVisibility"
+                    styleClass="password-eye-button" focusTraversable="false" StackPane.alignment="CENTER_RIGHT"/>
+        </StackPane>
         <Button fx:id="registerButton" text="Đăng ký" onAction="#onRegister" defaultButton="true" styleClass="btn-primary"/>
         <Button text="Quay lại đăng nhập" onAction="#onBackToLogin" styleClass="btn-link"/>
     </VBox>

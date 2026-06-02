@@ -8,6 +8,7 @@ import com.orderingsystem.uc007.boundary.dto.OrderSplitLineDto;
 import com.orderingsystem.uc007.boundary.dto.OrderSplitResultDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,7 +17,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -86,7 +86,15 @@ public class OverseasOrderSplitController extends BaseViewController {
 
         siteCol.setOnEditCommit(e -> e.getRowValue().siteCodeProperty().set(e.getNewValue()));
         merchCol.setOnEditCommit(e -> e.getRowValue().merchandiseCodeProperty().set(e.getNewValue()));
-        qtyCol.setOnEditCommit(e -> e.getRowValue().quantityProperty().set(e.getNewValue()));
+        qtyCol.setOnEditCommit(e -> {
+            Integer newQty = e.getNewValue();
+            if (newQty == null || newQty <= 0) {
+                e.getRowValue().quantityProperty().set(e.getOldValue());
+                setScreenStatus("Số lượng phải là số nguyên dương.");
+                return;
+            }
+            e.getRowValue().quantityProperty().set(newQty);
+        });
         meansCol.setOnEditCommit(e -> e.getRowValue().deliveryMeansProperty().set(e.getNewValue()));
 
         TableColumnLayout.bindProportionalColumns(processingTable, REQUEST_COL_RATIOS, idCol, byCol);
@@ -94,7 +102,7 @@ public class OverseasOrderSplitController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(siteCol);
         TableColumnLayout.bindEllipsisCellFactory(merchCol);
 
-        addQtySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999_999, 1));
+        SpinnerInputs.configureIntegerSpinner(addQtySpinner, 1, 999_999, 1);
         addMeansChoice.getItems().setAll(DeliveryMeans.values());
         addMeansChoice.setValue(DeliveryMeans.SHIP_DELIVERY);
 

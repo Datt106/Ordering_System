@@ -263,6 +263,24 @@ Text {
     -fx-border-color: #14b8a6;
 }
 
+/* Mật khẩu: icon mắt nằm trong ô nhập */
+.password-with-eye {
+    -fx-padding: 10 40 10 12;
+}
+
+.password-eye-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9cb5ad;
+    -fx-padding: 0 12 0 12;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.password-eye-button:hover {
+    -fx-text-fill: #c8ddd6;
+    -fx-background-color: rgba(31, 61, 52, 0.45);
+}
+
 .field-invalid {
     -fx-border-color: #f87171;
     -fx-border-width: 2;

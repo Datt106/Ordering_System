@@ -91,6 +91,10 @@ public class SalesTrackingController extends BaseViewController {
         RequestStatus status = statusFilter.getValue();
         LocalDate from = fromPicker.getValue();
         LocalDate to = toPicker.getValue();
+        if (from != null && to != null && from.isAfter(to)) {
+            setScreenStatus("Khoảng ngày không hợp lệ: Từ ngày phải nhỏ hơn hoặc bằng Đến ngày.");
+            return;
+        }
         UiTasks.runWithStatus(
                 "Đang tìm…",
                 () -> app.uc003().listRequests(status, from, to),

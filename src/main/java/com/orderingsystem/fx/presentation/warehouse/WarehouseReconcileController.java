@@ -6,13 +6,14 @@ import com.orderingsystem.uc014.boundary.dto.WarehouseReconcileResultDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -25,6 +26,8 @@ public class WarehouseReconcileController extends BaseViewController {
 
     @FXML
     private Spinner<Integer> actualSpinner;
+    @FXML
+    private Button reconcileButton;
     @FXML
     private TableView<WarehouseOrderDto> table;
     @FXML
@@ -40,7 +43,7 @@ public class WarehouseReconcileController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        actualSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 999_999, 0));
+        SpinnerInputs.configureIntegerSpinner(actualSpinner, 0, 999_999, 0);
         orderIdCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().orderId()));
         siteCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode()));
@@ -50,10 +53,12 @@ public class WarehouseReconcileController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
+            reconcileButton.setDisable(row == null);
             if (row != null) {
                 actualSpinner.getValueFactory().setValue(row.quantityOrdered());
             }
         });
+        reconcileButton.setDisable(true);
 
         bindEmptyTable(table, "Không có đơn Đã gửi hoặc Đã xác nhận — hoàn tất Gửi đơn (Overseas) trước.");
         Platform.runLater(this::refresh);
@@ -100,6 +105,7 @@ public class WarehouseReconcileController extends BaseViewController {
                         .toList(),
                 items -> {
                     table.setItems(FXCollections.observableArrayList(items));
+                    reconcileButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
                     setScreenStatus(items.isEmpty()
                             ? "Không có đơn Đã gửi/Đã xác nhận."
                             : items.size() + " đơn — chọn dòng, nhập SL thực, Ghi nhận.");

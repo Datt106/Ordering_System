@@ -1,11 +1,12 @@
 package com.orderingsystem.fx.presentation.sales;
 
 import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
-import com.orderingsystem.uc002.boundary.dto.ImportRequestDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
+import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -56,7 +57,7 @@ public class SalesCreateRequestController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        qtySpinner.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999_999, 1));
+        SpinnerInputs.configureIntegerSpinner(qtySpinner, 1, 999_999, 1);
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().code()));
         qtyCol.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().qty())));
         unitCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().unit()));
@@ -70,7 +71,7 @@ public class SalesCreateRequestController extends BaseViewController {
         deliveryPicker.setValue(LocalDate.now().plusDays(7));
         unitField.setText("pcs");
         bindEmptyTable(linesTable, "Chưa có dòng nào — nhập mã hàng, số lượng, đơn vị và ngày nhận rồi bấm Thêm dòng.");
-        FormValidation.bindDisabledUntilFilled(addLineButton, codeField, unitField);
+        bindAddButtonState();
         updateSubmitState();
         setScreenStatus("Ngày nhận mặc định: 7 ngày sau hôm nay — có thể đổi trước khi thêm dòng.");
         refreshTable();
@@ -172,6 +173,21 @@ public class SalesCreateRequestController extends BaseViewController {
 
     private void updateSubmitState() {
         submitButton.setDisable(lines.isEmpty());
+    }
+
+    private void bindAddButtonState() {
+        addLineButton.disableProperty().bind(
+                codeField.textProperty().isEmpty()
+                        .or(unitField.textProperty().isEmpty())
+                        .or(deliveryPicker.valueProperty().isNull())
+                        .or(Bindings.createBooleanBinding(
+                                () -> {
+                                    LocalDate date = deliveryPicker.getValue();
+                                    return date != null && !date.isAfter(LocalDate.now());
+                                },
+                                deliveryPicker.valueProperty()
+                        ))
+        );
     }
 
     private static String formatDate(LocalDate date) {

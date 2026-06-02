@@ -19,8 +19,8 @@ import java.util.List;
 
 public class OverseasSitesController extends BaseViewController {
 
-    /** Mã 12% · Tên 28% · Vận chuyển 50% · Trạng thái 10% */
-    private static final double[] SITES_COL_RATIOS = {0.12, 0.28, 0.50, 0.10};
+    /** Mã 12% · Tên 22% · Thông tin khác 24% · Vận chuyển 32% · Trạng thái 10% */
+    private static final double[] SITES_COL_RATIOS = {0.12, 0.22, 0.24, 0.32, 0.10};
 
     @FXML
     private TableView<SiteDto> table;
@@ -28,6 +28,8 @@ public class OverseasSitesController extends BaseViewController {
     private TableColumn<SiteDto, String> codeCol;
     @FXML
     private TableColumn<SiteDto, String> nameCol;
+    @FXML
+    private TableColumn<SiteDto, String> otherCol;
     @FXML
     private TableColumn<SiteDto, String> shipCol;
     @FXML
@@ -40,27 +42,42 @@ public class OverseasSitesController extends BaseViewController {
     private TextArea otherArea;
     @FXML
     private Button addButton;
+    @FXML
+    private Button updateButton;
+    @FXML
+    private Button deleteButton;
+
+    private boolean fillingFormFromTable;
 
     @Override
     protected void onInit() {
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
         nameCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteName()));
+        otherCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().otherInfo() != null && !c.getValue().otherInfo().isBlank()
+                        ? c.getValue().otherInfo()
+                        : "—"));
         shipCol.setCellValueFactory(c -> new SimpleStringProperty(formatShipping(c.getValue())));
         statusCol.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().active() ? "Hoạt động" : "Ngừng"));
 
-        TableColumnLayout.bindProportionalColumns(table, SITES_COL_RATIOS, codeCol, nameCol, shipCol, statusCol);
+        TableColumnLayout.bindProportionalColumns(table, SITES_COL_RATIOS, codeCol, nameCol, otherCol, shipCol, statusCol);
         TableColumnLayout.bindEllipsisCellFactory(nameCol);
+        TableColumnLayout.bindEllipsisCellFactory(otherCol);
         TableColumnLayout.bindEllipsisCellFactory(shipCol);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
+            if (fillingFormFromTable) {
+                return;
+            }
             if (row != null) {
-                codeField.setText(row.siteCode());
-                nameField.setText(row.siteName());
-                otherArea.setText(row.otherInfo() != null ? row.otherInfo() : "");
+                fillForm(row);
+                codeField.setEditable(false);
             }
         });
         FormValidation.bindDisabledUntilFilled(addButton, codeField, nameField);
+        FormValidation.bindDisabledUntilTableSelection(updateButton, table);
+        FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         bindEmptyTable(table, "Chưa có Site — thêm mã Site và tên đối tác bên dưới.");
         refresh();
     }
@@ -68,6 +85,12 @@ public class OverseasSitesController extends BaseViewController {
     @FXML
     private void onRefresh() {
         refresh();
+    }
+
+    @FXML
+    private void onClearForm() {
+        clearFormForNewEntry();
+        setScreenStatus("Nhập mã Site mới và tên đối tác, rồi bấm Thêm.");
     }
 
     @FXML
@@ -101,14 +124,18 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onUpdate() {
+        SiteDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn Site trong bảng để cập nhật."));
+            return;
+        }
         try {
-            validateRequired(codeField, "Chọn Site trong bảng (*).");
             validateRequired(nameField, "Nhập tên Site (*).");
         } catch (IllegalArgumentException ex) {
             UiTasks.showError(ex);
             return;
         }
-        String code = codeField.getText().trim();
+        String code = selected.siteCode();
         String name = nameField.getText().trim();
         String other = otherArea.getText();
         UiTasks.runWithStatus(
@@ -127,13 +154,12 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onDelete() {
-        try {
-            validateRequired(codeField, "Chọn Site cần xóa.");
-        } catch (IllegalArgumentException ex) {
-            UiTasks.showError(ex);
+        SiteDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn Site cần xóa trong bảng."));
             return;
         }
-        String code = codeField.getText().trim();
+        String code = selected.siteCode();
         if (!UiTasks.confirmDelete("Site: " + code)) {
             setScreenStatus("Đã hủy xóa Site.");
             return;
@@ -146,6 +172,7 @@ public class OverseasSitesController extends BaseViewController {
                 },
                 deletedCode -> {
                     UiTasks.showInfo("Đã xóa", "Site " + deletedCode + " đã được gỡ.");
+                    clearFormForNewEntry();
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -164,6 +191,30 @@ public class OverseasSitesController extends BaseViewController {
     private void applySiteList(List<SiteDto> items) {
         table.setItems(FXCollections.observableArrayList(items));
         setScreenStatus("Có " + items.size() + " Site.");
+    }
+
+    private void fillForm(SiteDto row) {
+        fillingFormFromTable = true;
+        try {
+            codeField.setText(row.siteCode());
+            nameField.setText(row.siteName());
+            otherArea.setText(row.otherInfo() != null ? row.otherInfo() : "");
+        } finally {
+            fillingFormFromTable = false;
+        }
+    }
+
+    private void clearFormForNewEntry() {
+        fillingFormFromTable = true;
+        try {
+            table.getSelectionModel().clearSelection();
+            codeField.clear();
+            codeField.setEditable(true);
+            nameField.clear();
+            otherArea.clear();
+        } finally {
+            fillingFormFromTable = false;
+        }
     }
 
     private static String formatShipping(SiteDto site) {

@@ -38,6 +38,10 @@ public class SalesCatalogController extends BaseViewController {
     private Button addButton;
     @FXML
     private Button updateButton;
+    @FXML
+    private Button deleteButton;
+
+    private boolean fillingFormFromTable;
 
     @Override
     protected void onInit() {
@@ -51,15 +55,18 @@ public class SalesCatalogController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(descCol);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
+            if (fillingFormFromTable) {
+                return;
+            }
             if (row != null) {
-                codeField.setText(row.merchandiseCode());
-                nameField.setText(row.merchandiseName());
-                descArea.setText(row.description() != null ? row.description() : "");
+                fillForm(row);
+                codeField.setEditable(false);
                 setScreenStatus("Đang sửa: " + row.merchandiseCode());
             }
         });
         FormValidation.bindDisabledUntilFilled(addButton, codeField, nameField);
-        FormValidation.bindDisabledUntilFilled(updateButton, codeField, nameField);
+        FormValidation.bindDisabledUntilTableSelection(updateButton, table);
+        FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         bindEmptyTable(table, "Chưa có mặt hàng trong danh mục. Dùng form bên dưới để thêm mã mới.");
         refresh();
     }
@@ -67,6 +74,12 @@ public class SalesCatalogController extends BaseViewController {
     @FXML
     private void onRefresh() {
         refresh();
+    }
+
+    @FXML
+    private void onClearForm() {
+        clearFormForNewEntry();
+        setScreenStatus("Nhập mã và tên mới, rồi bấm Thêm.");
     }
 
     @FXML
@@ -98,14 +111,18 @@ public class SalesCatalogController extends BaseViewController {
 
     @FXML
     private void onUpdate() {
+        StandardMerchandiseDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn một dòng trong bảng để cập nhật."));
+            return;
+        }
         try {
-            validateRequired(codeField, "Chọn hoặc nhập mã hàng (*).");
             validateRequired(nameField, "Nhập tên mặt hàng (*).");
         } catch (IllegalArgumentException ex) {
             UiTasks.showError(ex);
             return;
         }
-        String code = codeField.getText().trim();
+        String code = selected.merchandiseCode();
         String name = nameField.getText().trim();
         String desc = descArea.getText();
         UiTasks.runWithStatus(
@@ -125,13 +142,12 @@ public class SalesCatalogController extends BaseViewController {
 
     @FXML
     private void onDelete() {
-        try {
-            validateRequired(codeField, "Chọn mặt hàng cần xóa trong bảng hoặc nhập mã.");
-        } catch (IllegalArgumentException ex) {
-            UiTasks.showError(ex);
+        StandardMerchandiseDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn mặt hàng cần xóa trong bảng."));
             return;
         }
-        String code = codeField.getText().trim();
+        String code = selected.merchandiseCode();
         if (!UiTasks.confirmDelete("Mặt hàng: " + code)) {
             setScreenStatus("Đã hủy xóa.");
             return;
@@ -143,9 +159,7 @@ public class SalesCatalogController extends BaseViewController {
                     return code;
                 },
                 deletedCode -> {
-                    codeField.clear();
-                    nameField.clear();
-                    descArea.clear();
+                    clearFormForNewEntry();
                     setScreenStatus("Đã xóa: " + deletedCode);
                     UiTasks.showInfo("Đã xóa", "Mã " + deletedCode + " đã được gỡ khỏi danh mục.");
                     refresh();
@@ -168,5 +182,29 @@ public class SalesCatalogController extends BaseViewController {
         setScreenStatus(items.isEmpty()
                 ? "Danh mục trống — thêm mặt hàng đầu tiên."
                 : "Hiển thị " + items.size() + " mặt hàng.");
+    }
+
+    private void fillForm(StandardMerchandiseDto row) {
+        fillingFormFromTable = true;
+        try {
+            codeField.setText(row.merchandiseCode());
+            nameField.setText(row.merchandiseName());
+            descArea.setText(row.description() != null ? row.description() : "");
+        } finally {
+            fillingFormFromTable = false;
+        }
+    }
+
+    private void clearFormForNewEntry() {
+        fillingFormFromTable = true;
+        try {
+            table.getSelectionModel().clearSelection();
+            codeField.clear();
+            codeField.setEditable(true);
+            nameField.clear();
+            descArea.clear();
+        } finally {
+            fillingFormFromTable = false;
+        }
     }
 }

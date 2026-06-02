@@ -3,10 +3,12 @@ package com.orderingsystem.fx.presentation.site;
 import com.orderingsystem.uc006.boundary.dto.InventoryQueryDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -28,11 +30,12 @@ public class SiteInventoryResponseController extends BaseViewController {
     private TableColumn<InventoryQueryDto, String> unitCol;
     @FXML
     private Spinner<Integer> stockSpinner;
+    @FXML
+    private Button respondButton;
 
     @Override
     protected void onInit() {
-        stockSpinner.setValueFactory(
-                new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0, 999_999, 0));
+        SpinnerInputs.configureIntegerSpinner(stockSpinner, 0, 999_999, 0);
         requestCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().requestId()));
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode()));
         unitCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().unit()));
@@ -40,6 +43,9 @@ public class SiteInventoryResponseController extends BaseViewController {
         TableColumnLayout.bindProportionalColumns(table, QUERY_COL_RATIOS, requestCol, codeCol, unitCol);
         TableColumnLayout.bindEllipsisCellFactory(requestCol);
         TableColumnLayout.bindEllipsisCellFactory(codeCol);
+        table.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) ->
+                respondButton.setDisable(selected == null));
+        respondButton.setDisable(true);
 
         bindEmptyTable(table, "Không có truy vấn chờ — Overseas chưa gửi hoặc bạn đã phản hồi hết.");
         refresh();
@@ -87,6 +93,7 @@ public class SiteInventoryResponseController extends BaseViewController {
 
     private void applyQueryList(List<InventoryQueryDto> items) {
         table.setItems(FXCollections.observableArrayList(items));
+        respondButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
         setScreenStatus(items.isEmpty()
                 ? "Không còn truy vấn chờ phản hồi."
                 : items.size() + " truy vấn chờ — chọn dòng, nhập tồn, bấm Gửi phản hồi.");

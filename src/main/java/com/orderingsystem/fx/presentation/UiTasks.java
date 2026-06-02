@@ -127,7 +127,7 @@ public final class UiTasks {
         alert.setTitle("Thành công");
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.showAndWait();
+        alert.show();
         UiFeedback.setStatus(header);
     }
 

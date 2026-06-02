@@ -24,9 +24,17 @@ public class SiteRegisterController extends BaseViewController {
     @FXML
     private PasswordField passwordField;
     @FXML
+    private TextField passwordVisibleField;
+    @FXML
     private PasswordField confirmPasswordField;
     @FXML
+    private TextField confirmPasswordVisibleField;
+    @FXML
     private Button registerButton;
+    @FXML
+    private Button togglePasswordButton;
+    @FXML
+    private Button toggleConfirmPasswordButton;
 
     private Navigator navigator;
 
@@ -36,6 +44,7 @@ public class SiteRegisterController extends BaseViewController {
 
     @Override
     protected void onInit() {
+        bindPasswordFields();
         siteCombo.setCellFactory(list -> new javafx.scene.control.ListCell<>() {
             @Override
             protected void updateItem(RegistrableSiteDto item, boolean empty) {
@@ -71,8 +80,8 @@ public class SiteRegisterController extends BaseViewController {
             UiTasks.showError(ex);
             return;
         }
-        String password = passwordField.getText();
-        String confirm = confirmPasswordField.getText();
+        String password = currentPasswordText();
+        String confirm = currentConfirmPasswordText();
         if (!password.equals(confirm)) {
             UiTasks.showError(new IllegalArgumentException("Mật khẩu nhập lại không khớp."));
             return;
@@ -123,5 +132,56 @@ public class SiteRegisterController extends BaseViewController {
                 },
                 "Đã tải."
         );
+    }
+
+    @FXML
+    private void onTogglePasswordVisibility() {
+        boolean showPlain = !passwordVisibleField.isVisible();
+        if (showPlain) {
+            passwordVisibleField.setText(passwordField.getText());
+        } else {
+            passwordField.setText(passwordVisibleField.getText());
+        }
+        passwordVisibleField.setVisible(showPlain);
+        passwordVisibleField.setManaged(showPlain);
+        passwordField.setVisible(!showPlain);
+        passwordField.setManaged(!showPlain);
+        togglePasswordButton.setText(showPlain ? "◉" : "○");
+    }
+
+    @FXML
+    private void onToggleConfirmPasswordVisibility() {
+        boolean showPlain = !confirmPasswordVisibleField.isVisible();
+        if (showPlain) {
+            confirmPasswordVisibleField.setText(confirmPasswordField.getText());
+        } else {
+            confirmPasswordField.setText(confirmPasswordVisibleField.getText());
+        }
+        confirmPasswordVisibleField.setVisible(showPlain);
+        confirmPasswordVisibleField.setManaged(showPlain);
+        confirmPasswordField.setVisible(!showPlain);
+        confirmPasswordField.setManaged(!showPlain);
+        toggleConfirmPasswordButton.setText(showPlain ? "◉" : "○");
+    }
+
+    private void bindPasswordFields() {
+        passwordVisibleField.textProperty().bindBidirectional(passwordField.textProperty());
+        confirmPasswordVisibleField.textProperty().bindBidirectional(confirmPasswordField.textProperty());
+        passwordVisibleField.setVisible(false);
+        passwordVisibleField.setManaged(false);
+        confirmPasswordVisibleField.setVisible(false);
+        confirmPasswordVisibleField.setManaged(false);
+        togglePasswordButton.setText("○");
+        toggleConfirmPasswordButton.setText("○");
+    }
+
+    private String currentPasswordText() {
+        return passwordVisibleField.isVisible() ? passwordVisibleField.getText() : passwordField.getText();
+    }
+
+    private String currentConfirmPasswordText() {
+        return confirmPasswordVisibleField.isVisible()
+                ? confirmPasswordVisibleField.getText()
+                : confirmPasswordField.getText();
     }
 }

@@ -5,10 +5,10 @@ import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 
 public class SiteShippingController extends BaseViewController {
 
@@ -25,8 +25,8 @@ public class SiteShippingController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        shipSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 365, 30));
-        airSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 90, 7));
+        SpinnerInputs.configureIntegerSpinner(shipSpinner, 1, 365, 30);
+        SpinnerInputs.configureIntegerSpinner(airSpinner, 1, 90, 7);
         loadSite();
     }
 

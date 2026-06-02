@@ -18,9 +18,9 @@
         <Label text="Thao tác" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
-            <Button text="Gửi truy vấn" onAction="#onDispatch" styleClass="btn-primary"/>
-            <Button text="Xem trạng thái" onAction="#onStatus" styleClass="btn-secondary"/>
-            <Button text="Timeout → 0" onAction="#onTimeoutZero" styleClass="btn-danger"/>
+            <Button fx:id="dispatchButton" text="Gửi truy vấn" onAction="#onDispatch" styleClass="btn-primary"/>
+            <Button fx:id="statusButton" text="Xem trạng thái" onAction="#onStatus" styleClass="btn-secondary"/>
+            <Button fx:id="timeoutButton" text="Timeout → 0" onAction="#onTimeoutZero" styleClass="btn-danger"/>
         </HBox>
     </VBox>
 

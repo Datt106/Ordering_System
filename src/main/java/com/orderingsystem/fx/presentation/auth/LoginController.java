@@ -22,7 +22,11 @@ public class LoginController extends BaseViewController {
     @FXML
     private PasswordField passwordField;
     @FXML
+    private TextField passwordVisibleField;
+    @FXML
     private Button loginButton;
+    @FXML
+    private Button togglePasswordButton;
     @FXML
     private Label hintLabel;
 
@@ -35,6 +39,7 @@ public class LoginController extends BaseViewController {
     @Override
     protected void onInit() {
         hintLabel.setText(RoleMenuFactory.loginHelpText().trim());
+        bindPasswordFields();
         FormValidation.bindDisabledUntilFilled(loginButton, usernameField, passwordField);
         setScreenStatus("Nhập tài khoản và mật khẩu để bắt đầu.");
     }
@@ -49,7 +54,7 @@ public class LoginController extends BaseViewController {
             return;
         }
         String username = usernameField.getText().trim();
-        String password = passwordField.getText();
+        String password = currentPasswordText();
         UiTasks.runWithStatus(
                 "Đang đăng nhập…",
                 () -> app.auth().login(username, password),
@@ -88,5 +93,31 @@ public class LoginController extends BaseViewController {
                 "Cơ sở dữ liệu cục bộ:\n" + DbManager.databasePath()
                         + "\n\nPhiên bản demo — dùng cho phát triển và kiểm thử."
         );
+    }
+
+    @FXML
+    private void onTogglePasswordVisibility() {
+        boolean showPlain = !passwordVisibleField.isVisible();
+        if (showPlain) {
+            passwordVisibleField.setText(passwordField.getText());
+        } else {
+            passwordField.setText(passwordVisibleField.getText());
+        }
+        passwordVisibleField.setVisible(showPlain);
+        passwordVisibleField.setManaged(showPlain);
+        passwordField.setVisible(!showPlain);
+        passwordField.setManaged(!showPlain);
+        togglePasswordButton.setText(showPlain ? "◉" : "○");
+    }
+
+    private void bindPasswordFields() {
+        passwordVisibleField.textProperty().bindBidirectional(passwordField.textProperty());
+        passwordVisibleField.setVisible(false);
+        passwordVisibleField.setManaged(false);
+        togglePasswordButton.setText("○");
+    }
+
+    private String currentPasswordText() {
+        return passwordVisibleField.isVisible() ? passwordVisibleField.getText() : passwordField.getText();
     }
 }

@@ -8,6 +8,7 @@ import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -27,6 +28,12 @@ public class OverseasInventoryController extends BaseViewController {
     private TableColumn<ImportRequestDto, String> byCol;
     @FXML
     private TextArea resultArea;
+    @FXML
+    private Button dispatchButton;
+    @FXML
+    private Button statusButton;
+    @FXML
+    private Button timeoutButton;
 
     @Override
     protected void onInit() {
@@ -37,6 +44,9 @@ public class OverseasInventoryController extends BaseViewController {
         TableColumnLayout.bindProportionalColumns(processingTable, PROCESSING_COL_RATIOS, idCol, byCol);
         TableColumnLayout.bindEllipsisCellFactory(idCol);
         TableColumnLayout.bindEllipsisCellFactory(byCol);
+        processingTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) ->
+                setActionButtonsEnabled(selected != null));
+        setActionButtonsEnabled(false);
 
         bindEmptyTable(processingTable, "Không có yêu cầu Đang xử lý — tiếp nhận yêu cầu ở menu Tiếp nhận trước.");
         refresh();
@@ -134,6 +144,7 @@ public class OverseasInventoryController extends BaseViewController {
 
     private void applyProcessingList(List<ImportRequestDto> items) {
         processingTable.setItems(FXCollections.observableArrayList(items));
+        setActionButtonsEnabled(processingTable.getSelectionModel().getSelectedItem() != null);
         setScreenStatus(items.isEmpty()
                 ? "Chưa có yêu cầu đang xử lý."
                 : items.size() + " yêu cầu — chọn rồi Gửi truy vấn hoặc Xem trạng thái.");
@@ -162,5 +173,11 @@ public class OverseasInventoryController extends BaseViewController {
     }
 
     private record TimeoutResult(int updatedCount, InventoryQueryDispatchResultDto status) {
+    }
+
+    private void setActionButtonsEnabled(boolean enabled) {
+        dispatchButton.setDisable(!enabled);
+        statusButton.setDisable(!enabled);
+        timeoutButton.setDisable(!enabled);
     }
 }
