@@ -80,9 +80,6 @@ public class OverseasSitesController extends BaseViewController {
         bindTableScroll(table, tableContainer);
 
         FormValidation.bindDisabledUntilTableSelection(updateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(deactivateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(activateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> updateActionButtons(row));
