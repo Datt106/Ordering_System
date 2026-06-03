@@ -60,4 +60,10 @@ public final class FormValidation {
     public static void bindDisabledUntilTableSelection(Button button, TableView<?> table) {
         button.disableProperty().bind(table.getSelectionModel().selectedItemProperty().isNull());
     }
+
+    public static void unbindDisable(Button button) {
+        if (button.disableProperty().isBound()) {
+            button.disableProperty().unbind();
+        }
+    }
 }

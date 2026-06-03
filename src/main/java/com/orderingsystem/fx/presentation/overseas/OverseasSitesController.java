@@ -79,10 +79,6 @@ public class OverseasSitesController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(shipCol);
         bindTableScroll(table, tableContainer);
 
-        FormValidation.bindDisabledUntilTableSelection(updateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(deactivateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(activateButton, table);
-        FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> updateActionButtons(row));
@@ -92,6 +88,11 @@ public class OverseasSitesController extends BaseViewController {
     private void updateActionButtons(SiteDto row) {
         boolean hasRow = row != null;
         boolean active = hasRow && row.active();
+
+        FormValidation.unbindDisable(deactivateButton);
+        FormValidation.unbindDisable(activateButton);
+        FormValidation.unbindDisable(deleteButton);
+
         deactivateButton.setDisable(!hasRow || !active);
         activateButton.setDisable(!hasRow || active);
         deleteButton.setDisable(!hasRow || active);

@@ -31,8 +31,6 @@ public class OverseasInventoryController extends BaseViewController {
     @FXML
     private Button dispatchButton;
     @FXML
-    private Button statusButton;
-    @FXML
     private Button timeoutButton;
 
     @Override
@@ -44,8 +42,13 @@ public class OverseasInventoryController extends BaseViewController {
         TableColumnLayout.bindProportionalColumns(processingTable, PROCESSING_COL_RATIOS, idCol, byCol);
         TableColumnLayout.bindEllipsisCellFactory(idCol);
         TableColumnLayout.bindEllipsisCellFactory(byCol);
-        processingTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) ->
-                setActionButtonsEnabled(selected != null));
+        processingTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
+            boolean hasSelection = selected != null;
+            setActionButtonsEnabled(hasSelection);
+            if (hasSelection) {
+                onStatus();
+            }
+        });
         setActionButtonsEnabled(false);
         bindTableScroll(processingTable);
         refresh();
@@ -146,7 +149,7 @@ public class OverseasInventoryController extends BaseViewController {
         setActionButtonsEnabled(processingTable.getSelectionModel().getSelectedItem() != null);
         setScreenStatus(items.isEmpty()
                 ? "Chưa có yêu cầu đang xử lý."
-                : items.size() + " yêu cầu — chọn rồi Gửi truy vấn hoặc Xem trạng thái.");
+                : items.size() + " yêu cầu — chọn rồi Gửi truy vấn để xem kết quả.");
     }
 
     private void showResult(InventoryQueryDispatchResultDto result) {
@@ -176,7 +179,6 @@ public class OverseasInventoryController extends BaseViewController {
 
     private void setActionButtonsEnabled(boolean enabled) {
         dispatchButton.setDisable(!enabled);
-        statusButton.setDisable(!enabled);
         timeoutButton.setDisable(!enabled);
     }
 }

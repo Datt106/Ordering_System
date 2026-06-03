@@ -25,6 +25,7 @@ public class OverseasOrderDispatchController extends BaseViewController {
     private static final double[] ORDER_COL_RATIOS = {0.22, 0.14, 0.18, 0.12, 0.34};
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
+    private ImportRequestDto lastSelectedRequest;
 
     @FXML
     private TableView<ImportRequestDto> requestTable;
@@ -53,6 +54,7 @@ public class OverseasOrderDispatchController extends BaseViewController {
         reqByCol.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().processedBy() != null ? c.getValue().processedBy() : "—"));
         TableColumnLayout.bindProportionalColumns(requestTable, REQ_COL_RATIOS, reqIdCol, reqByCol);
+        requestTable.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> showRequestDetails(newValue));
 
         orderIdCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().orderId()));
         siteCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
@@ -74,11 +76,6 @@ public class OverseasOrderDispatchController extends BaseViewController {
     }
 
     @FXML
-    private void onPreview() {
-        runDispatch(false);
-    }
-
-    @FXML
     private void onDispatch() {
         ImportRequestDto selected = requestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -96,6 +93,21 @@ public class OverseasOrderDispatchController extends BaseViewController {
         runDispatch(true);
     }
 
+    private void showRequestDetails(ImportRequestDto selected) {
+        if (selected == null) {
+            lastSelectedRequest = null;
+            ordersTable.setItems(FXCollections.observableArrayList());
+            summaryArea.clear();
+            setScreenStatus("Chọn yêu cầu trong bảng.");
+            return;
+        }
+        if (selected.equals(lastSelectedRequest)) {
+            return;
+        }
+        lastSelectedRequest = selected;
+        runDispatch(false);
+    }
+
     private void runDispatch(boolean send) {
         ImportRequestDto selected = requestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -104,10 +116,10 @@ public class OverseasOrderDispatchController extends BaseViewController {
         }
         String requestId = selected.requestId();
         UiTasks.<OrderDispatchResultDto>runWithStatus(
-                send ? "Đang gửi đơn..." : "Đang xem trước...",
+                send ? "Đang gửi đơn..." : "Đang tải tóm tắt...",
                 () -> send ? app.uc008().dispatchOrders(requestId) : app.uc008().previewToSend(requestId),
                 result -> applyDispatchResult(result, send),
-                send ? "Đã gửi đơn." : "Xem trước hoàn tất."
+                send ? "Đã gửi đơn." : "Tóm tắt đã được cập nhật."
         );
     }
 
