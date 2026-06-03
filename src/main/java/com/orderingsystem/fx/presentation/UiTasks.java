@@ -8,6 +8,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Region;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -110,32 +111,84 @@ public final class UiTasks {
 
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Không thực hiện được");
-        alert.setHeaderText(friendly.summary());
-        alert.setContentText(friendly.recoveryHint());
+        alert.setHeaderText(null);
+
+        Label hdr = new Label(friendly.summary());
+        hdr.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:black;");
+
+        TextArea contentArea = new TextArea(friendly.recoveryHint());
+        contentArea.setEditable(false);
+        contentArea.setWrapText(true);
+        contentArea.setPrefRowCount(3);
+        contentArea.setPrefWidth(520);
+        contentArea.setStyle("-fx-control-inner-background: white; -fx-text-fill: black;");
 
         TextArea technical = new TextArea(formatTechnicalDetail(ex));
         technical.setEditable(false);
         technical.setWrapText(true);
         technical.setPrefRowCount(6);
+        technical.setStyle("-fx-control-inner-background: white; -fx-text-fill: black;");
+
+        javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(8);
+        box.getChildren().addAll(hdr, contentArea);
+        alert.getDialogPane().setContent(box);
         alert.getDialogPane().setExpandableContent(technical);
+        alert.getDialogPane().setExpanded(false);
+        alert.getDialogPane().setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-text-fill: black;");
 
         alert.showAndWait();
     }
 
     public static void showInfo(String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Thành công");
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.show();
+        javafx.scene.control.Dialog<java.lang.Void> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Thành công");
+
+        javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(8);
+        javafx.scene.control.Label hdr = new javafx.scene.control.Label(header);
+        hdr.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:black;");
+
+        javafx.scene.control.TextArea contentArea = new javafx.scene.control.TextArea(content);
+        contentArea.setEditable(false);
+        contentArea.setWrapText(true);
+        contentArea.setPrefRowCount(4);
+        contentArea.setPrefColumnCount(40);
+        contentArea.setPrefWidth(520);
+        contentArea.getStyleClass().add("text-area");
+
+        box.getChildren().addAll(hdr, contentArea);
+        dialog.getDialogPane().setContent(box);
+        dialog.getDialogPane().getButtonTypes().addAll(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        dialog.getDialogPane().setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        // force light dialog look: white background and black text for readability
+        dialog.getDialogPane().setStyle("-fx-background-color: white; -fx-text-fill: black;");
+        contentArea.setStyle("-fx-control-inner-background: white; -fx-text-fill: black;");
+
+        dialog.showAndWait();
         UiFeedback.setStatus(header);
     }
 
     public static boolean confirm(String title, String header, String detail) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(detail);
+        alert.setHeaderText(null);
+
+        Label hdr = new Label(header);
+        hdr.setStyle("-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:black;");
+
+        javafx.scene.control.TextArea detailArea = new javafx.scene.control.TextArea(detail);
+        detailArea.setEditable(false);
+        detailArea.setWrapText(true);
+        detailArea.setPrefRowCount(3);
+        detailArea.setPrefWidth(520);
+        detailArea.setStyle("-fx-control-inner-background: white; -fx-text-fill: black;");
+
+        javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(8);
+        box.getChildren().addAll(hdr, detailArea);
+        alert.getDialogPane().setContent(box);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-text-fill: black;");
+
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
     }

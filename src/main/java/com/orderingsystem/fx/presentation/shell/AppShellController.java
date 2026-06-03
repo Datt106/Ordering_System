@@ -32,6 +32,8 @@ public class AppShellController extends BaseViewController {
     @FXML
     private ProgressIndicator busyIndicator;
     @FXML
+    private Label statusLabel;
+    @FXML
     private ListView<String> menuList;
     @FXML
     private StackPane contentPane;
@@ -47,7 +49,7 @@ public class AppShellController extends BaseViewController {
         userLabel.setText(user.username() + (user.siteCode() != null ? " · Site " + user.siteCode() : ""));
         menuList.getItems().setAll(screenDefinitions.stream().map(ScreenDefinition::label).toList());
         configureMenuList();
-        UiFeedback.bind(null, busyIndicator);
+        UiFeedback.bind(statusLabel, busyIndicator);
         menuList.getSelectionModel().selectedIndexProperty().addListener((obs, old, idx) -> {
             if (idx != null && idx.intValue() >= 0 && idx.intValue() < screens.size()) {
                 showScreen(idx.intValue());

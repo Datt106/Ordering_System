@@ -81,7 +81,12 @@ public class OverseasOrderSplitController extends BaseViewController {
         planTable.setEditable(true);
         siteCol.setCellFactory(TextFieldTableCell.forTableColumn());
         merchCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        qtyCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        qtyCol.setCellFactory(col -> {
+            var cell = new TextFieldTableCell<EditableSplitLineRow, Integer>(new IntegerStringConverter());
+            cell.setAlignment(javafx.geometry.Pos.CENTER);
+            cell.getStyleClass().add("quantity-centered");
+            return cell;
+        });
         meansCol.setCellFactory(col -> new ChoiceBoxTableCell<>(DeliveryMeans.values()));
 
         siteCol.setOnEditCommit(e -> e.getRowValue().siteCodeProperty().set(e.getNewValue()));

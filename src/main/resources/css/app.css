@@ -268,6 +268,15 @@ Text {
     -fx-border-width: 1;
     -fx-padding: 10 12;
     -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT; /* ensure single-line inputs center vertically */
+}
+
+/* Make multi-line text areas and their prompt text align consistently */
+.text-area {
+    -fx-padding: 10 12; /* match TextField vertical padding */
+}
+.text-area .content {
+    -fx-padding: 0; /* remove extra inner padding so prompt aligns predictably */
 }
 
 .text-field:focused, .password-field:focused, .text-area:focused,
@@ -564,4 +573,42 @@ Text {
     -fx-background-color: #101916;
     -fx-text-fill: #c8ddd6;
     -fx-border-color: #2a3d36;
+}
+
+/* Overrides to make inline editors (TextField in editable TableCells) fit and centered */
+.catalog-table .table-row-cell {
+    -fx-min-height: 56; /* ensure enough vertical room for editor + focus ring */
+    -fx-alignment: CENTER-LEFT; /* vertically center cell content by default */
+}
+
+.catalog-table .table-cell {
+    -fx-padding: 14 12 10 12; /* top right bottom left — nudge content slightly down */
+    -fx-alignment: CENTER-LEFT; /* ensure text is vertically centered and left-aligned */
+}
+
+.catalog-table .table-cell .text-field {
+    -fx-padding: 6 10;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-alignment: CENTER; /* center text horizontally and vertically */
+    -fx-background-color: -fx-control-inner-background; /* match other inputs */
+    -fx-border-color: rgba(42,61,54,0.6);
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.catalog-table .table-cell .text-field:focused {
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 2;
+    -fx-background-color: -fx-control-inner-background;
+}
+
+/* Center content in the quantity column specifically if needed (fallback selector).
+   If you prefer explicit column class, we can add a styleClass in FXML and target '.col-qty'. */
+.catalog-table .table-column .table-cell {
+    -fx-alignment: CENTER-LEFT;
+}
+
+.catalog-table .table-cell.quantity-centered {
+    -fx-alignment: CENTER;
 }

@@ -32,6 +32,7 @@
         <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
             <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
             <ProgressIndicator fx:id="busyIndicator" prefWidth="18" prefHeight="18" styleClass="busy-indicator"/>
+            <Label fx:id="statusLabel" styleClass="global-status" wrapText="true" HBox.hgrow="ALWAYS"/>
         </HBox>
     </bottom>
 </BorderPane>
