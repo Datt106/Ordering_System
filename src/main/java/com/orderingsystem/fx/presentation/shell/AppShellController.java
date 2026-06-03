@@ -5,13 +5,17 @@ import com.orderingsystem.fx.framework.FxmlLoaderFactory;
 import com.orderingsystem.fx.navigation.ScreenDefinition;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.ScrollSupport;
 import com.orderingsystem.fx.presentation.ux.UiFeedback;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
@@ -25,10 +29,6 @@ public class AppShellController extends BaseViewController {
     private Label roleLabel;
     @FXML
     private Label userLabel;
-    @FXML
-    private Label contextHelpLabel;
-    @FXML
-    private Label globalStatusLabel;
     @FXML
     private ProgressIndicator busyIndicator;
     @FXML
@@ -46,9 +46,10 @@ public class AppShellController extends BaseViewController {
         roleLabel.setText(roleTitle);
         userLabel.setText(user.username() + (user.siteCode() != null ? " · Site " + user.siteCode() : ""));
         menuList.getItems().setAll(screenDefinitions.stream().map(ScreenDefinition::label).toList());
-        UiFeedback.bind(globalStatusLabel, busyIndicator);
+        configureMenuList();
+        UiFeedback.bind(null, busyIndicator);
         menuList.getSelectionModel().selectedIndexProperty().addListener((obs, old, idx) -> {
-            if (idx != null && idx.intValue() >= 0) {
+            if (idx != null && idx.intValue() >= 0 && idx.intValue() < screens.size()) {
                 showScreen(idx.intValue());
             }
         });
@@ -82,15 +83,35 @@ public class AppShellController extends BaseViewController {
         onLogout.run();
     }
 
+    private void configureMenuList() {
+        menuList.setFixedCellSize(44);
+        menuList.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setDisable(empty);
+                setMouseTransparent(empty);
+            }
+        });
+        menuList.prefHeightProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.max(44, menuList.getItems().size() * menuList.getFixedCellSize() + 4),
+                menuList.getItems(),
+                menuList.fixedCellSizeProperty()));
+        menuList.setMaxHeight(Double.MAX_VALUE);
+    }
+
     private void showScreen(int index) {
         ScreenDefinition screen = screens.get(index);
-        contextHelpLabel.setText(screen.helpText());
         UiTasks.runWithStatusOnFxThread(
                 "Đang mở: " + screen.label() + "…",
                 () -> {
                     try {
                         FxmlLoaderFactory loader = new FxmlLoaderFactory(app);
-                        contentPane.getChildren().setAll(loader.loadView(screen.fxmlClasspath()));
+                        ScrollPane scroll = ScrollSupport.wrapScreen(loader.loadView(screen.fxmlClasspath()));
+                        scroll.setMaxWidth(Double.MAX_VALUE);
+                        scroll.setMaxHeight(Double.MAX_VALUE);
+                        contentPane.getChildren().setAll(scroll);
                         Platform.runLater(() -> {
                             try {
                                 loader.initLastController();

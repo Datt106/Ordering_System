@@ -12,7 +12,6 @@
     </padding>
 
     <Label text="Tách đơn hàng" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Yêu cầu đang xử lý" styleClass="section-heading"/>
@@ -20,9 +19,8 @@
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
             <Button text="Sinh phương án tự động" onAction="#onGeneratePlan" styleClass="btn-primary"/>
         </HBox>
-        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-        <VBox styleClass="table-container" maxWidth="Infinity">
-            <TableView fx:id="processingTable" styleClass="catalog-table" minHeight="160" maxWidth="Infinity">
+        <VBox styleClass="table-container" prefHeight="180" minHeight="180" maxHeight="180" maxWidth="Infinity">
+            <TableView fx:id="processingTable" styleClass="catalog-table" maxWidth="Infinity">
                 <columns>
                     <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
                     <TableColumn fx:id="byCol" text="Tiếp nhận bởi" sortable="true"/>
@@ -31,16 +29,15 @@
         </VBox>
     </VBox>
 
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Phương án phân bổ (chỉnh tay)" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Kiểm tra phương án" onAction="#onValidatePlan" styleClass="btn-secondary"/>
             <Button fx:id="confirmButton" text="Xác nhận tách đơn" onAction="#onConfirmPlan" styleClass="btn-primary"/>
             <Button text="Xóa dòng" onAction="#onRemoveLine" styleClass="btn-danger"/>
         </HBox>
-        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-            <TableView fx:id="planTable" styleClass="catalog-table" editable="true" VBox.vgrow="ALWAYS"
-                       minHeight="200" maxWidth="Infinity">
+        <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
+            <TableView fx:id="planTable" styleClass="catalog-table" editable="true" maxWidth="Infinity">
                 <columns>
                     <TableColumn fx:id="siteCol" text="Site" editable="true"/>
                     <TableColumn fx:id="merchCol" text="Mã hàng" editable="true"/>

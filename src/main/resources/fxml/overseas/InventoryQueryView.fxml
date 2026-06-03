@@ -12,7 +12,6 @@
     </padding>
 
     <Label text="Truy vấn tồn kho" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Thao tác" styleClass="section-heading"/>
@@ -20,17 +19,16 @@
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
             <Button fx:id="dispatchButton" text="Gửi truy vấn" onAction="#onDispatch" styleClass="btn-primary"/>
             <Button fx:id="statusButton" text="Xem trạng thái" onAction="#onStatus" styleClass="btn-secondary"/>
-            <Button fx:id="timeoutButton" text="Timeout → 0" onAction="#onTimeoutZero" styleClass="btn-danger"/>
+            <Button fx:id="timeoutButton" text="Ngắt chờ phản hồi" onAction="#onTimeoutZero" styleClass="btn-danger"/>
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Yêu cầu đang xử lý" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.45" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <SplitPane dividerPositions="0.45" prefHeight="320" minHeight="320" maxHeight="320" maxWidth="Infinity">
             <VBox spacing="8" maxWidth="Infinity">
-                <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-                <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-                    <TableView fx:id="processingTable" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="240" maxWidth="Infinity">
+                <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
+                    <TableView fx:id="processingTable" styleClass="catalog-table" minHeight="240" maxWidth="Infinity">
                         <columns>
                             <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
                             <TableColumn fx:id="byCol" text="Tiếp nhận bởi" sortable="true"/>
@@ -43,7 +41,7 @@
                     <Insets top="8" right="8" bottom="8" left="16"/>
                 </padding>
                 <Label text="Kết quả truy vấn" styleClass="section-heading"/>
-                <TextArea fx:id="resultArea" VBox.vgrow="ALWAYS" editable="false" wrapText="true"
+                <TextArea fx:id="resultArea" editable="false" wrapText="true"
                           promptText="Kết quả truy vấn hiển thị tại đây…" maxWidth="Infinity"/>
             </VBox>
         </SplitPane>

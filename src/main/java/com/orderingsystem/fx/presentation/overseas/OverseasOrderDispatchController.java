@@ -63,7 +63,8 @@ public class OverseasOrderDispatchController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
         TableColumnLayout.bindEllipsisCellFactory(statusCol);
 
-        bindEmptyTable(requestTable, "Không có yêu cầu — tách đơn trước khi gửi.");
+        bindTableScroll(requestTable, TableColumnLayout.COMPACT_TABLE_HEIGHT);
+        bindTableScroll(ordersTable, TableColumnLayout.DEFAULT_TABLE_HEIGHT);
         Platform.runLater(this::refresh);
     }
 

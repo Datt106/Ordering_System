@@ -48,7 +48,7 @@ public class OverseasPendingController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(byCol);
 
         pendingTable.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> loadDetail(row));
-        bindEmptyTable(pendingTable, "Không có yêu cầu Chờ xử lý — Sales có thể chưa gửi yêu cầu mới.");
+        bindTableScroll(pendingTable);
         refresh();
     }
 

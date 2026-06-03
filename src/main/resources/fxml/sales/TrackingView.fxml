@@ -12,9 +12,7 @@
     </padding>
 
     <Label text="Theo dõi yêu cầu" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
-    <!-- Card: bộ lọc -->
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Tìm kiếm" styleClass="section-heading"/>
         <HBox spacing="12" alignment="CENTER_LEFT">
@@ -37,14 +35,12 @@
         </HBox>
     </VBox>
 
-    <!-- Card: bảng + chi tiết -->
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Danh sách yêu cầu" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.55" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+        <SplitPane dividerPositions="0.55" prefHeight="320" minHeight="320" maxHeight="320" maxWidth="Infinity">
             <VBox spacing="8" maxWidth="Infinity">
-                <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-                <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-                    <TableView fx:id="listTable" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="240" maxWidth="Infinity">
+                <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
+                    <TableView fx:id="listTable" styleClass="catalog-table" maxWidth="Infinity">
                         <columns>
                             <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
                             <TableColumn fx:id="createdCol" text="Tạo lúc" sortable="true"/>
@@ -59,16 +55,6 @@
                     <Insets top="8" right="8" bottom="8" left="16"/>
                 </padding>
                 <Label text="Chi tiết yêu cầu" styleClass="section-heading"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Mã yêu cầu" styleClass="field-label"/>
-                        <TextField fx:id="detailIdField" promptText="Mã yêu cầu" onAction="#onShowDetail" maxWidth="Infinity"/>
-                    </VBox>
-                    <VBox spacing="6" alignment="BOTTOM_LEFT">
-                        <Label text=" " styleClass="field-label"/>
-                        <Button text="Chi tiết" onAction="#onShowDetail" styleClass="btn-secondary"/>
-                    </VBox>
-                </HBox>
                 <TextArea fx:id="detailArea" VBox.vgrow="ALWAYS" editable="false" wrapText="true"
                           promptText="Chọn dòng trong bảng để xem chi tiết…" maxWidth="Infinity"/>
             </VBox>

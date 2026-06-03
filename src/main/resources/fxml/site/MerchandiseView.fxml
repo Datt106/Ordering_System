@@ -12,36 +12,35 @@
     </padding>
 
     <Label text="Mặt hàng kinh doanh" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
     <VBox styleClass="content-card" maxWidth="Infinity">
-        <Label text="Thêm mặt hàng" styleClass="section-heading"/>
-        <HBox spacing="12" alignment="BOTTOM_LEFT">
-            <VBox spacing="6">
-                <Label text="Mã hàng (danh mục chuẩn)" styleClass="field-label"/>
-                <ComboBox fx:id="catalogCombo" prefWidth="160"/>
-            </VBox>
-            <VBox spacing="6" alignment="BOTTOM_LEFT">
-                <Label text=" " styleClass="field-label"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Button text="Thêm" onAction="#onAdd" styleClass="btn-primary"/>
-                    <Button text="Xóa" onAction="#onRemove" styleClass="btn-danger"/>
-                    <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
-                </HBox>
-            </VBox>
-        </HBox>
-    </VBox>
-
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
         <Label text="Danh sách mặt hàng kinh doanh" styleClass="section-heading"/>
-        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-            <TableView fx:id="table" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="220" maxWidth="Infinity">
+        <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
+            <Button text="Thêm" onAction="#onShowAddForm" styleClass="btn-primary"/>
+            <Button text="Xóa" onAction="#onRemove" styleClass="btn-danger"/>
+            <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+        </HBox>
+        <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="220" minHeight="220" maxHeight="220" maxWidth="Infinity">
+            <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity">
                 <columns>
                     <TableColumn fx:id="codeCol" text="Mã" sortable="true"/>
                     <TableColumn fx:id="nameCol" text="Tên" sortable="true"/>
                 </columns>
             </TableView>
         </VBox>
+    </VBox>
+
+    <VBox fx:id="formPanel" visible="false" managed="false" styleClass="content-card form-panel" maxWidth="Infinity">
+        <HBox styleClass="form-panel-header" alignment="CENTER_LEFT">
+            <Label text="Thêm mặt hàng kinh doanh" styleClass="section-heading" HBox.hgrow="ALWAYS"/>
+            <Button text="✕" onAction="#onFormClose" styleClass="btn-icon-close"/>
+        </HBox>
+        <VBox spacing="6" maxWidth="Infinity">
+            <Label text="Mã hàng (danh mục chuẩn)" styleClass="field-label"/>
+            <ComboBox fx:id="catalogCombo" editable="true" maxWidth="Infinity"/>
+        </VBox>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button text="Ok" onAction="#onFormOk" styleClass="btn-primary"/>
+        </HBox>
     </VBox>
 </VBox>

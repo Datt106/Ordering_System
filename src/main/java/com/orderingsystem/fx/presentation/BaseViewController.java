@@ -3,6 +3,8 @@ package com.orderingsystem.fx.presentation;
 import com.orderingsystem.fx.app.AppContext;
 import com.orderingsystem.fx.presentation.ux.EmptyStates;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
+import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
+import javafx.scene.layout.Region;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -47,13 +49,31 @@ public abstract class BaseViewController implements ViewController, Initializabl
     }
 
     protected void setScreenStatus(String message) {
-        if (screenStatusLabel != null) {
-            screenStatusLabel.setText(message);
-        }
+        // Trạng thái màn hình không hiển thị trên UI.
     }
 
     protected void bindEmptyTable(TableView<?> table, String emptyMessage) {
-        EmptyStates.bindTable(table, emptyStateLabel, emptyMessage);
+        if (emptyStateLabel != null) {
+            EmptyStates.bindTable(table, emptyStateLabel, emptyMessage);
+        }
+    }
+
+    protected void bindTableScroll(TableView<?> table, Region container) {
+        double height = container.getMinHeight() > 0
+                ? container.getMinHeight()
+                : TableColumnLayout.DEFAULT_TABLE_HEIGHT;
+        container.setPrefHeight(height);
+        container.setMinHeight(height);
+        container.setMaxHeight(height);
+        TableColumnLayout.constrainHeight(table, height);
+    }
+
+    protected void bindTableScroll(TableView<?> table) {
+        TableColumnLayout.constrainHeight(table);
+    }
+
+    protected void bindTableScroll(TableView<?> table, double height) {
+        TableColumnLayout.constrainHeight(table, height);
     }
 
     protected void validateRequired(TextInputControl field, String message) {

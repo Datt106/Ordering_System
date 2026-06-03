@@ -47,7 +47,7 @@ public class SiteInventoryResponseController extends BaseViewController {
                 respondButton.setDisable(selected == null));
         respondButton.setDisable(true);
 
-        bindEmptyTable(table, "Không có truy vấn chờ — Overseas chưa gửi hoặc bạn đã phản hồi hết.");
+        bindTableScroll(table);
         refresh();
     }
 

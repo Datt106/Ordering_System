@@ -12,7 +12,6 @@
     </padding>
 
     <Label text="Thông tin vận chuyển" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Thông tin Site" styleClass="section-heading"/>

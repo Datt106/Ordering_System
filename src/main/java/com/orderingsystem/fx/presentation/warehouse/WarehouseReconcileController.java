@@ -60,7 +60,7 @@ public class WarehouseReconcileController extends BaseViewController {
         });
         reconcileButton.setDisable(true);
 
-        bindEmptyTable(table, "Không có đơn Đã gửi hoặc Đã xác nhận — hoàn tất Gửi đơn (Overseas) trước.");
+        bindTableScroll(table);
         Platform.runLater(this::refresh);
     }
 

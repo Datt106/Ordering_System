@@ -30,6 +30,18 @@ Text {
 
 .login-root {
     -fx-background-color: linear-gradient(to bottom right, #0c1210, #152820);
+    -fx-min-width: 0;
+    -fx-min-height: 0;
+}
+
+.auth-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.auth-scroll > .viewport {
+    -fx-background-color: transparent;
 }
 
 .header-box {
@@ -465,4 +477,91 @@ Text {
     -fx-background-color: #1f3d34;
     -fx-text-fill: #eef6f3;
     -fx-font-size: 12px;
+}
+
+/* —— Cuộn màn hình & bảng (màu chìm) —— */
+.screen-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.screen-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane,
+.table-view {
+    -fx-background-insets: 0;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.scroll-bar:vertical .track,
+.scroll-bar:horizontal .track {
+    -fx-background-color: rgba(16, 25, 22, 0.35);
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(42, 61, 54, 0.85);
+    -fx-background-radius: 6;
+    -fx-background-insets: 2;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(58, 82, 72, 0.95);
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+.form-panel {
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 1;
+}
+
+.form-panel-header {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 8;
+}
+
+.btn-icon-close {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a8bfb6;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-min-width: 36;
+}
+
+.btn-icon-close:hover {
+    -fx-background-color: #1f3d34;
+    -fx-text-fill: #f87171;
+}
+
+.readonly-field {
+    -fx-background-color: #101916;
+    -fx-text-fill: #c8ddd6;
+    -fx-border-color: #2a3d36;
 }

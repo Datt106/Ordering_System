@@ -47,8 +47,7 @@ public class OverseasInventoryController extends BaseViewController {
         processingTable.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) ->
                 setActionButtonsEnabled(selected != null));
         setActionButtonsEnabled(false);
-
-        bindEmptyTable(processingTable, "Không có yêu cầu Đang xử lý — tiếp nhận yêu cầu ở menu Tiếp nhận trước.");
+        bindTableScroll(processingTable);
         refresh();
     }
 

@@ -5,6 +5,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
 /**
@@ -70,6 +71,37 @@ public final class TableColumnLayout {
                 }
             }
         };
+    }
+
+    public static final double DEFAULT_TABLE_HEIGHT = 240;
+    public static final double COMPACT_TABLE_HEIGHT = 180;
+
+    /**
+     * Chiều cao cố định — bảng cuộn nội bộ, không giãn theo số dòng.
+     */
+    public static void constrainHeight(TableView<?> table, double height) {
+        table.setFixedCellSize(44);
+        table.setPrefHeight(height);
+        table.setMinHeight(height);
+        table.setMaxHeight(height);
+    }
+
+    public static void constrainHeight(TableView<?> table) {
+        constrainHeight(table, DEFAULT_TABLE_HEIGHT);
+    }
+
+    /**
+     * @deprecated dùng {@link #constrainHeight(TableView, double)}
+     */
+    @Deprecated
+    public static void bindVerticalScroll(TableView<?> table, Region container) {
+        double height = container.getMinHeight() > 0
+                ? container.getMinHeight()
+                : DEFAULT_TABLE_HEIGHT;
+        container.setPrefHeight(height);
+        container.setMinHeight(height);
+        container.setMaxHeight(height);
+        constrainHeight(table, height);
     }
 
     private static double minWidthForRatio(double ratio) {

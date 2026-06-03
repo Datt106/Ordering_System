@@ -12,7 +12,6 @@
     </padding>
 
     <Label text="Danh sách đơn hàng" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Tìm kiếm" styleClass="section-heading"/>
@@ -36,11 +35,10 @@
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Kết quả" styleClass="section-heading"/>
-        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-            <TableView fx:id="table" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="280" maxWidth="Infinity">
+        <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
+            <TableView fx:id="table" styleClass="catalog-table" minHeight="280" maxWidth="Infinity">
                 <columns>
                     <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
                     <TableColumn fx:id="requestCol" text="Yêu cầu" sortable="true"/>

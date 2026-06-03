@@ -39,7 +39,7 @@ public class SiteOrderConfirmController extends BaseViewController {
         shipCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().deliveryMeans()));
         TableColumnLayout.bindProportionalColumns(table, COL_RATIOS, orderIdCol, requestCol, codeCol, qtyCol, shipCol);
         TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
-        bindEmptyTable(table, "Không có đơn Đã gửi chờ xác nhận — Overseas gửi đơn sau khi tách.");
+        bindTableScroll(table);
         Platform.runLater(this::refresh);
     }
 

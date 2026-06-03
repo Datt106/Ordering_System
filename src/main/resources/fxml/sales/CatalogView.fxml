@@ -12,21 +12,17 @@
     </padding>
 
     <Label text="Danh mục mặt hàng chuẩn" styleClass="screen-title"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="Infinity"/>
 
-    <!-- Card: bảng full width -->
-    <VBox styleClass="content-card" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Danh sách mặt hàng" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
-            <Button text="Nhập mới" onAction="#onClearForm" styleClass="btn-secondary"/>
-            <Button fx:id="addButton" text="Thêm" onAction="#onAdd" styleClass="btn-primary"/>
-            <Button fx:id="updateButton" text="Cập nhật" onAction="#onUpdate" styleClass="btn-secondary"/>
+            <Button fx:id="addButton" text="Thêm" onAction="#onShowAddForm" styleClass="btn-primary"/>
+            <Button fx:id="updateButton" text="Sửa" onAction="#onShowEditForm" styleClass="btn-secondary"/>
             <Button fx:id="deleteButton" text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
         </HBox>
-        <Label fx:id="emptyStateLabel" styleClass="empty-state" wrapText="true" managed="false" visible="false"/>
-        <VBox styleClass="table-container" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-            <TableView fx:id="table" styleClass="catalog-table" VBox.vgrow="ALWAYS" minHeight="220" maxWidth="Infinity">
+        <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="220" minHeight="220" maxHeight="220" maxWidth="Infinity">
+            <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity">
                 <columns>
                     <TableColumn fx:id="codeCol" text="Mã" sortable="true"/>
                     <TableColumn fx:id="nameCol" text="Tên" sortable="true"/>
@@ -36,8 +32,11 @@
         </VBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity">
-        <Label text="Thêm/Sửa Mặt hàng" styleClass="section-heading"/>
+    <VBox fx:id="formPanel" visible="false" managed="false" styleClass="content-card form-panel" maxWidth="Infinity">
+        <HBox styleClass="form-panel-header" alignment="CENTER_LEFT">
+            <Label fx:id="formTitleLabel" text="Thêm mặt hàng" styleClass="section-heading" HBox.hgrow="ALWAYS"/>
+            <Button text="✕" onAction="#onFormClose" styleClass="btn-icon-close"/>
+        </HBox>
         <GridPane hgap="16" vgap="16">
             <columnConstraints>
                 <ColumnConstraints minWidth="120" prefWidth="140"/>
@@ -56,5 +55,8 @@
                 <TextArea fx:id="descArea" prefRowCount="3" promptText="Mô tả ngắn (tùy chọn)" wrapText="true" maxWidth="Infinity"/>
             </VBox>
         </GridPane>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="formOkButton" text="Ok" onAction="#onFormOk" styleClass="btn-primary"/>
+        </HBox>
     </VBox>
 </VBox>

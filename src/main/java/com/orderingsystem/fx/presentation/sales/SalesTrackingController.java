@@ -15,7 +15,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.time.Instant;
@@ -40,6 +40,8 @@ public class SalesTrackingController extends BaseViewController {
     @FXML
     private DatePicker toPicker;
     @FXML
+    private VBox tableContainer;
+    @FXML
     private TableView<ImportRequestListItemDto> listTable;
     @FXML
     private TableColumn<ImportRequestListItemDto, String> idCol;
@@ -49,8 +51,6 @@ public class SalesTrackingController extends BaseViewController {
     private TableColumn<ImportRequestListItemDto, String> itemsCol;
     @FXML
     private TableColumn<ImportRequestListItemDto, String> statusCol;
-    @FXML
-    private TextField detailIdField;
     @FXML
     private TextArea detailArea;
 
@@ -75,14 +75,13 @@ public class SalesTrackingController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(idCol);
         TableColumnLayout.bindEllipsisCellFactory(createdCol);
         TableColumnLayout.bindEllipsisCellFactory(statusCol);
+        bindTableScroll(listTable, tableContainer);
 
         listTable.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
             if (row != null) {
-                detailIdField.setText(row.requestId());
-                onShowDetail();
+                loadDetail(row.requestId());
             }
         });
-        bindEmptyTable(listTable, "Chưa có yêu cầu nào khớp bộ lọc. Thử bỏ lọc trạng thái hoặc mở rộng khoảng ngày.");
         onSearch();
     }
 
@@ -92,7 +91,7 @@ public class SalesTrackingController extends BaseViewController {
         LocalDate from = fromPicker.getValue();
         LocalDate to = toPicker.getValue();
         if (from != null && to != null && from.isAfter(to)) {
-            setScreenStatus("Khoảng ngày không hợp lệ: Từ ngày phải nhỏ hơn hoặc bằng Đến ngày.");
+            UiTasks.showError(new IllegalArgumentException("Khoảng ngày không hợp lệ: Từ ngày phải nhỏ hơn hoặc bằng Đến ngày."));
             return;
         }
         UiTasks.runWithStatus(
@@ -105,20 +104,9 @@ public class SalesTrackingController extends BaseViewController {
 
     private void applySearchResults(List<ImportRequestListItemDto> items) {
         listTable.setItems(FXCollections.observableArrayList(items));
-        setScreenStatus(items.isEmpty()
-                ? "Không có kết quả."
-                : "Tìm thấy " + items.size() + " yêu cầu — chọn dòng để xem chi tiết.");
     }
 
-    @FXML
-    private void onShowDetail() {
-        String id = detailIdField.getText();
-        if (id == null || id.isBlank()) {
-            detailArea.setText("Chọn một dòng trong bảng hoặc nhập mã yêu cầu.");
-            setScreenStatus("Chưa chọn yêu cầu.");
-            return;
-        }
-        String requestId = id.trim();
+    private void loadDetail(String requestId) {
         UiTasks.runWithStatus(
                 "Đang tải chi tiết…",
                 () -> app.uc003().getRequestDetail(requestId),
@@ -129,12 +117,10 @@ public class SalesTrackingController extends BaseViewController {
 
     private void applyDetailResult(String requestId, Optional<ImportRequestTrackingDetailDto> detail) {
         if (detail.isEmpty()) {
-            detailArea.setText("Không tìm thấy yêu cầu \"" + requestId + "\".\nKiểm tra mã hoặc bấm Tìm để làm mới danh sách.");
-            setScreenStatus("Không tìm thấy yêu cầu.");
+            detailArea.setText("Không tìm thấy yêu cầu \"" + requestId + "\".");
             return;
         }
         detailArea.setText(formatDetail(detail.get()));
-        setScreenStatus("Chi tiết: " + requestId);
     }
 
     private static String formatDetail(ImportRequestTrackingDetailDto d) {

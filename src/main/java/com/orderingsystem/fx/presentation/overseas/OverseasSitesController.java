@@ -4,26 +4,30 @@ import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.FormPanels;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 
 import java.util.List;
 
 public class OverseasSitesController extends BaseViewController {
 
-    /** Mã 12% · Tên 22% · Thông tin khác 24% · Vận chuyển 32% · Trạng thái 10% */
     private static final double[] SITES_COL_RATIOS = {0.12, 0.22, 0.24, 0.32, 0.10};
 
     @FXML
     private TableView<SiteDto> table;
+    @FXML
+    private VBox tableContainer;
     @FXML
     private TableColumn<SiteDto, String> codeCol;
     @FXML
@@ -35,19 +39,23 @@ public class OverseasSitesController extends BaseViewController {
     @FXML
     private TableColumn<SiteDto, String> statusCol;
     @FXML
+    private VBox formPanel;
+    @FXML
+    private Label formTitleLabel;
+    @FXML
     private TextField codeField;
     @FXML
     private TextField nameField;
     @FXML
     private TextArea otherArea;
     @FXML
-    private Button addButton;
-    @FXML
     private Button updateButton;
     @FXML
     private Button deleteButton;
+    @FXML
+    private Button formOkButton;
 
-    private boolean fillingFormFromTable;
+    private FormPanels.Mode formMode;
 
     @Override
     protected void onInit() {
@@ -65,20 +73,11 @@ public class OverseasSitesController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(nameCol);
         TableColumnLayout.bindEllipsisCellFactory(otherCol);
         TableColumnLayout.bindEllipsisCellFactory(shipCol);
+        bindTableScroll(table, tableContainer);
 
-        table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
-            if (fillingFormFromTable) {
-                return;
-            }
-            if (row != null) {
-                fillForm(row);
-                codeField.setEditable(false);
-            }
-        });
-        FormValidation.bindDisabledUntilFilled(addButton, codeField, nameField);
         FormValidation.bindDisabledUntilTableSelection(updateButton, table);
         FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
-        bindEmptyTable(table, "Chưa có Site — thêm mã Site và tên đối tác bên dưới.");
+        FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
         refresh();
     }
 
@@ -88,13 +87,67 @@ public class OverseasSitesController extends BaseViewController {
     }
 
     @FXML
-    private void onClearForm() {
-        clearFormForNewEntry();
-        setScreenStatus("Nhập mã Site mới và tên đối tác, rồi bấm Thêm.");
+    private void onShowAddForm() {
+        formMode = FormPanels.Mode.ADD;
+        formTitleLabel.setText("Thêm Site");
+        clearFormFields(true);
+        FormPanels.open(formPanel);
     }
 
     @FXML
-    private void onAdd() {
+    private void onShowEditForm() {
+        SiteDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn Site trong bảng để sửa."));
+            return;
+        }
+        formMode = FormPanels.Mode.EDIT;
+        formTitleLabel.setText("Sửa Site");
+        fillForm(selected);
+        FormPanels.open(formPanel);
+    }
+
+    @FXML
+    private void onFormOk() {
+        if (formMode == FormPanels.Mode.ADD) {
+            performAdd();
+        } else {
+            performUpdate();
+        }
+    }
+
+    @FXML
+    private void onFormClose() {
+        FormPanels.close(formPanel);
+    }
+
+    @FXML
+    private void onDelete() {
+        SiteDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn Site cần xóa trong bảng."));
+            return;
+        }
+        String code = selected.siteCode();
+        if (!UiTasks.confirmDelete("Site: " + code)) {
+            return;
+        }
+        UiTasks.runWithStatus(
+                "Đang xóa Site…",
+                () -> {
+                    app.uc004().deleteSite(code);
+                    return code;
+                },
+                deletedCode -> {
+                    FormPanels.close(formPanel);
+                    UiTasks.showInfo("Đã xóa", "Site " + deletedCode + " đã được gỡ.");
+                    refresh();
+                },
+                "Danh sách Site đã cập nhật."
+        );
+    }
+
+    private void performAdd() {
         try {
             validateRequired(codeField, "Nhập mã Site (*).");
             validateRequired(nameField, "Nhập tên Site (*).");
@@ -112,6 +165,7 @@ public class OverseasSitesController extends BaseViewController {
                     return code;
                 },
                 savedCode -> {
+                    FormPanels.close(formPanel);
                     UiTasks.showInfo(
                             "Đã lưu",
                             "Site " + savedCode + " đã được thêm.\n"
@@ -122,8 +176,7 @@ public class OverseasSitesController extends BaseViewController {
         );
     }
 
-    @FXML
-    private void onUpdate() {
+    private void performUpdate() {
         SiteDto selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
             UiTasks.showError(new IllegalArgumentException("Chọn Site trong bảng để cập nhật."));
@@ -145,34 +198,8 @@ public class OverseasSitesController extends BaseViewController {
                     return code;
                 },
                 savedCode -> {
+                    FormPanels.close(formPanel);
                     UiTasks.showInfo("Đã lưu", "Đã cập nhật Site " + savedCode);
-                    refresh();
-                },
-                "Danh sách Site đã cập nhật."
-        );
-    }
-
-    @FXML
-    private void onDelete() {
-        SiteDto selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            UiTasks.showError(new IllegalArgumentException("Chọn Site cần xóa trong bảng."));
-            return;
-        }
-        String code = selected.siteCode();
-        if (!UiTasks.confirmDelete("Site: " + code)) {
-            setScreenStatus("Đã hủy xóa Site.");
-            return;
-        }
-        UiTasks.runWithStatus(
-                "Đang xóa Site…",
-                () -> {
-                    app.uc004().deleteSite(code);
-                    return code;
-                },
-                deletedCode -> {
-                    UiTasks.showInfo("Đã xóa", "Site " + deletedCode + " đã được gỡ.");
-                    clearFormForNewEntry();
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -183,38 +210,23 @@ public class OverseasSitesController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang tải Site…",
                 () -> app.uc004().listAllSites(),
-                this::applySiteList,
+                items -> table.setItems(FXCollections.observableArrayList(items)),
                 "Danh sách Site sẵn sàng."
         );
     }
 
-    private void applySiteList(List<SiteDto> items) {
-        table.setItems(FXCollections.observableArrayList(items));
-        setScreenStatus("Có " + items.size() + " Site.");
-    }
-
     private void fillForm(SiteDto row) {
-        fillingFormFromTable = true;
-        try {
-            codeField.setText(row.siteCode());
-            nameField.setText(row.siteName());
-            otherArea.setText(row.otherInfo() != null ? row.otherInfo() : "");
-        } finally {
-            fillingFormFromTable = false;
-        }
+        codeField.setText(row.siteCode());
+        codeField.setEditable(false);
+        nameField.setText(row.siteName());
+        otherArea.setText(row.otherInfo() != null ? row.otherInfo() : "");
     }
 
-    private void clearFormForNewEntry() {
-        fillingFormFromTable = true;
-        try {
-            table.getSelectionModel().clearSelection();
-            codeField.clear();
-            codeField.setEditable(true);
-            nameField.clear();
-            otherArea.clear();
-        } finally {
-            fillingFormFromTable = false;
-        }
+    private void clearFormFields(boolean editableCode) {
+        codeField.clear();
+        codeField.setEditable(editableCode);
+        nameField.clear();
+        otherArea.clear();
     }
 
     private static String formatShipping(SiteDto site) {

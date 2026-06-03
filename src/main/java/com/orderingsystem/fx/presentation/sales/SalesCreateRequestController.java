@@ -1,22 +1,26 @@
 package com.orderingsystem.fx.presentation.sales;
 
+import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
 import com.orderingsystem.uc002.boundary.dto.CreateImportRequestLineInput;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.FormPanels;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
+import com.orderingsystem.fx.presentation.ux.MerchandisePicker;
 import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,13 +33,17 @@ public class SalesCreateRequestController extends BaseViewController {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
-    private TextField codeField;
+    private ComboBox<String> codeCombo;
     @FXML
     private Spinner<Integer> qtySpinner;
     @FXML
     private TextField unitField;
     @FXML
     private DatePicker deliveryPicker;
+    @FXML
+    private VBox lineFormPanel;
+    @FXML
+    private VBox tableContainer;
     @FXML
     private TableView<LineRow> linesTable;
     @FXML
@@ -50,10 +58,9 @@ public class SalesCreateRequestController extends BaseViewController {
     private Label resultLabel;
     @FXML
     private Button submitButton;
-    @FXML
-    private Button addLineButton;
 
     private final List<LineRow> lines = new ArrayList<>();
+    private List<StandardMerchandiseDto> catalog = List.of();
 
     @Override
     protected void onInit() {
@@ -67,55 +74,66 @@ public class SalesCreateRequestController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(codeCol);
         TableColumnLayout.bindEllipsisCellFactory(unitCol);
         TableColumnLayout.bindEllipsisCellFactory(dateCol);
+        bindTableScroll(linesTable, tableContainer);
 
         deliveryPicker.setValue(LocalDate.now().plusDays(7));
         unitField.setText("pcs");
-        bindEmptyTable(linesTable, "Chưa có dòng nào — nhập mã hàng, số lượng, đơn vị và ngày nhận rồi bấm Thêm dòng.");
-        bindAddButtonState();
         updateSubmitState();
-        setScreenStatus("Ngày nhận mặc định: 7 ngày sau hôm nay — có thể đổi trước khi thêm dòng.");
+        loadCatalog();
         refreshTable();
     }
 
     @FXML
-    private void onAddLine() {
+    private void onShowLineForm() {
+        deliveryPicker.setValue(LocalDate.now().plusDays(7));
+        if (!catalog.isEmpty() && codeCombo.getValue() == null) {
+            codeCombo.getSelectionModel().selectFirst();
+        }
+        FormPanels.open(lineFormPanel);
+    }
+
+    @FXML
+    private void onLineFormOk() {
         LocalDate date = deliveryPicker.getValue();
+        String code = MerchandisePicker.extractCode(codeCombo.getEditor().getText());
+        if (code.isBlank()) {
+            code = MerchandisePicker.extractCode(codeCombo.getValue());
+        }
         try {
-            FormValidation.requireNonBlank(codeField, "Nhập mã hàng.", () -> setScreenStatus("Thiếu mã hàng."));
-            FormValidation.requireNonBlank(unitField, "Nhập đơn vị.", () -> setScreenStatus("Thiếu đơn vị."));
+            if (code.isBlank()) {
+                throw new IllegalArgumentException("Chọn hoặc nhập mã hàng từ danh mục.");
+            }
+            FormValidation.requireNonBlank(unitField, "Nhập đơn vị.", () -> {});
             if (date == null) {
-                setScreenStatus("Chọn ngày nhận mong muốn.");
                 throw new IllegalArgumentException("Chọn ngày nhận mong muốn.");
             }
             if (!date.isAfter(LocalDate.now())) {
-                setScreenStatus("Ngày nhận phải sau hôm nay.");
                 throw new IllegalArgumentException("Ngày nhận mong muốn phải sau ngày hiện tại.");
             }
         } catch (IllegalArgumentException ex) {
             UiTasks.showError(ex);
             return;
         }
-        lines.add(new LineRow(
-                codeField.getText().trim(),
-                qtySpinner.getValue(),
-                unitField.getText().trim(),
-                date
-        ));
+        lines.add(new LineRow(code, qtySpinner.getValue(), unitField.getText().trim(), date));
         refreshTable();
-        setScreenStatus("Đã thêm dòng. Tổng: " + lines.size() + " — kiểm tra bảng trước khi gửi.");
+        FormPanels.close(lineFormPanel);
         resultLabel.setText("");
+    }
+
+    @FXML
+    private void onLineFormClose() {
+        FormPanels.close(lineFormPanel);
     }
 
     @FXML
     private void onRemoveLine() {
         LineRow selected = linesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            setScreenStatus("Chọn dòng cần xóa trong bảng.");
+            UiTasks.showError(new IllegalArgumentException("Chọn dòng cần xóa trong bảng."));
             return;
         }
         lines.remove(selected);
         refreshTable();
-        setScreenStatus("Đã xóa một dòng. Còn " + lines.size() + " dòng.");
     }
 
     @FXML
@@ -128,14 +146,13 @@ public class SalesCreateRequestController extends BaseViewController {
         }
         lines.clear();
         refreshTable();
-        setScreenStatus("Đã xóa hết dòng.");
         resultLabel.setText("");
     }
 
     @FXML
     private void onSubmit() {
         if (lines.isEmpty()) {
-            setScreenStatus("Thêm ít nhất một dòng trước khi gửi.");
+            UiTasks.showError(new IllegalArgumentException("Thêm ít nhất một dòng trước khi gửi."));
             return;
         }
         if (!UiTasks.confirm(
@@ -143,7 +160,6 @@ public class SalesCreateRequestController extends BaseViewController {
                 "Gửi yêu cầu nhập hàng với " + lines.size() + " dòng?",
                 "Yêu cầu sẽ chuyển sang trạng thái Chờ xử lý cho bộ phận Đặt hàng quốc tế."
         )) {
-            setScreenStatus("Đã hủy gửi.");
             return;
         }
         List<CreateImportRequestLineInput> inputs = lines.stream()
@@ -156,13 +172,24 @@ public class SalesCreateRequestController extends BaseViewController {
                     lines.clear();
                     refreshTable();
                     resultLabel.setText("Mã yêu cầu: " + created.requestId());
-                    setScreenStatus("Đã tạo yêu cầu " + created.requestId());
                     UiTasks.showInfo(
                             "Yêu cầu đã gửi",
                             "Mã: " + created.requestId() + "\nTheo dõi tiến độ tại menu Theo dõi yêu cầu."
                     );
                 },
                 "Sẵn sàng tạo yêu cầu mới."
+        );
+    }
+
+    private void loadCatalog() {
+        UiTasks.runWithStatus(
+                "Đang tải danh mục…",
+                () -> app.uc001().listAll(),
+                items -> {
+                    catalog = items;
+                    MerchandisePicker.bindCatalog(codeCombo, catalog);
+                },
+                "Danh mục sẵn sàng."
         );
     }
 
@@ -173,21 +200,6 @@ public class SalesCreateRequestController extends BaseViewController {
 
     private void updateSubmitState() {
         submitButton.setDisable(lines.isEmpty());
-    }
-
-    private void bindAddButtonState() {
-        addLineButton.disableProperty().bind(
-                codeField.textProperty().isEmpty()
-                        .or(unitField.textProperty().isEmpty())
-                        .or(deliveryPicker.valueProperty().isNull())
-                        .or(Bindings.createBooleanBinding(
-                                () -> {
-                                    LocalDate date = deliveryPicker.getValue();
-                                    return date != null && !date.isAfter(LocalDate.now());
-                                },
-                                deliveryPicker.valueProperty()
-                        ))
-        );
     }
 
     private static String formatDate(LocalDate date) {

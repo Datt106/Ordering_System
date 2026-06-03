@@ -106,8 +106,8 @@ public class OverseasOrderSplitController extends BaseViewController {
         addMeansChoice.getItems().setAll(DeliveryMeans.values());
         addMeansChoice.setValue(DeliveryMeans.SHIP_DELIVERY);
 
-        bindEmptyTable(processingTable, "Không có yêu cầu Đang xử lý.");
-        bindEmptyTable(planTable, "Chọn yêu cầu rồi bấm Sinh phương án tự động.");
+        bindTableScroll(processingTable, TableColumnLayout.COMPACT_TABLE_HEIGHT);
+        bindTableScroll(planTable, TableColumnLayout.DEFAULT_TABLE_HEIGHT);
         confirmButton.setDisable(true);
         Platform.runLater(this::refreshRequests);
     }

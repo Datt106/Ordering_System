@@ -4,6 +4,8 @@ import com.orderingsystem.uc001.boundary.dto.StandardMerchandiseDto;
 import com.orderingsystem.uc009.boundary.dto.SiteMerchandiseDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
+import com.orderingsystem.fx.presentation.ux.FormPanels;
+import com.orderingsystem.fx.presentation.ux.MerchandisePicker;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -11,20 +13,24 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 
 import java.util.List;
 
 public class SiteMerchandiseController extends BaseViewController {
 
-    /** Mã 20% · Tên 80% */
     private static final double[] MERCHANDISE_COL_RATIOS = {0.20, 0.80};
 
     @FXML
     private TableView<SiteMerchandiseDto> table;
     @FXML
+    private VBox tableContainer;
+    @FXML
     private TableColumn<SiteMerchandiseDto, String> codeCol;
     @FXML
     private TableColumn<SiteMerchandiseDto, String> nameCol;
+    @FXML
+    private VBox formPanel;
     @FXML
     private ComboBox<String> catalogCombo;
 
@@ -36,10 +42,47 @@ public class SiteMerchandiseController extends BaseViewController {
 
         TableColumnLayout.bindProportionalColumns(table, MERCHANDISE_COL_RATIOS, codeCol, nameCol);
         TableColumnLayout.bindEllipsisCellFactory(nameCol);
-
-        bindEmptyTable(table, "Chưa khai báo mặt hàng kinh doanh — chọn mã từ danh mục chuẩn và bấm Thêm.");
+        bindTableScroll(table, tableContainer);
         loadCatalog();
         refresh();
+    }
+
+    @FXML
+    private void onShowAddForm() {
+        if (!catalogCombo.getItems().isEmpty()) {
+            catalogCombo.getSelectionModel().selectFirst();
+        }
+        FormPanels.open(formPanel);
+    }
+
+    @FXML
+    private void onFormOk() {
+        String code = MerchandisePicker.extractCode(catalogCombo.getEditor().getText());
+        if (code.isBlank()) {
+            code = MerchandisePicker.extractCode(catalogCombo.getValue());
+        }
+        if (code.isBlank()) {
+            UiTasks.showError(new IllegalArgumentException("Chọn mã hàng từ danh mục chuẩn."));
+            return;
+        }
+        String merchandiseCode = code;
+        UiTasks.runWithStatus(
+                "Đang thêm…",
+                () -> {
+                    app.uc009().addMerchandise(merchandiseCode);
+                    return merchandiseCode;
+                },
+                addedCode -> {
+                    FormPanels.close(formPanel);
+                    refresh();
+                },
+                "Danh sách đã cập nhật."
+        );
+    }
+
+    @FXML
+    private void onFormClose() {
+        FormPanels.close(formPanel);
     }
 
     private void loadCatalog() {
@@ -52,11 +95,7 @@ public class SiteMerchandiseController extends BaseViewController {
     }
 
     private void applyCatalogCodes(List<StandardMerchandiseDto> catalog) {
-        catalogCombo.setItems(FXCollections.observableArrayList(
-                catalog.stream().map(StandardMerchandiseDto::merchandiseCode).toList()));
-        if (!catalog.isEmpty()) {
-            catalogCombo.getSelectionModel().selectFirst();
-        }
+        MerchandisePicker.bindCatalog(catalogCombo, catalog);
     }
 
     @FXML
@@ -65,35 +104,13 @@ public class SiteMerchandiseController extends BaseViewController {
     }
 
     @FXML
-    private void onAdd() {
-        String code = catalogCombo.getValue();
-        if (code == null || code.isBlank()) {
-            setScreenStatus("Chọn mã hàng từ danh mục chuẩn.");
-            return;
-        }
-        UiTasks.runWithStatus(
-                "Đang thêm…",
-                () -> {
-                    app.uc009().addMerchandise(code);
-                    return code;
-                },
-                addedCode -> {
-                    setScreenStatus("Đã thêm " + addedCode);
-                    refresh();
-                },
-                "Danh sách đã cập nhật."
-        );
-    }
-
-    @FXML
     private void onRemove() {
         SiteMerchandiseDto selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            setScreenStatus("Chọn mặt hàng cần xóa trong bảng.");
+            UiTasks.showError(new IllegalArgumentException("Chọn mặt hàng cần xóa trong bảng."));
             return;
         }
         if (!UiTasks.confirmDelete("Mặt hàng kinh doanh: " + selected.merchandiseCode())) {
-            setScreenStatus("Đã hủy xóa.");
             return;
         }
         String code = selected.merchandiseCode();
@@ -103,10 +120,7 @@ public class SiteMerchandiseController extends BaseViewController {
                     app.uc009().removeMerchandise(code);
                     return code;
                 },
-                removedCode -> {
-                    setScreenStatus("Đã xóa " + removedCode);
-                    refresh();
-                },
+                removedCode -> refresh(),
                 "Danh sách đã cập nhật."
         );
     }
@@ -115,13 +129,8 @@ public class SiteMerchandiseController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang tải…",
                 () -> app.uc009().listMyMerchandise(),
-                this::applyMerchandiseList,
+                items -> table.setItems(FXCollections.observableArrayList(items)),
                 "Sẵn sàng."
         );
-    }
-
-    private void applyMerchandiseList(List<SiteMerchandiseDto> items) {
-        table.setItems(FXCollections.observableArrayList(items));
-        setScreenStatus("Site đang kinh doanh " + items.size() + " mặt hàng.");
     }
 }

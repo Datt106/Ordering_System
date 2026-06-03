@@ -2,13 +2,10 @@ package com.orderingsystem.fx.presentation.auth;
 
 import com.orderingsystem.auth.AuthenticatedUser;
 import com.orderingsystem.fx.navigation.Navigator;
-import com.orderingsystem.fx.navigation.RoleMenuFactory;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
-import com.orderingsystem.infrastructure.database.DbManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
@@ -27,8 +24,6 @@ public class LoginController extends BaseViewController {
     private Button loginButton;
     @FXML
     private Button togglePasswordButton;
-    @FXML
-    private Label hintLabel;
 
     private Navigator navigator;
 
@@ -38,10 +33,8 @@ public class LoginController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        hintLabel.setText(RoleMenuFactory.loginHelpText().trim());
         bindPasswordFields();
         FormValidation.bindDisabledUntilFilled(loginButton, usernameField, passwordField);
-        setScreenStatus("Nhập tài khoản và mật khẩu để bắt đầu.");
     }
 
     @FXML
@@ -66,7 +59,7 @@ public class LoginController extends BaseViewController {
     private void handleLoginResult(Optional<AuthenticatedUser> user) {
         if (user.isEmpty()) {
             setScreenStatus("Đăng nhập thất bại.");
-            UiTasks.showError(new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu. Kiểm tra gợi ý tài khoản demo bên dưới."));
+            UiTasks.showError(new IllegalArgumentException("Sai tên đăng nhập hoặc mật khẩu."));
             return;
         }
         try {
@@ -84,15 +77,6 @@ public class LoginController extends BaseViewController {
         } catch (Exception ex) {
             UiTasks.showError(new IllegalStateException("Không mở màn đăng ký Site.", ex));
         }
-    }
-
-    @FXML
-    private void onShowSystemInfo() {
-        UiTasks.showInfo(
-                "Thông tin hệ thống",
-                "Cơ sở dữ liệu cục bộ:\n" + DbManager.databasePath()
-                        + "\n\nPhiên bản demo — dùng cho phát triển và kiểm thử."
-        );
     }
 
     @FXML

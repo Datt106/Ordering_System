@@ -7,26 +7,22 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.orderingsystem.fx.presentation.shell.AppShellController">
     <top>
-        <VBox styleClass="header-box">
-            <HBox alignment="CENTER_LEFT" spacing="16">
-                <padding><Insets top="12" right="20" bottom="8" left="20"/></padding>
-                <VBox spacing="2">
-                    <Label fx:id="roleLabel" styleClass="title"/>
-                    <Label fx:id="userLabel" styleClass="subtitle"/>
-                </VBox>
-                <Pane HBox.hgrow="ALWAYS"/>
-                <Button fx:id="logoutButton" text="Đăng xuất" onAction="#onLogoutClicked" styleClass="btn-secondary"/>
-            </HBox>
-            <Label fx:id="contextHelpLabel" styleClass="context-help" wrapText="true">
-                <padding><Insets bottom="10" left="20" right="20" top="0"/></padding>
-            </Label>
-        </VBox>
+        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="header-box">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <VBox spacing="2">
+                <Label fx:id="roleLabel" styleClass="title"/>
+                <Label fx:id="userLabel" styleClass="subtitle"/>
+            </VBox>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button fx:id="logoutButton" text="Đăng xuất" onAction="#onLogoutClicked" styleClass="btn-secondary"/>
+        </HBox>
     </top>
     <left>
         <VBox styleClass="sidebar" prefWidth="220">
             <padding><Insets top="12" right="8" bottom="12" left="8"/></padding>
             <Label text="Chức năng" styleClass="sidebar-title"/>
-            <ListView fx:id="menuList" VBox.vgrow="ALWAYS" styleClass="menu-list"/>
+            <ListView fx:id="menuList" styleClass="menu-list"/>
+            <Pane VBox.vgrow="ALWAYS"/>
         </VBox>
     </left>
     <center>
@@ -36,7 +32,6 @@
         <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
             <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
             <ProgressIndicator fx:id="busyIndicator" prefWidth="18" prefHeight="18" styleClass="busy-indicator"/>
-            <Label fx:id="globalStatusLabel" styleClass="global-status" wrapText="true" HBox.hgrow="ALWAYS"/>
         </HBox>
     </bottom>
 </BorderPane>

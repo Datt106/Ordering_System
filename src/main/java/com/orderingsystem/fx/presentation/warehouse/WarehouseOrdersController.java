@@ -67,7 +67,7 @@ public class WarehouseOrdersController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
         TableColumnLayout.bindEllipsisCellFactory(statusCol);
 
-        bindEmptyTable(table, "Chưa có đơn hàng — hoàn tất luồng Sales → Overseas → Site trước.");
+        bindTableScroll(table);
         Platform.runLater(this::onSearch);
     }
 

@@ -4,28 +4,27 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.orderingsystem.fx.presentation.auth.LoginController"
-      alignment="CENTER" spacing="16" styleClass="login-root">
-    <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
-    <Label styleClass="title" text="Hệ thống Đặt hàng Nhập khẩu"/>
-    <Label fx:id="screenStatusLabel" styleClass="screen-status" wrapText="true" maxWidth="420"/>
-    <VBox spacing="8" styleClass="form-card" maxWidth="400">
-        <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-        <Label text="Tên đăng nhập *"/>
-        <TextField fx:id="usernameField" promptText="vd. sales"/>
-        <Label text="Mật khẩu *"/>
-        <StackPane maxWidth="Infinity">
-            <PasswordField fx:id="passwordField" onAction="#onLogin" promptText="••••••••"
-                           maxWidth="Infinity" styleClass="password-with-eye"/>
-            <TextField fx:id="passwordVisibleField" onAction="#onLogin" promptText="••••••••"
-                       visible="false" managed="false" maxWidth="Infinity" styleClass="password-with-eye"/>
-            <Button fx:id="togglePasswordButton" text="○" onAction="#onTogglePasswordVisibility"
-                    styleClass="password-eye-button" focusTraversable="false" StackPane.alignment="CENTER_RIGHT"/>
-        </StackPane>
-        <Button fx:id="loginButton" text="Đăng nhập" onAction="#onLogin" defaultButton="true" styleClass="btn-primary"/>
-        <Button text="Đăng ký tài khoản Site…" onAction="#onGoToSiteRegister" styleClass="btn-link"/>
-        <Button text="Thông tin hệ thống…" onAction="#onShowSystemInfo" styleClass="btn-link"/>
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.orderingsystem.fx.presentation.auth.LoginController"
+           styleClass="login-root" maxWidth="Infinity" maxHeight="Infinity">
+    <VBox alignment="CENTER" spacing="16" maxWidth="Infinity">
+        <padding><Insets top="48" right="48" bottom="48" left="48"/></padding>
+        <Label styleClass="title" text="Hệ thống Đặt hàng Nhập khẩu"/>
+        <VBox spacing="8" styleClass="form-card" maxWidth="400">
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+            <Label text="Tên đăng nhập *"/>
+            <TextField fx:id="usernameField" promptText="vd. sales"/>
+            <Label text="Mật khẩu *"/>
+            <StackPane maxWidth="Infinity">
+                <PasswordField fx:id="passwordField" onAction="#onLogin" promptText="••••••••"
+                               maxWidth="Infinity" styleClass="password-with-eye"/>
+                <TextField fx:id="passwordVisibleField" onAction="#onLogin" promptText="••••••••"
+                           visible="false" managed="false" maxWidth="Infinity" styleClass="password-with-eye"/>
+                <Button fx:id="togglePasswordButton" text="○" onAction="#onTogglePasswordVisibility"
+                        styleClass="password-eye-button" focusTraversable="false" StackPane.alignment="CENTER_RIGHT"/>
+            </StackPane>
+            <Button fx:id="loginButton" text="Đăng nhập" onAction="#onLogin" defaultButton="true" styleClass="btn-primary"/>
+            <Button text="Đăng ký tài khoản Site…" onAction="#onGoToSiteRegister" styleClass="btn-link"/>
+        </VBox>
     </VBox>
-    <Label fx:id="hintLabel" styleClass="help-banner" wrapText="true" maxWidth="480"/>
-</VBox>
+</StackPane>
