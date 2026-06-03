@@ -85,6 +85,15 @@ public class RequestAcceptController {
         return ImportRequestDto.from(importRequestRepository.findByIdWithItems(id).orElseThrow());
     }
 
+    /** Từ chối yêu cầu (chỉ trạng thái Chờ xử lý) — Sales thấy trạng thái Từ chối khi theo dõi. */
+    public ImportRequestDto rejectRequest(String requestId) {
+        authService.requireRole(UserRole.OVERSEAS);
+        AuthenticatedUser user = Session.requireCurrentUser();
+        String id = requireRequestId(requestId);
+        importRequestRepository.rejectRequest(id, user.username());
+        return ImportRequestDto.from(importRequestRepository.findByIdWithItems(id).orElseThrow());
+    }
+
     private static String requireRequestId(String requestId) {
         if (requestId == null || requestId.isBlank()) {
             throw new IllegalArgumentException("Mã yêu cầu không được để trống.");

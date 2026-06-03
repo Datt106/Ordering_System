@@ -58,6 +58,35 @@ public class OverseasPendingController extends BaseViewController {
     }
 
     @FXML
+    private void onReject() {
+        ImportRequestDto selected = pendingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn một yêu cầu trong bảng trước khi từ chối."));
+            return;
+        }
+        if (!UiTasks.confirm(
+                "Từ chối yêu cầu",
+                "Từ chối " + selected.requestId() + "?",
+                "Yêu cầu sẽ chuyển sang Từ chối. Bộ phận Bán hàng thấy trạng thái khi theo dõi — không xử lý truy vấn/tách đơn."
+        )) {
+            return;
+        }
+        String requestId = selected.requestId();
+        UiTasks.runWithStatus(
+                "Đang từ chối…",
+                () -> app.uc005().rejectRequest(requestId),
+                rejected -> {
+                    UiTasks.showInfo(
+                            "Đã từ chối",
+                            "Mã " + rejected.requestId() + " — " + StatusLabels.requestStatus(rejected.status())
+                    );
+                    refresh();
+                },
+                "Sẵn sàng."
+        );
+    }
+
+    @FXML
     private void onAccept() {
         ImportRequestDto selected = pendingTable.getSelectionModel().getSelectedItem();
         if (selected == null) {

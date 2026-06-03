@@ -51,6 +51,10 @@ public class OverseasSitesController extends BaseViewController {
     @FXML
     private Button updateButton;
     @FXML
+    private Button deactivateButton;
+    @FXML
+    private Button activateButton;
+    @FXML
     private Button deleteButton;
     @FXML
     private Button formOkButton;
@@ -76,9 +80,21 @@ public class OverseasSitesController extends BaseViewController {
         bindTableScroll(table, tableContainer);
 
         FormValidation.bindDisabledUntilTableSelection(updateButton, table);
+        FormValidation.bindDisabledUntilTableSelection(deactivateButton, table);
+        FormValidation.bindDisabledUntilTableSelection(activateButton, table);
         FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
+
+        table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> updateActionButtons(row));
         refresh();
+    }
+
+    private void updateActionButtons(SiteDto row) {
+        boolean hasRow = row != null;
+        boolean active = hasRow && row.active();
+        deactivateButton.setDisable(!hasRow || !active);
+        activateButton.setDisable(!hasRow || active);
+        deleteButton.setDisable(!hasRow || active);
     }
 
     @FXML
@@ -122,14 +138,76 @@ public class OverseasSitesController extends BaseViewController {
     }
 
     @FXML
-    private void onDelete() {
-        SiteDto selected = table.getSelectionModel().getSelectedItem();
+    private void onDeactivate() {
+        SiteDto selected = requireSelectedSite();
         if (selected == null) {
-            UiTasks.showError(new IllegalArgumentException("Chọn Site cần xóa trong bảng."));
+            return;
+        }
+        if (!selected.active()) {
+            UiTasks.showError(new IllegalStateException("Site đã ngừng hoạt động."));
             return;
         }
         String code = selected.siteCode();
-        if (!UiTasks.confirmDelete("Site: " + code)) {
+        if (!UiTasks.confirm(
+                "Ngừng hoạt động Site",
+                "Ngừng hợp tác với Site " + code + "?",
+                "Tài khoản Site sẽ không đăng nhập được. Site không dùng cho truy vấn tồn kho mới. Lịch sử đơn hàng được giữ."
+        )) {
+            return;
+        }
+        UiTasks.runWithStatus(
+                "Đang cập nhật…",
+                () -> app.uc004().deactivateSite(code),
+                updated -> {
+                    UiTasks.showInfo("Đã ngừng hoạt động", "Site " + updated.siteCode() + " đã chuyển sang Ngừng.");
+                    refresh();
+                },
+                "Danh sách Site đã cập nhật."
+        );
+    }
+
+    @FXML
+    private void onActivate() {
+        SiteDto selected = requireSelectedSite();
+        if (selected == null) {
+            return;
+        }
+        if (selected.active()) {
+            UiTasks.showError(new IllegalStateException("Site đang hoạt động."));
+            return;
+        }
+        String code = selected.siteCode();
+        if (!UiTasks.confirm(
+                "Kích hoạt lại Site",
+                "Kích hoạt lại Site " + code + "?",
+                "Site có thể nhận truy vấn tồn kho và tài khoản Site (nếu còn) có thể đăng nhập lại."
+        )) {
+            return;
+        }
+        UiTasks.runWithStatus(
+                "Đang kích hoạt…",
+                () -> app.uc004().activateSite(code),
+                updated -> {
+                    UiTasks.showInfo("Đã kích hoạt", "Site " + updated.siteCode() + " đang Hoạt động.");
+                    refresh();
+                },
+                "Danh sách Site đã cập nhật."
+        );
+    }
+
+    @FXML
+    private void onDelete() {
+        SiteDto selected = requireSelectedSite();
+        if (selected == null) {
+            return;
+        }
+        if (selected.active()) {
+            UiTasks.showError(new IllegalStateException(
+                    "Chỉ xóa Site đã ngừng hoạt động. Dùng \"Ngừng hoạt động\" trước."));
+            return;
+        }
+        String code = selected.siteCode();
+        if (!UiTasks.confirmDelete("Site (đã ngừng): " + code)) {
             return;
         }
         UiTasks.runWithStatus(
@@ -140,7 +218,10 @@ public class OverseasSitesController extends BaseViewController {
                 },
                 deletedCode -> {
                     FormPanels.close(formPanel);
-                    UiTasks.showInfo("Đã xóa", "Site " + deletedCode + " đã được gỡ.");
+                    UiTasks.showInfo(
+                            "Đã xóa",
+                            "Site " + deletedCode + " đã gỡ khỏi hệ thống.\n"
+                                    + "Mã Site có thể dùng lại khi thêm Site mới.");
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -169,7 +250,7 @@ public class OverseasSitesController extends BaseViewController {
                     UiTasks.showInfo(
                             "Đã lưu",
                             "Site " + savedCode + " đã được thêm.\n"
-                                    + "Đại diện Site dùng màn Đăng ký tài khoản (từ màn đăng nhập) để tạo user gắn mã này.");
+                                    + "Mỗi Site chỉ một tài khoản — đại diện Site đăng ký từ màn đăng nhập.");
                     refresh();
                 },
                 "Danh sách Site đã cập nhật."
@@ -210,9 +291,21 @@ public class OverseasSitesController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang tải Site…",
                 () -> app.uc004().listAllSites(),
-                items -> table.setItems(FXCollections.observableArrayList(items)),
+                items -> {
+                    table.setItems(FXCollections.observableArrayList(items));
+                    updateActionButtons(table.getSelectionModel().getSelectedItem());
+                },
                 "Danh sách Site sẵn sàng."
         );
+    }
+
+    private SiteDto requireSelectedSite() {
+        SiteDto selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            UiTasks.showError(new IllegalArgumentException("Chọn Site trong bảng."));
+            return null;
+        }
+        return selected;
     }
 
     private void fillForm(SiteDto row) {

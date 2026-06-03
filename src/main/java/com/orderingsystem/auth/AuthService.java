@@ -2,6 +2,7 @@ package com.orderingsystem.auth;
 
 import com.orderingsystem.core.domain.User;
 import com.orderingsystem.core.domain.UserRole;
+import com.orderingsystem.infrastructure.database.SiteRepository;
 import com.orderingsystem.infrastructure.database.UserRepository;
 
 import java.util.Optional;
@@ -9,13 +10,19 @@ import java.util.Optional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final SiteRepository siteRepository;
 
     public AuthService() {
-        this(new UserRepository());
+        this(new UserRepository(), new SiteRepository());
     }
 
     public AuthService(UserRepository userRepository) {
+        this(userRepository, new SiteRepository());
+    }
+
+    public AuthService(UserRepository userRepository, SiteRepository siteRepository) {
         this.userRepository = userRepository;
+        this.siteRepository = siteRepository;
     }
 
     /**
@@ -34,6 +41,17 @@ public class AuthService {
         User user = userOpt.get();
         if (!PasswordHasher.verify(password, user.getPasswordHash())) {
             return Optional.empty();
+        }
+        if (user.getRole() == UserRole.SITE) {
+            String siteCode = user.getSiteCode();
+            if (siteCode == null || siteCode.isBlank()) {
+                return Optional.empty();
+            }
+            var site = siteRepository.findByCode(siteCode.trim());
+            if (site.isEmpty() || !site.get().isActive()) {
+                throw new IllegalStateException(
+                        "Site đã ngừng hoạt động hoặc không còn trong danh sách đối tác — không thể đăng nhập.");
+            }
         }
         AuthenticatedUser authenticated = AuthenticatedUser.from(user);
         Session.setCurrentUser(authenticated);

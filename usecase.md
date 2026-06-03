@@ -100,6 +100,7 @@
 | Đang xử lý | Đang truy vấn tồn kho / đang tách đơn |
 | Đã tách đơn | Đơn hàng đã được phát hành tới các Site |
 | Lỗi – Không đủ hàng | Không thể đáp ứng đủ số lượng yêu cầu |
+| Từ chối | Overseas từ chối tiếp nhận (UC005) |
 
 ---
 
@@ -166,6 +167,12 @@
 3. Người dùng xem chi tiết một yêu cầu (danh sách mặt hàng, số lượng, ngày nhận mong muốn).
 4. Người dùng nhấn "Tiếp nhận xử lý".
 5. Hệ thống chuyển trạng thái yêu cầu sang **Đang xử lý**, ghi nhận người tiếp nhận và thời điểm tiếp nhận.
+
+**Luồng thay thế — Từ chối yêu cầu:**
+
+1. Người dùng chọn yêu cầu **Chờ xử lý** và nhấn "Từ chối".
+2. Hệ thống xác nhận và chuyển trạng thái sang **Từ chối**, ghi nhận người xử lý và thời điểm.
+3. Bộ phận Bán hàng thấy trạng thái khi theo dõi (UC003); yêu cầu không đi tiếp truy vấn/tách đơn.
 
 ---
 

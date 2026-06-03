@@ -194,28 +194,34 @@ public class ImportRequestRepository extends BaseRepository {
     }
 
     public void acceptForProcessing(String requestId, String processedBy) {
-        inJdbcTransaction(connection -> {
-            Optional<ImportRequest> found = executeQuery(connection,
-                    "SELECT * FROM import_requests WHERE request_id = ?",
-                    bind(requestId),
-                    rs -> rs.next() ? Optional.of(mapRequest(rs)) : Optional.empty());
-            if (found.isEmpty()) {
-                throw new IllegalArgumentException("Yêu cầu không tồn tại: " + requestId);
-            }
-            if (found.get().getStatus() != RequestStatus.CHO_XU_LY) {
-                throw new IllegalStateException(
-                        "Chỉ tiếp nhận được yêu cầu ở trạng thái Chờ xử lý. Hiện tại: " + found.get().getStatus());
-            }
-            executeUpdate(connection,
-                    "UPDATE import_requests SET status = ?, processed_by = ?, processed_at = ? WHERE request_id = ?",
-                    statement -> {
-                        statement.setString(1, RequestStatus.DANG_XU_LY.name());
-                        statement.setString(2, processedBy);
-                        JdbcSupport.setInstant(statement, 3, Instant.now());
-                        statement.setString(4, requestId);
-                    });
-            return null;
-        });
+        requirePendingStatus(requestId, "Chỉ tiếp nhận được yêu cầu ở trạng thái Chờ xử lý.");
+        updateStatusWithProcessor(requestId, RequestStatus.DANG_XU_LY, processedBy);
+    }
+
+    /** Overseas từ chối yêu cầu — chỉ khi còn Chờ xử lý. */
+    public void rejectRequest(String requestId, String processedBy) {
+        requirePendingStatus(requestId, "Chỉ từ chối được yêu cầu ở trạng thái Chờ xử lý.");
+        updateStatusWithProcessor(requestId, RequestStatus.TU_CHOI, processedBy);
+    }
+
+    private void requirePendingStatus(String requestId, String messagePrefix) {
+        ImportRequest request = findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Yêu cầu không tồn tại: " + requestId));
+        if (request.getStatus() != RequestStatus.CHO_XU_LY) {
+            throw new IllegalStateException(
+                    messagePrefix + " Hiện tại: " + request.getStatus());
+        }
+    }
+
+    private void updateStatusWithProcessor(String requestId, RequestStatus status, String processedBy) {
+        inJdbcTransaction(connection -> executeUpdate(connection,
+                "UPDATE import_requests SET status = ?, processed_by = ?, processed_at = ? WHERE request_id = ?",
+                statement -> {
+                    statement.setString(1, status.name());
+                    statement.setString(2, processedBy);
+                    JdbcSupport.setInstant(statement, 3, Instant.now());
+                    statement.setString(4, requestId);
+                }));
     }
 
     private static ImportRequest mapRequest(java.sql.ResultSet rs) throws java.sql.SQLException {

@@ -17,9 +17,11 @@
         <Label text="Danh sách Site" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
-            <Button fx:id="addButton" text="Thêm" onAction="#onShowAddForm" styleClass="btn-primary"/>
+            <Button text="Thêm" onAction="#onShowAddForm" styleClass="btn-primary"/>
             <Button fx:id="updateButton" text="Sửa" onAction="#onShowEditForm" styleClass="btn-secondary"/>
-            <Button fx:id="deleteButton" text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
+            <Button fx:id="deactivateButton" text="Ngừng hoạt động" onAction="#onDeactivate" styleClass="btn-secondary"/>
+            <Button fx:id="activateButton" text="Kích hoạt lại" onAction="#onActivate" styleClass="btn-secondary"/>
+            <Button fx:id="deleteButton" text="Xóa hẳn" onAction="#onDelete" styleClass="btn-danger"/>
         </HBox>
         <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="220" minHeight="220" maxHeight="220" maxWidth="Infinity">
             <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity">

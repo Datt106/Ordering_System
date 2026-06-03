@@ -17,6 +17,7 @@
         <Label text="Thao tác" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>
+            <Button text="Từ chối" onAction="#onReject" styleClass="btn-danger"/>
             <Button text="Tiếp nhận" onAction="#onAccept" styleClass="btn-primary"/>
         </HBox>
     </VBox>

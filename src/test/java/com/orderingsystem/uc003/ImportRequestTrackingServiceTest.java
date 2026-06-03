@@ -4,7 +4,9 @@ import com.orderingsystem.auth.AuthService;
 import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.RequestStatus;
+import com.orderingsystem.core.domain.OrderStatus;
 import com.orderingsystem.infrastructure.database.DbManager;
+import com.orderingsystem.infrastructure.database.ImportRequestRepository;
 import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
@@ -32,6 +34,7 @@ class ImportRequestTrackingServiceTest {
     private static final ImportRequestAcceptanceService acceptanceService = new ImportRequestAcceptanceService();
     private static final ImportRequestTrackingService trackingService = new ImportRequestTrackingService();
     private static final PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepository();
+    private static final ImportRequestRepository importRequestRepository = new ImportRequestRepository();
 
     @BeforeAll
     static void setUp() {
@@ -92,7 +95,7 @@ class ImportRequestTrackingServiceTest {
     }
 
     @Test
-    void detail_includesChildOrders() {
+    void detail_childOrdersOnlyWhenDaTachDon() {
         authService.login("sales", "sales123");
         ImportRequestDto created = importRequestService.createImportRequest(List.of(
                 new CreateImportRequestLineInput("P003", 50, "box", LocalDate.now().plusDays(25))));
@@ -107,12 +110,45 @@ class ImportRequestTrackingServiceTest {
                 "box",
                 DeliveryMeans.SHIP_DELIVERY));
 
+        ImportRequestTrackingDetailDto beforeSplit =
+                trackingService.getRequestDetail(requestId).orElseThrow();
+        assertTrue(beforeSplit.childOrders().isEmpty());
+
+        importRequestRepository.updateStatus(requestId, RequestStatus.DA_TACH_DON, "overseas");
+
         ImportRequestTrackingDetailDto detail = trackingService.getRequestDetail(requestId).orElseThrow();
         assertEquals(1, detail.childOrders().size());
         assertEquals("PO-TRACK-1", detail.childOrders().getFirst().orderId());
         assertEquals(DatabaseSeeder.DEMO_SITE_CODE, detail.childOrders().getFirst().siteCode());
         assertEquals("ship delivery", detail.childOrders().getFirst().deliveryMeansLabel());
         assertEquals(LocalDate.now().plusDays(25), detail.childOrders().getFirst().expectedDeliveryDate());
+    }
+
+    @Test
+    void detail_includesActualQuantityAndDiff() {
+        authService.login("sales", "sales123");
+        ImportRequestDto created = importRequestService.createImportRequest(List.of(
+                new CreateImportRequestLineInput("P001", 20, "pcs", LocalDate.now().plusDays(10))));
+        String requestId = created.requestId();
+        importRequestRepository.updateStatus(requestId, RequestStatus.DA_TACH_DON, "overseas");
+
+        PurchaseOrder order = new PurchaseOrder(
+                "PO-TRACK-2",
+                requestId,
+                DatabaseSeeder.DEMO_SITE_CODE,
+                "P001",
+                20,
+                "pcs",
+                DeliveryMeans.AIR_DELIVERY);
+        order.setStatus(OrderStatus.SAI_LECH);
+        order.setActualQuantity(18);
+        order.setQuantityDiff(-2);
+        purchaseOrderRepository.save(order);
+
+        var line = trackingService.getRequestDetail(requestId).orElseThrow().childOrders().getFirst();
+        assertEquals(18, line.actualQuantity());
+        assertEquals(-2, line.quantityDiff());
+        assertEquals(OrderStatus.SAI_LECH, line.orderStatus());
     }
 
     @Test

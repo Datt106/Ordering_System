@@ -18,6 +18,7 @@ public final class StatusLabels {
             case DANG_XU_LY -> "Đang xử lý";
             case DA_TACH_DON -> "Đã tách đơn";
             case LOI -> "Lỗi";
+            case TU_CHOI -> "Từ chối";
         };
     }
 

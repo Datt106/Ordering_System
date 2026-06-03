@@ -72,4 +72,17 @@ class SiteRegistrationServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 registrationService.registerSiteAccount("NOPE", "x", "pass1234"));
     }
+
+    @Test
+    void registerSiteAccount_inactiveSite_fails() {
+        String code = "S-INACT";
+        if (!siteRepository.existsByCode(code)) {
+            siteRepository.save(new Site(code, "Inactive Test", null));
+        }
+        userRepository.deleteBySiteCode(code);
+        siteRepository.setActive(code, false);
+
+        assertThrows(IllegalStateException.class, () ->
+                registrationService.registerSiteAccount(code, "site_inact", "pass1234"));
+    }
 }

@@ -70,19 +70,45 @@ public class SiteMasterController {
         return SiteDto.from(siteRepository.findByCode(code).orElseThrow());
     }
 
-    public void deleteSite(String siteCode) {
+    public SiteDto deactivateSite(String siteCode) {
+        authService.requireRole(UserRole.OVERSEAS);
+        String code = normalizeSiteCode(siteCode);
+        Site site = siteRepository.findByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("Site không tồn tại: " + code));
+        if (!site.isActive()) {
+            throw new IllegalStateException("Site đã ở trạng thái ngừng hoạt động.");
+        }
+        if (purchaseOrderRepository.hasActiveOrdersForSite(code)) {
+            throw new IllegalStateException("Không thể ngừng hoạt động khi Site còn đơn hàng chưa hoàn tất.");
+        }
+        siteRepository.setActive(code, false);
+        return SiteDto.from(siteRepository.findByCode(code).orElseThrow());
+    }
+
+    public SiteDto activateSite(String siteCode) {
         authService.requireRole(UserRole.OVERSEAS);
         String code = normalizeSiteCode(siteCode);
         if (!siteRepository.existsByCode(code)) {
             throw new IllegalArgumentException("Site không tồn tại: " + code);
         }
+        siteRepository.setActive(code, true);
+        return SiteDto.from(siteRepository.findByCode(code).orElseThrow());
+    }
+
+    /** Xóa hẳn hồ sơ Site (chỉ khi đã ngừng hoạt động, không còn đơn đang chạy). */
+    public void deleteSite(String siteCode) {
+        authService.requireRole(UserRole.OVERSEAS);
+        String code = normalizeSiteCode(siteCode);
+        Site site = siteRepository.findByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("Site không tồn tại: " + code));
+        if (site.isActive()) {
+            throw new IllegalStateException(
+                    "Chỉ xóa Site đã ngừng hoạt động. Dùng \"Ngừng hoạt động\" trước khi xóa hẳn.");
+        }
         if (purchaseOrderRepository.hasActiveOrdersForSite(code)) {
             throw new IllegalStateException("Không thể xóa Site đang có đơn hàng chưa hoàn tất.");
         }
-        if (userRepository.existsBySiteCode(code)) {
-            throw new IllegalStateException(
-                    "Không thể xóa Site đã có tài khoản đăng nhập. Site cần ngừng dùng hệ thống trước khi xóa hồ sơ.");
-        }
+        userRepository.deleteBySiteCode(code);
         siteMerchandiseRepository.deleteAllBySiteCode(code);
         siteRepository.delete(code);
     }

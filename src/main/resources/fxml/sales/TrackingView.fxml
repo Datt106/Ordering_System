@@ -37,7 +37,7 @@
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Danh sách yêu cầu" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.55" prefHeight="320" minHeight="320" maxHeight="320" maxWidth="Infinity">
+        <SplitPane dividerPositions="0.55" prefHeight="280" minHeight="280" maxHeight="280" maxWidth="Infinity">
             <VBox spacing="8" maxWidth="Infinity">
                 <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
                     <TableView fx:id="listTable" styleClass="catalog-table" maxWidth="Infinity">
@@ -55,9 +55,26 @@
                     <Insets top="8" right="8" bottom="8" left="16"/>
                 </padding>
                 <Label text="Chi tiết yêu cầu" styleClass="section-heading"/>
-                <TextArea fx:id="detailArea" VBox.vgrow="ALWAYS" editable="false" wrapText="true"
+                <TextArea fx:id="detailArea" prefRowCount="8" editable="false" wrapText="true"
                           promptText="Chọn dòng trong bảng để xem chi tiết…" maxWidth="Infinity"/>
             </VBox>
         </SplitPane>
+        <VBox fx:id="childOrdersSection" spacing="8" visible="false" managed="false" maxWidth="Infinity">
+            <Label text="Phương án tách đơn (theo Site)" styleClass="section-heading"/>
+            <VBox fx:id="childOrdersContainer" styleClass="table-container" prefHeight="200" minHeight="200" maxHeight="200" maxWidth="Infinity">
+                <TableView fx:id="childOrdersTable" styleClass="catalog-table" maxWidth="Infinity">
+                    <columns>
+                        <TableColumn fx:id="coOrderCol" text="Mã đơn" sortable="true"/>
+                        <TableColumn fx:id="coSiteCol" text="Site" sortable="true"/>
+                        <TableColumn fx:id="coMerchCol" text="Mã hàng" sortable="true"/>
+                        <TableColumn fx:id="coQtyCol" text="SL đặt" sortable="true"/>
+                        <TableColumn fx:id="coActualCol" text="SL thực" sortable="true"/>
+                        <TableColumn fx:id="coDiffCol" text="Lệch" sortable="true"/>
+                        <TableColumn fx:id="coShipCol" text="VC" sortable="true"/>
+                        <TableColumn fx:id="coStatusCol" text="Trạng thái đơn" sortable="true"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
     </VBox>
 </VBox>

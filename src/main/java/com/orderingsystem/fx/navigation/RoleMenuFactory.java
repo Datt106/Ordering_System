@@ -36,7 +36,7 @@ public final class RoleMenuFactory {
                     new ScreenDefinition(
                             "Tiếp nhận yêu cầu",
                             "/fxml/overseas/PendingRequestsView.fxml",
-                            "Chỉ yêu cầu Chờ xử lý. Xem chi tiết bên phải, bấm Tiếp nhận để chuyển sang Đang xử lý."),
+                            "Chỉ yêu cầu Chờ xử lý. Xem chi tiết → Tiếp nhận hoặc Từ chối (Sales thấy trạng thái Từ chối)."),
                     new ScreenDefinition(
                             "Truy vấn tồn kho",
                             "/fxml/overseas/InventoryQueryView.fxml",

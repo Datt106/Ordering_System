@@ -95,19 +95,20 @@ public class RequestTrackController {
 
     private ImportRequestTrackingDetailDto toDetail(ImportRequest request) {
         ImportRequestDto requestDto = ImportRequestDto.from(request);
-        Map<String, LocalDate> deliveryByMerchandise = request.getItems().stream()
-                .collect(Collectors.toMap(
-                        ImportRequestItem::getMerchandiseCode,
-                        ImportRequestItem::getDesiredDeliveryDate,
-                        (a, b) -> a.isBefore(b) ? a : b));
-
-        List<PurchaseOrderTrackingDto> childOrders = purchaseOrderRepository.findByRequestId(request.getRequestId())
-                .stream()
-                .map(order -> PurchaseOrderTrackingDto.from(
-                        order,
-                        deliveryByMerchandise.get(order.getMerchandiseCode())))
-                .toList();
-
+        List<PurchaseOrderTrackingDto> childOrders = List.of();
+        if (request.getStatus() == RequestStatus.DA_TACH_DON) {
+            Map<String, LocalDate> deliveryByMerchandise = request.getItems().stream()
+                    .collect(Collectors.toMap(
+                            ImportRequestItem::getMerchandiseCode,
+                            ImportRequestItem::getDesiredDeliveryDate,
+                            (a, b) -> a.isBefore(b) ? a : b));
+            childOrders = purchaseOrderRepository.findByRequestId(request.getRequestId())
+                    .stream()
+                    .map(order -> PurchaseOrderTrackingDto.from(
+                            order,
+                            deliveryByMerchandise.get(order.getMerchandiseCode())))
+                    .toList();
+        }
         return new ImportRequestTrackingDetailDto(requestDto, childOrders);
     }
 

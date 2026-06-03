@@ -71,4 +71,33 @@ class ImportRequestAcceptanceServiceTest {
         assertThrows(IllegalStateException.class, () ->
                 acceptanceService.acceptRequest(created.requestId()));
     }
+
+    @Test
+    void rejectRequest_fromPending_marksTuChoi() {
+        authService.login("sales", "sales123");
+        ImportRequestDto created = importRequestService.createImportRequest(List.of(
+                new CreateImportRequestLineInput("P002", 5, "pcs", LocalDate.now().plusDays(12))));
+        authService.logout();
+
+        authService.login("overseas", "overseas123");
+        ImportRequestDto rejected = acceptanceService.rejectRequest(created.requestId());
+        assertEquals(RequestStatus.TU_CHOI, rejected.status());
+        assertEquals("overseas", rejected.processedBy());
+        assertTrue(rejected.processedAt() != null);
+        assertTrue(acceptanceService.listPendingRequests().stream()
+                .noneMatch(r -> r.requestId().equals(created.requestId())));
+
+        assertThrows(IllegalStateException.class, () ->
+                acceptanceService.rejectRequest(created.requestId()));
+        assertThrows(IllegalStateException.class, () ->
+                acceptanceService.acceptRequest(created.requestId()));
+    }
+
+    @Test
+    void rejectRequest_requiresOverseas() {
+        authService.login("sales", "sales123");
+        ImportRequestDto created = importRequestService.createImportRequest(List.of(
+                new CreateImportRequestLineInput("P003", 1, "pcs", LocalDate.now().plusDays(5))));
+        assertThrows(SecurityException.class, () -> acceptanceService.rejectRequest(created.requestId()));
+    }
 }

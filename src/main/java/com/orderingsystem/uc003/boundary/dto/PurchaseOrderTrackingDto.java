@@ -16,7 +16,9 @@ public record PurchaseOrderTrackingDto(
         DeliveryMeans deliveryMeans,
         String deliveryMeansLabel,
         OrderStatus orderStatus,
-        LocalDate expectedDeliveryDate
+        LocalDate expectedDeliveryDate,
+        Integer actualQuantity,
+        Integer quantityDiff
 ) {
     public static PurchaseOrderTrackingDto from(PurchaseOrder order, LocalDate expectedDeliveryDate) {
         return new PurchaseOrderTrackingDto(
@@ -28,7 +30,9 @@ public record PurchaseOrderTrackingDto(
                 order.getDeliveryMeans(),
                 order.getDeliveryMeans().toExternalValue(),
                 order.getStatus(),
-                expectedDeliveryDate
+                expectedDeliveryDate,
+                order.getActualQuantity(),
+                order.getQuantityDiff()
         );
     }
 }

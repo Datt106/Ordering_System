@@ -87,6 +87,18 @@ public class SiteRepository extends BaseRepository {
         return findByCode(siteCode).isPresent();
     }
 
+    public void setActive(String siteCode, boolean active) {
+        int updated = inJdbcTransaction(connection -> executeUpdate(connection,
+                "UPDATE sites SET active = ? WHERE site_code = ?",
+                statement -> {
+                    JdbcSupport.setBoolean(statement, 1, active);
+                    statement.setString(2, siteCode);
+                }));
+        if (updated == 0) {
+            throw new IllegalArgumentException("Site không tồn tại: " + siteCode);
+        }
+    }
+
     public void updateMaster(String siteCode, String siteName, String otherInfo) {
         int updated = inJdbcTransaction(connection -> executeUpdate(connection,
                 "UPDATE sites SET site_name = ?, other_info = ? WHERE site_code = ?",
