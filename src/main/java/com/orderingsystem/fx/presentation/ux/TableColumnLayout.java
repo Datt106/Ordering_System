@@ -1,6 +1,7 @@
 package com.orderingsystem.fx.presentation.ux;
 
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -12,6 +13,9 @@ import javafx.util.Callback;
  * Bảng full width + cột % cố định — dùng binding JavaFX và CSS {@code -fx-text-overrun: ellipsis}.
  */
 public final class TableColumnLayout {
+
+    /** Chiều cao một dòng — đủ chỗ cho dấu tiếng Việt (không cắt chân chữ). */
+    public static final double TABLE_ROW_HEIGHT = 54;
 
     private TableColumnLayout() {
     }
@@ -50,6 +54,7 @@ public final class TableColumnLayout {
             col.minWidthProperty().bind(col.prefWidthProperty());
             col.maxWidthProperty().bind(col.prefWidthProperty());
         }
+        applyRowHeight(table);
     }
 
     public static <T, S> void bindEllipsisCellFactory(TableColumn<T, S> column) {
@@ -61,6 +66,7 @@ public final class TableColumnLayout {
             @Override
             protected void updateItem(S item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 if (empty || item == null) {
                     setText(null);
                     setTooltip(null);
@@ -79,8 +85,12 @@ public final class TableColumnLayout {
     /**
      * Chiều cao cố định — bảng cuộn nội bộ, không giãn theo số dòng.
      */
+    public static void applyRowHeight(TableView<?> table) {
+        table.setFixedCellSize(TABLE_ROW_HEIGHT);
+    }
+
     public static void constrainHeight(TableView<?> table, double height) {
-        table.setFixedCellSize(44);
+        applyRowHeight(table);
         table.setPrefHeight(height);
         table.setMinHeight(height);
         table.setMaxHeight(height);
