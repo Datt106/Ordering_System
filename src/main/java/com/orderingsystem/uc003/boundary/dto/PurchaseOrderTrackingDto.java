@@ -2,7 +2,6 @@ package com.orderingsystem.uc003.boundary.dto;
 
 import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.OrderStatus;
-import com.orderingsystem.core.domain.PurchaseOrder;
 
 import java.time.LocalDate;
 
@@ -20,19 +19,4 @@ public record PurchaseOrderTrackingDto(
         Integer actualQuantity,
         Integer quantityDiff
 ) {
-    public static PurchaseOrderTrackingDto from(PurchaseOrder order, LocalDate expectedDeliveryDate) {
-        return new PurchaseOrderTrackingDto(
-                order.getOrderId(),
-                order.getSiteCode(),
-                order.getMerchandiseCode(),
-                order.getQuantityOrdered(),
-                order.getUnit(),
-                order.getDeliveryMeans(),
-                order.getDeliveryMeans().toExternalValue(),
-                order.getStatus(),
-                expectedDeliveryDate,
-                order.getActualQuantity(),
-                order.getQuantityDiff()
-        );
-    }
 }
