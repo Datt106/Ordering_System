@@ -3,13 +3,12 @@ package com.orderingsystem.fx.presentation.site;
 import com.orderingsystem.uc006.boundary.dto.InventoryQueryDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.UiTasks;
-import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
@@ -17,25 +16,20 @@ import java.util.List;
 
 public class SiteInventoryResponseController extends BaseViewController {
 
-    /** Yêu cầu 40% · Mã hàng 35% · ĐVT 25% */
     private static final double[] QUERY_COL_RATIOS = {0.40, 0.35, 0.25};
 
-    @FXML
-    private TableView<InventoryQueryDto> table;
-    @FXML
-    private TableColumn<InventoryQueryDto, String> requestCol;
-    @FXML
-    private TableColumn<InventoryQueryDto, String> codeCol;
-    @FXML
-    private TableColumn<InventoryQueryDto, String> unitCol;
-    @FXML
-    private Spinner<Integer> stockSpinner;
-    @FXML
-    private Button respondButton;
+    @FXML private TableView<InventoryQueryDto> table;
+    @FXML private TableColumn<InventoryQueryDto, String> requestCol;
+    @FXML private TableColumn<InventoryQueryDto, String> codeCol;
+    @FXML private TableColumn<InventoryQueryDto, String> unitCol;
+    
+    // Đã thay đổi từ Spinner sang TextField
+    @FXML private TextField stockField;
+    @FXML private Button respondButton;
 
     @Override
     protected void onInit() {
-        SpinnerInputs.configureIntegerSpinner(stockSpinner, 0, 999_999, 0);
+        stockField.setText("0");
         requestCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().requestId()));
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode()));
         unitCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().unit()));
@@ -63,7 +57,15 @@ public class SiteInventoryResponseController extends BaseViewController {
             setScreenStatus("Chọn một dòng truy vấn trong bảng.");
             return;
         }
-        int qty = stockSpinner.getValue();
+        
+        int qty;
+        try {
+            qty = Integer.parseInt(stockField.getText().trim());
+        } catch (NumberFormatException e) {
+            UiTasks.showError(new IllegalArgumentException("Vui lòng nhập số lượng hợp lệ."));
+            return;
+        }
+        
         String queryId = selected.queryId();
         String merchandiseCode = selected.merchandiseCode();
         String unit = selected.unit();

@@ -6,13 +6,12 @@ import com.orderingsystem.uc014.boundary.dto.WarehouseReconcileResultDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
-import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -24,8 +23,9 @@ public class WarehouseReconcileController extends BaseViewController {
 
     private static final double[] COL_RATIOS = {0.24, 0.16, 0.20, 0.14, 0.26};
 
+    // Đã thay đổi từ Spinner sang TextField
     @FXML
-    private Spinner<Integer> actualSpinner;
+    private TextField actualField;
     @FXML
     private Button reconcileButton;
     @FXML
@@ -43,7 +43,8 @@ public class WarehouseReconcileController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        SpinnerInputs.configureIntegerSpinner(actualSpinner, 0, 999_999, 0);
+        actualField.setText("0"); // Đặt giá trị mặc định cho ô TextField
+        
         orderIdCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().orderId()));
         siteCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode()));
@@ -55,7 +56,10 @@ public class WarehouseReconcileController extends BaseViewController {
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
             reconcileButton.setDisable(row == null);
             if (row != null) {
-                actualSpinner.getValueFactory().setValue(row.quantityOrdered());
+                // Tự động điền số lượng đặt vào ô thực nhận khi click chọn dòng
+                actualField.setText(String.valueOf(row.quantityOrdered()));
+            } else {
+                actualField.setText("0");
             }
         });
         reconcileButton.setDisable(true);
@@ -76,7 +80,18 @@ public class WarehouseReconcileController extends BaseViewController {
             setScreenStatus("Chọn đơn trong bảng.");
             return;
         }
-        int actual = actualSpinner.getValue();
+        
+        int actual;
+        try {
+            actual = Integer.parseInt(actualField.getText().trim());
+            if (actual < 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            UiTasks.showError(new IllegalArgumentException("Vui lòng nhập số lượng thực nhận hợp lệ."));
+            return;
+        }
+        
         String orderId = selected.orderId();
         UiTasks.<WarehouseReconcileResultDto>runWithStatus(
                 "Đang ghi nhận...",

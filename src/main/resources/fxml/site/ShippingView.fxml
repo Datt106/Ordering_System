@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.orderingsystem.fx.presentation.site.SiteShippingController"
-      spacing="16" styleClass="screen" maxWidth="Infinity">
+      spacing="16" styleClass="screen" maxWidth="Infinity" VBox.vgrow="ALWAYS">
     <padding>
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
@@ -40,16 +40,16 @@
         <HBox spacing="24" alignment="CENTER_LEFT">
             <VBox spacing="6">
                 <Label text="Số ngày tàu" styleClass="field-label"/>
-                <Spinner fx:id="shipSpinner" prefWidth="120"/>
+                <TextField fx:id="shipField" promptText="30" prefWidth="120" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="6">
                 <Label text="Số ngày bay" styleClass="field-label"/>
-                <Spinner fx:id="airSpinner" prefWidth="120"/>
+                <TextField fx:id="airField" promptText="7" prefWidth="120" styleClass="uniform-field"/>
             </VBox>
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity" VBox.vgrow="ALWAYS">
         <Label text="Thao tác" styleClass="section-heading"/>
         <HBox spacing="8" styleClass="toolbar" alignment="CENTER_LEFT">
             <Button text="Làm mới" onAction="#onRefresh" styleClass="btn-secondary"/>

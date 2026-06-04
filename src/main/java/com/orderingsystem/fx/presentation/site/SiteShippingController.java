@@ -5,28 +5,22 @@ import com.orderingsystem.uc004.boundary.dto.SiteDto;
 import com.orderingsystem.fx.presentation.BaseViewController;
 import com.orderingsystem.fx.presentation.StatusLabels;
 import com.orderingsystem.fx.presentation.UiTasks;
-import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 
 public class SiteShippingController extends BaseViewController {
 
-    @FXML
-    private Label siteCodeLabel;
-    @FXML
-    private Label siteNameLabel;
-    @FXML
-    private Label shippingStatusLabel;
-    @FXML
-    private Spinner<Integer> shipSpinner;
-    @FXML
-    private Spinner<Integer> airSpinner;
+    @FXML private Label siteCodeLabel;
+    @FXML private Label siteNameLabel;
+    @FXML private Label shippingStatusLabel;
+    
+    // Đã thay đổi từ Spinner sang TextField
+    @FXML private TextField shipField;
+    @FXML private TextField airField;
 
     @Override
     protected void onInit() {
-        SpinnerInputs.configureIntegerSpinner(shipSpinner, 1, 365, 30);
-        SpinnerInputs.configureIntegerSpinner(airSpinner, 1, 90, 7);
         loadSite();
     }
 
@@ -37,14 +31,18 @@ public class SiteShippingController extends BaseViewController {
 
     @FXML
     private void onSave() {
-        int shipDays = shipSpinner.getValue();
-        int airDays = airSpinner.getValue();
-        UiTasks.<SiteDto>runWithStatus(
-                "Đang lưu...",
-                () -> app.uc010().updateMyShipping(shipDays, airDays),
-                this::bindSiteAfterSave,
-                "Thông tin vận chuyển đã cập nhật."
-        );
+        try {
+            int shipDays = Integer.parseInt(shipField.getText().trim());
+            int airDays = Integer.parseInt(airField.getText().trim());
+            UiTasks.<SiteDto>runWithStatus(
+                    "Đang lưu...",
+                    () -> app.uc010().updateMyShipping(shipDays, airDays),
+                    this::bindSiteAfterSave,
+                    "Thông tin vận chuyển đã cập nhật."
+            );
+        } catch (NumberFormatException e) {
+            UiTasks.showError(new IllegalArgumentException("Vui lòng nhập số hợp lệ cho ngày tàu/bay."));
+        }
     }
 
     private void bindSiteAfterSave(SiteDto updated) {
@@ -68,11 +66,12 @@ public class SiteShippingController extends BaseViewController {
         siteCodeLabel.setText(site.siteCode());
         siteNameLabel.setText(site.siteName());
         shippingStatusLabel.setText(StatusLabels.shippingStatus(site.shippingStatus()));
+        
         if (site.shipDays() != null) {
-            shipSpinner.getValueFactory().setValue(site.shipDays());
+            shipField.setText(String.valueOf(site.shipDays()));
         }
         if (site.airDays() != null) {
-            airSpinner.getValueFactory().setValue(site.airDays());
+            airField.setText(String.valueOf(site.airDays()));
         }
         boolean declared = site.shippingStatus() == ShippingStatus.DA_KHAI_BAO;
         setScreenStatus(declared
