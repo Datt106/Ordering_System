@@ -438,7 +438,9 @@ Text {
     -fx-background-color: #101916;
     -fx-text-fill: #eef6f3;
     -fx-font-size: 14px;
-    -fx-min-height: 44;
+    -fx-min-height: 40; 
+    -fx-pref-height: 40;
+    -fx-max-height: 40; 
 }
 
 .table-view .table-row-cell:odd {
@@ -456,10 +458,12 @@ Text {
 
 .table-view .table-cell {
     -fx-text-fill: #eef6f3;
-    -fx-padding: 14 10 12 10;
+    -fx-padding: 0 12;
+    -fx-alignment: CENTER-LEFT;
+    -fx-border-color: transparent;
 }
 
-/* —— Danh mục: full width + cột 15% / 35% / 50% (table-layout: fixed tương đương) —— */
+/* —— Danh mục: full width + cột 15% / 35% / 50% —— */
 .table-container {
     -fx-background-color: #111827;
     -fx-background-radius: 8;
@@ -480,35 +484,21 @@ Text {
 
 .catalog-table .column-header,
 .catalog-table .filler {
-    -fx-size: 40;
+    -fx-size: 44;
 }
 
 .catalog-table .table-cell {
     -fx-text-overrun: ellipsis;
     -fx-wrap-text: false;
+    -fx-padding: 0 12;
+    -fx-alignment: CENTER-LEFT;
+    -fx-border-color: transparent;
 }
 
 .catalog-table .table-row-cell {
-    -fx-min-height: 48;
-}
-
-.catalog-table .table-cell {
-    -fx-padding: 16 10 14 10;
-}
-
-.catalog-table .table-column.col-proportional .table-cell {
-    -fx-text-overrun: ellipsis;
-}
-
-.catalog-table .table-column.col-code {
-    -fx-alignment: CENTER-LEFT;
-}
-
-.catalog-table .table-column.col-name {
-    -fx-alignment: CENTER-LEFT;
-}
-
-.catalog-table .table-column.col-desc {
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
     -fx-alignment: CENTER-LEFT;
 }
 
@@ -689,21 +679,11 @@ Text {
     -fx-border-color: #2a3d36;
 }
 
-/* Overrides to make inline editors (TextField in editable TableCells) fit and centered */
-.catalog-table .table-row-cell {
-    -fx-min-height: 56; /* ensure enough vertical room for editor + focus ring */
-    -fx-alignment: CENTER-LEFT; /* vertically center cell content by default */
-}
-
-.catalog-table .table-cell {
-    -fx-padding: 14 12 10 12; /* top right bottom left — nudge content slightly down */
-    -fx-alignment: CENTER-LEFT; /* ensure text is vertically centered and left-aligned */
-}
-
+/* Ô chỉnh sửa inline (bảng editable) */
 .catalog-table .table-cell .text-field {
     -fx-padding: 6 10;
-    -fx-min-height: 30;
-    -fx-pref-height: 30;
+    -fx-min-height: 32;
+    -fx-pref-height: 32;
     -fx-alignment: CENTER; /* center text horizontally and vertically */
     -fx-background-color: -fx-control-inner-background; /* match other inputs */
     -fx-border-color: rgba(42,61,54,0.6);

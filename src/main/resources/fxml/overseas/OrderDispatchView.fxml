@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.orderingsystem.fx.presentation.overseas.OverseasOrderDispatchController"
-      spacing="16" styleClass="screen" maxWidth="Infinity">
+      spacing="16" styleClass="screen" maxWidth="Infinity" VBox.vgrow="ALWAYS">
     <padding>
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
@@ -21,12 +21,13 @@
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity" VBox.vgrow="ALWAYS">
         <Label text="Yêu cầu đang xử lý" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.35" prefHeight="280" minHeight="280" maxHeight="280" maxWidth="Infinity">
+        
+        <SplitPane dividerPositions="0.35" maxWidth="Infinity" VBox.vgrow="ALWAYS">
             <VBox spacing="8" maxWidth="Infinity">
-                <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
-                    <TableView fx:id="requestTable" styleClass="catalog-table" maxWidth="Infinity">
+                <VBox styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="requestTable" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="reqIdCol" text="Mã YC" sortable="true"/>
                             <TableColumn fx:id="reqByCol" text="Tiếp nhận bởi" sortable="true"/>
@@ -39,12 +40,14 @@
                     <Insets top="8" right="8" bottom="8" left="16"/>
                 </padding>
                 <Label text="Tóm tắt" styleClass="section-heading"/>
-                <TextArea fx:id="summaryArea" prefRowCount="8" editable="false" wrapText="true" maxWidth="Infinity"/>
+                <TextArea fx:id="summaryArea" editable="false" wrapText="true" maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
+
         <Label text="Đơn con" styleClass="section-heading"/>
-        <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
-            <TableView fx:id="ordersTable" styleClass="catalog-table" maxWidth="Infinity">
+        
+        <VBox styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+            <TableView fx:id="ordersTable" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
                     <TableColumn fx:id="siteCol" text="Site" sortable="true"/>
