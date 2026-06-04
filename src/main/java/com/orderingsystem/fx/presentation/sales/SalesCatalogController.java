@@ -8,6 +8,8 @@ import com.orderingsystem.fx.presentation.ux.FormValidation;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -49,8 +51,12 @@ public class SalesCatalogController extends BaseViewController {
     private Button deleteButton;
     @FXML
     private Button formOkButton;
+    @FXML
+    private TextField searchField;
 
     private FormPanels.Mode formMode;
+    private final ObservableList<StandardMerchandiseDto> masterItems = FXCollections.observableArrayList();
+    private FilteredList<StandardMerchandiseDto> filteredItems;
 
     @Override
     protected void onInit() {
@@ -67,6 +73,7 @@ public class SalesCatalogController extends BaseViewController {
         FormValidation.bindDisabledUntilTableSelection(updateButton, table);
         FormValidation.bindDisabledUntilTableSelection(deleteButton, table);
         FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> applyFilter());
         refresh();
     }
 
@@ -196,9 +203,23 @@ public class SalesCatalogController extends BaseViewController {
         UiTasks.runWithStatus(
                 "Đang tải danh mục…",
                 () -> app.uc001().listAll(),
-                items -> table.setItems(FXCollections.observableArrayList(items)),
+                this::refreshTable,
                 "Danh mục đã tải."
         );
+    }
+
+    private void applyFilter() {
+        if (filteredItems == null) {
+            return;
+        }
+        String keyword = searchField.getText() != null ? searchField.getText().trim().toLowerCase() : "";
+        filteredItems.setPredicate(item -> {
+            if (keyword.isBlank()) {
+                return true;
+            }
+            String name = item.merchandiseName() != null ? item.merchandiseName().toLowerCase() : "";
+            return name.contains(keyword);
+        });
     }
 
     private void fillForm(StandardMerchandiseDto row) {
@@ -213,5 +234,12 @@ public class SalesCatalogController extends BaseViewController {
         codeField.setEditable(editableCode);
         nameField.clear();
         descArea.clear();
+    }
+
+    private void refreshTable(List<StandardMerchandiseDto> items) {
+        masterItems.setAll(items);
+        filteredItems = new FilteredList<>(masterItems, item -> true);
+        table.setItems(filteredItems);
+        applyFilter();
     }
 }

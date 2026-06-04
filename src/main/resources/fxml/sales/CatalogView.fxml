@@ -20,6 +20,8 @@
             <Button fx:id="addButton" text="Thêm" onAction="#onShowAddForm" styleClass="btn-primary"/>
             <Button fx:id="updateButton" text="Sửa" onAction="#onShowEditForm" styleClass="btn-secondary"/>
             <Button fx:id="deleteButton" text="Xóa" onAction="#onDelete" styleClass="btn-danger"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Tìm theo tên mặt hàng..." prefWidth="260" maxWidth="260"/>
         </HBox>
         <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="220" minHeight="220" maxHeight="220" maxWidth="Infinity">
             <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity">

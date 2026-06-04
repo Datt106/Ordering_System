@@ -7,7 +7,6 @@ import com.orderingsystem.fx.presentation.UiTasks;
 import com.orderingsystem.fx.presentation.ux.FormPanels;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
 import com.orderingsystem.fx.presentation.ux.MerchandisePicker;
-import com.orderingsystem.fx.presentation.ux.SpinnerInputs;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -16,11 +15,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.VBox;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,7 +35,7 @@ public class SalesCreateRequestController extends BaseViewController {
     @FXML
     private ComboBox<String> codeCombo;
     @FXML
-    private Spinner<Integer> qtySpinner;
+    private TextField qtyField;
     @FXML
     private TextField unitField;
     @FXML
@@ -64,7 +64,7 @@ public class SalesCreateRequestController extends BaseViewController {
 
     @Override
     protected void onInit() {
-        SpinnerInputs.configureIntegerSpinner(qtySpinner, 1, 999_999, 1);
+        configureQuantityField();
         codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().code()));
         qtyCol.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().qty())));
         unitCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().unit()));
@@ -86,6 +86,7 @@ public class SalesCreateRequestController extends BaseViewController {
     @FXML
     private void onShowLineForm() {
         deliveryPicker.setValue(LocalDate.now().plusDays(7));
+        qtyField.setText("1");
         if (!catalog.isEmpty() && codeCombo.getValue() == null) {
             codeCombo.getSelectionModel().selectFirst();
         }
@@ -96,12 +97,16 @@ public class SalesCreateRequestController extends BaseViewController {
     private void onLineFormOk() {
         LocalDate date = deliveryPicker.getValue();
         String code = MerchandisePicker.extractCode(codeCombo.getEditor().getText());
+        Integer qty = readQuantity();
         if (code.isBlank()) {
             code = MerchandisePicker.extractCode(codeCombo.getValue());
         }
         try {
             if (code.isBlank()) {
                 throw new IllegalArgumentException("Chọn hoặc nhập mã hàng từ danh mục.");
+            }
+            if (qty == null) {
+                throw new IllegalArgumentException("Nhập số lượng hợp lệ.");
             }
             FormValidation.requireNonBlank(unitField, "Nhập đơn vị.", () -> {});
             if (date == null) {
@@ -114,7 +119,7 @@ public class SalesCreateRequestController extends BaseViewController {
             UiTasks.showError(ex);
             return;
         }
-        lines.add(new LineRow(code, qtySpinner.getValue(), unitField.getText().trim(), date));
+        lines.add(new LineRow(code, qty, unitField.getText().trim(), date));
         refreshTable();
         FormPanels.close(lineFormPanel);
         resultLabel.setText("");
@@ -196,6 +201,31 @@ public class SalesCreateRequestController extends BaseViewController {
     private void refreshTable() {
         linesTable.setItems(FXCollections.observableArrayList(lines));
         updateSubmitState();
+    }
+
+    private void configureQuantityField() {
+        TextFormatter<Integer> formatter = new TextFormatter<>(new IntegerStringConverter(), 1, change -> {
+            String next = change.getControlNewText();
+            if (next == null || next.isBlank()) {
+                return change;
+            }
+            return next.matches("\\d+") ? change : null;
+        });
+        qtyField.setTextFormatter(formatter);
+        qtyField.setText("1");
+    }
+
+    private Integer readQuantity() {
+        String text = qtyField.getText();
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        try {
+            int qty = Integer.parseInt(text.trim());
+            return qty > 0 ? qty : null;
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private void updateSubmitState() {

@@ -50,19 +50,19 @@
             </columnConstraints>
             <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <Label text="Mã hàng" styleClass="field-label"/>
-                <ComboBox fx:id="codeCombo" editable="true" maxWidth="Infinity"/>
+                <ComboBox fx:id="codeCombo" id="codeCombo" editable="true" maxWidth="Infinity" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <Label text="SL" styleClass="field-label"/>
-                <Spinner fx:id="qtySpinner" maxWidth="Infinity"/>
+                <TextField fx:id="qtyField" promptText="1" maxWidth="Infinity" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="0">
                 <Label text="ĐVT" styleClass="field-label"/>
-                <TextField fx:id="unitField" promptText="pcs" maxWidth="Infinity"/>
+                <TextField fx:id="unitField" promptText="pcs" maxWidth="Infinity" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="6" GridPane.columnIndex="3" GridPane.rowIndex="0">
                 <Label text="Ngày nhận" styleClass="field-label"/>
-                <DatePicker fx:id="deliveryPicker" maxWidth="Infinity"/>
+                <DatePicker fx:id="deliveryPicker" maxWidth="Infinity" editable="true" styleClass="uniform-field"/>
             </VBox>
         </GridPane>
         <HBox spacing="8" alignment="CENTER_LEFT">

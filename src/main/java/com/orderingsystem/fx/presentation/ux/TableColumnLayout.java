@@ -13,6 +13,8 @@ import javafx.util.Callback;
  */
 public final class TableColumnLayout {
 
+    private static final double TABLE_CELL_SIZE = 48;
+
     private TableColumnLayout() {
     }
 
@@ -80,7 +82,7 @@ public final class TableColumnLayout {
      * Chiều cao cố định — bảng cuộn nội bộ, không giãn theo số dòng.
      */
     public static void constrainHeight(TableView<?> table, double height) {
-        table.setFixedCellSize(44);
+        table.setFixedCellSize(TABLE_CELL_SIZE);
         table.setPrefHeight(height);
         table.setMinHeight(height);
         table.setMaxHeight(height);
