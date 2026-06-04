@@ -438,8 +438,9 @@ Text {
     -fx-background-color: #101916;
     -fx-text-fill: #eef6f3;
     -fx-font-size: 14px;
-    -fx-min-height: 54;
-    -fx-pref-height: 54;
+    -fx-min-height: 40; 
+    -fx-pref-height: 40;
+    -fx-max-height: 40; 
 }
 
 .table-view .table-row-cell:odd {
@@ -457,11 +458,12 @@ Text {
 
 .table-view .table-cell {
     -fx-text-fill: #eef6f3;
-    -fx-padding: 8 10;
+    -fx-padding: 0 12;
     -fx-alignment: CENTER-LEFT;
+    -fx-border-color: transparent;
 }
 
-/* —— Danh mục: full width + cột 15% / 35% / 50% (table-layout: fixed tương đương) —— */
+/* —— Danh mục: full width + cột 15% / 35% / 50% —— */
 .table-container {
     -fx-background-color: #111827;
     -fx-background-radius: 8;
@@ -488,29 +490,15 @@ Text {
 .catalog-table .table-cell {
     -fx-text-overrun: ellipsis;
     -fx-wrap-text: false;
-    -fx-padding: 8 10;
+    -fx-padding: 0 12;
     -fx-alignment: CENTER-LEFT;
+    -fx-border-color: transparent;
 }
 
 .catalog-table .table-row-cell {
-    -fx-min-height: 54;
-    -fx-pref-height: 54;
-    -fx-alignment: CENTER-LEFT;
-}
-
-.catalog-table .table-column.col-proportional .table-cell {
-    -fx-text-overrun: ellipsis;
-}
-
-.catalog-table .table-column.col-code {
-    -fx-alignment: CENTER-LEFT;
-}
-
-.catalog-table .table-column.col-name {
-    -fx-alignment: CENTER-LEFT;
-}
-
-.catalog-table .table-column.col-desc {
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
     -fx-alignment: CENTER-LEFT;
 }
 

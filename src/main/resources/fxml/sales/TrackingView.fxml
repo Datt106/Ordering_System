@@ -35,12 +35,13 @@
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity" VBox.vgrow="ALWAYS">
         <Label text="Danh sách yêu cầu" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.55" prefHeight="280" minHeight="280" maxHeight="280" maxWidth="Infinity">
+        
+        <SplitPane dividerPositions="0.55" maxWidth="Infinity" VBox.vgrow="ALWAYS">
             <VBox spacing="8" maxWidth="Infinity">
-                <VBox fx:id="tableContainer" styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
-                    <TableView fx:id="listTable" styleClass="catalog-table" maxWidth="Infinity">
+                <VBox fx:id="tableContainer" styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="listTable" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
                             <TableColumn fx:id="createdCol" text="Tạo lúc" sortable="true"/>
@@ -50,19 +51,22 @@
                     </TableView>
                 </VBox>
             </VBox>
+            
             <VBox spacing="8" styleClass="detail-panel" maxWidth="Infinity">
                 <padding>
                     <Insets top="8" right="8" bottom="8" left="16"/>
                 </padding>
                 <Label text="Chi tiết yêu cầu" styleClass="section-heading"/>
-                <TextArea fx:id="detailArea" prefRowCount="8" editable="false" wrapText="true"
-                          promptText="Chọn dòng trong bảng để xem chi tiết…" maxWidth="Infinity"/>
+                <TextArea fx:id="detailArea" editable="false" wrapText="true"
+                          promptText="Chọn dòng trong bảng để xem chi tiết…" 
+                          maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
-        <VBox fx:id="childOrdersSection" spacing="8" visible="false" managed="false" maxWidth="Infinity">
+        
+        <VBox fx:id="childOrdersSection" spacing="8" visible="false" managed="false" maxWidth="Infinity" VBox.vgrow="ALWAYS">
             <Label text="Phương án tách đơn (theo Site)" styleClass="section-heading"/>
-            <VBox fx:id="childOrdersContainer" styleClass="table-container" prefHeight="200" minHeight="200" maxHeight="200" maxWidth="Infinity">
-                <TableView fx:id="childOrdersTable" styleClass="catalog-table" maxWidth="Infinity">
+            <VBox fx:id="childOrdersContainer" styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+                <TableView fx:id="childOrdersTable" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="coOrderCol" text="Mã đơn" sortable="true"/>
                         <TableColumn fx:id="coSiteCol" text="Site" sortable="true"/>

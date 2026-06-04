@@ -6,7 +6,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.orderingsystem.fx.presentation.overseas.OverseasPendingController"
-      spacing="16" styleClass="screen" maxWidth="Infinity">
+      spacing="16" styleClass="screen" maxWidth="Infinity" VBox.vgrow="ALWAYS">
     <padding>
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
@@ -22,12 +22,13 @@
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity">
+    <VBox styleClass="content-card" maxWidth="Infinity" VBox.vgrow="ALWAYS">
         <Label text="Yêu cầu chờ tiếp nhận" styleClass="section-heading"/>
-        <SplitPane dividerPositions="0.55" prefHeight="320" minHeight="320" maxHeight="320" maxWidth="Infinity">
+        
+        <SplitPane dividerPositions="0.55" maxWidth="Infinity" VBox.vgrow="ALWAYS">
             <VBox spacing="8" maxWidth="Infinity">
-                <VBox styleClass="table-container" prefHeight="240" minHeight="240" maxHeight="240" maxWidth="Infinity">
-                    <TableView fx:id="pendingTable" styleClass="catalog-table" minHeight="240" maxWidth="Infinity">
+                <VBox styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="pendingTable" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="idCol" text="Mã YC" sortable="true"/>
                             <TableColumn fx:id="createdCol" text="Tạo lúc" sortable="true"/>
@@ -42,7 +43,7 @@
                 </padding>
                 <Label text="Chi tiết yêu cầu" styleClass="section-heading"/>
                 <TextArea fx:id="detailArea" editable="false" wrapText="true"
-                          promptText="Chọn yêu cầu để xem chi tiết mặt hàng…" maxWidth="Infinity"/>
+                          promptText="Chọn yêu cầu để xem chi tiết mặt hàng…" maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
     </VBox>

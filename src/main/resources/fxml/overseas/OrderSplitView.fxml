@@ -51,27 +51,28 @@
                 <ColumnConstraints minWidth="100" prefWidth="120"/>
                 <ColumnConstraints minWidth="100" prefWidth="120"/>
                 <ColumnConstraints minWidth="80" prefWidth="100"/>
-                <ColumnConstraints minWidth="140" prefWidth="160"/>
-                <ColumnConstraints minWidth="80" prefWidth="100"/>
+                <ColumnConstraints minWidth="160" prefWidth="180"/>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
             </columnConstraints>
             <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <Label text="Site" styleClass="field-label"/>
-                <TextField fx:id="addSiteField" promptText="S01"/>
+                <TextField fx:id="addSiteField" promptText="S01" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <Label text="Mã hàng" styleClass="field-label"/>
-                <TextField fx:id="addMerchField" promptText="P001"/>
+                <TextField fx:id="addMerchField" promptText="P001" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="4" GridPane.columnIndex="2" GridPane.rowIndex="0">
                 <Label text="Số lượng" styleClass="field-label"/>
-                <Spinner fx:id="addQtySpinner" editable="true"/>
+                <TextField fx:id="addQtyField" promptText="1" styleClass="uniform-field"/>
             </VBox>
             <VBox spacing="4" GridPane.columnIndex="3" GridPane.rowIndex="0">
                 <Label text="Phương tiện" styleClass="field-label"/>
-                <ChoiceBox fx:id="addMeansChoice"/>
+                <ComboBox fx:id="addMeansChoice" maxWidth="Infinity" styleClass="uniform-field"/>
             </VBox>
-            <VBox spacing="4" GridPane.columnIndex="4" GridPane.rowIndex="0" alignment="BOTTOM_LEFT">
-                <Button text="Thêm dòng" onAction="#onAddLine" styleClass="btn-secondary"/>
+            <VBox spacing="4" GridPane.columnIndex="4" GridPane.rowIndex="0" alignment="CENTER_LEFT">
+                <Label text=" " styleClass="field-label"/>
+                <Button text="Thêm dòng" onAction="#onAddLine" prefHeight="44" maxWidth="Infinity" styleClass="btn-primary"/>
             </VBox>
         </GridPane>
         <Label text="Kết quả kiểm tra" styleClass="section-heading"/>

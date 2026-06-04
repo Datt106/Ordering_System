@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -55,9 +56,9 @@ public class OverseasOrderSplitController extends BaseViewController {
     @FXML
     private TextField addMerchField;
     @FXML
-    private Spinner<Integer> addQtySpinner;
+    private TextField addQtyField;
     @FXML
-    private ChoiceBox<DeliveryMeans> addMeansChoice;
+    private ComboBox<DeliveryMeans> addMeansChoice;
     @FXML
     private TextArea validationArea;
     @FXML
@@ -107,7 +108,6 @@ public class OverseasOrderSplitController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(siteCol);
         TableColumnLayout.bindEllipsisCellFactory(merchCol);
 
-        SpinnerInputs.configureIntegerSpinner(addQtySpinner, 1, 999_999, 1);
         addMeansChoice.getItems().setAll(DeliveryMeans.values());
         addMeansChoice.setValue(DeliveryMeans.SHIP_DELIVERY);
 
@@ -189,10 +189,22 @@ public class OverseasOrderSplitController extends BaseViewController {
             setScreenStatus("Nhập mã Site và mã hàng trước khi thêm dòng.");
             return;
         }
+        
+        int qty = 1;
+        if (addQtyField.getText() != null && !addQtyField.getText().isBlank()) {
+            try {
+                qty = Integer.parseInt(addQtyField.getText().trim());
+                if (qty <= 0) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                setScreenStatus("Số lượng phải là số nguyên dương.");
+                return;
+            }
+        }
+
         EditableSplitLineRow row = new EditableSplitLineRow();
         row.siteCodeProperty().set(site);
         row.merchandiseCodeProperty().set(merch);
-        row.quantityProperty().set(addQtySpinner.getValue());
+        row.quantityProperty().set(qty); // Cập nhật biến qty mới
         row.deliveryMeansProperty().set(addMeansChoice.getValue());
         planLines.add(row);
         refreshPlanTable();
