@@ -16,19 +16,19 @@
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Tìm kiếm" styleClass="section-heading"/>
         <HBox spacing="12" alignment="CENTER_LEFT">
-            <VBox spacing="6">
+            <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text="Trạng thái" styleClass="field-label"/>
-                <ComboBox fx:id="statusFilter" prefWidth="160"/>
+                <ComboBox fx:id="statusFilter" prefWidth="210" minWidth="210" styleClass="uniform-field"/>
             </VBox>
-            <VBox spacing="6">
+            <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text="Từ" styleClass="field-label"/>
-                <DatePicker fx:id="fromPicker"/>
+                <DatePicker fx:id="fromPicker" editable="true" styleClass="uniform-field"/>
             </VBox>
-            <VBox spacing="6">
+            <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text="Đến" styleClass="field-label"/>
-                <DatePicker fx:id="toPicker"/>
+                <DatePicker fx:id="toPicker" editable="true" styleClass="uniform-field"/>
             </VBox>
-            <VBox spacing="6" alignment="BOTTOM_LEFT">
+            <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text=" " styleClass="field-label"/>
                 <Button text="Tìm" onAction="#onSearch" styleClass="btn-primary"/>
             </VBox>
