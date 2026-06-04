@@ -271,6 +271,111 @@ Text {
     -fx-alignment: CENTER_LEFT; /* ensure single-line inputs center vertically */
 }
 
+/* Uniform small form controls used in toolbars/search rows */
+.uniform-field {
+    -fx-pref-height: 44; /* make controls visually equal height */
+    -fx-min-height: 44;
+    -fx-max-height: 44;
+}
+
+/* DatePicker has an inner editor - style it to look like other inputs when using .uniform-field */
+.date-picker.uniform-field .arrow-button {
+    -fx-background-color: transparent;
+}
+.date-picker.uniform-field .text-field {
+    -fx-background-color: #151f1c;
+    -fx-text-fill: #eef6f3;
+    -fx-prompt-text-fill: #9cb5ad;
+    -fx-border-color: #2a3d36;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 10 12;
+    -fx-min-height: 44;
+}
+
+/* Remove the outer DatePicker chrome when using uniform-field: keep only the editor's border */
+.date-picker.uniform-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.date-picker.uniform-field .text-field {
+    -fx-background-insets: 0; /* ensure inner editor fills without outer gap */
+    -fx-background-radius: 8;
+}
+/* More-specific selectors to hide DatePicker outer chrome */
+.date-picker.uniform-field .background,
+.date-picker.uniform-field .combo-box-base,
+.date-picker.uniform-field .date-picker {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.date-picker.uniform-field .arrow-button {
+    -fx-background-color: transparent;
+}
+
+/* Make primary button match controls when used in toolbars */
+.btn-primary.uniform-field {
+    -fx-pref-height: 44;
+    -fx-min-height: 44;
+    -fx-max-height: 44;
+    -fx-padding: 0 18; /* keep horizontal padding but match vertical size */
+}
+
+/* ComboBox-specific uniform-field fix: ensure label/text isn't hidden by inner chrome */
+.combo-box.uniform-field {
+    -fx-background-color: #151f1c;
+    -fx-border-color: #2a3d36;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-padding: 0 10; /* horizontal padding; vertical aligned by height */
+    -fx-background-insets: 0;
+    -fx-min-height: 44;
+    -fx-pref-height: 44;
+}
+.combo-box.uniform-field .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8 0 8;
+}
+.combo-box.uniform-field .label {
+    -fx-padding: 0 6 0 6;
+    -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: #eef6f3;
+}
+
+/* Remove inner chrome that can create a second rounded box inside ComboBox */
+.combo-box.uniform-field .button-cell,
+.combo-box.uniform-field .text-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0 6;
+}
+.combo-box.uniform-field .text-field {
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Keep the dropdown list readable and closer to the earlier polished look */
+.combo-box-popup .list-view {
+    -fx-background-color: #151f1c;
+    -fx-background-insets: 0;
+    -fx-border-color: #2a3d36;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 4;
+}
+.combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #eef6f3;
+    -fx-padding: 8 12;
+}
+.combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #1f3d34;
+    -fx-text-fill: #ffffff;
+}
+
 /* Make multi-line text areas and their prompt text align consistently */
 .text-area {
     -fx-padding: 10 12; /* match TextField vertical padding */
@@ -333,6 +438,7 @@ Text {
     -fx-background-color: #101916;
     -fx-text-fill: #eef6f3;
     -fx-font-size: 14px;
+    -fx-min-height: 44;
 }
 
 .table-view .table-row-cell:odd {
@@ -350,7 +456,7 @@ Text {
 
 .table-view .table-cell {
     -fx-text-fill: #eef6f3;
-    -fx-padding: 10 8;
+    -fx-padding: 14 10 12 10;
 }
 
 /* —— Danh mục: full width + cột 15% / 35% / 50% (table-layout: fixed tương đương) —— */
@@ -380,6 +486,14 @@ Text {
 .catalog-table .table-cell {
     -fx-text-overrun: ellipsis;
     -fx-wrap-text: false;
+}
+
+.catalog-table .table-row-cell {
+    -fx-min-height: 48;
+}
+
+.catalog-table .table-cell {
+    -fx-padding: 16 10 14 10;
 }
 
 .catalog-table .table-column.col-proportional .table-cell {
@@ -426,8 +540,8 @@ Text {
 
 .combo-box .list-cell:filled:hover,
 .combo-box .list-cell:filled:selected {
-    -fx-background-color: #1f3d34;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #151f1c;
+    -fx-text-fill: #eef6f3;
 }
 
 .combo-box-popup .list-view {
