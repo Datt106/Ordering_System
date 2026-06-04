@@ -74,8 +74,13 @@ public class StockQueryController {
                     "Chỉ truy vấn tồn kho khi yêu cầu ở trạng thái Đang xử lý. Hiện tại: " + request.getStatus());
         }
 
+        // Kiểm tra xem yêu cầu này đã được gửi truy vấn chưa?
+        List<InventoryQuery> existingQueries = inventoryQueryRepository.findByRequestId(id);
+        if (!existingQueries.isEmpty()) {
+            throw new IllegalStateException("Yêu cầu này đã được gửi truy vấn tồn kho từ trước. Không thể gửi lại!");
+        }
+
         RequestStatusEvaluator.clearErrorStatusIfProcessing(importRequestRepository, id);
-        inventoryQueryRepository.deleteByRequestId(id);
         for (ImportRequestItem item : request.getItems()) {
             importRequestRepository.updateItemStatus(item.getId(), ItemStatus.OK);
         }
