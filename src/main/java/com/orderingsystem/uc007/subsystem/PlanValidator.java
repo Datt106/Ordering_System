@@ -1,8 +1,11 @@
-package com.orderingsystem.uc007.controller;
+package com.orderingsystem.uc007.subsystem;
 
 import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.Site;
 import com.orderingsystem.uc007.boundary.dto.ManualSplitLineInput;
+import com.orderingsystem.uc007.support.MerchandiseDemand;
+import com.orderingsystem.uc007.support.SplitPlanContext;
+import com.orderingsystem.uc007.support.StockSnapshot;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,35 +15,20 @@ import java.util.List;
 import java.util.Map;
 
 /** Kiểm tra phương án phân bổ do người dùng chỉnh tay (FR-06.9). */
-final class ManualSplitPlanValidator {
+public final class PlanValidator {
 
-    record StockSnapshot(int quantity, String unit, boolean responded) {
+    private PlanValidator() {
     }
 
-    record DemandSnapshot(
-            String merchandiseCode,
-            int quantityNeeded,
-            LocalDate targetDate,
-            String unit,
-            boolean skippedNoSite
-    ) {
-    }
-
-    private ManualSplitPlanValidator() {
-    }
-
-    static List<String> validate(
-            String requestId,
-            LocalDate startDate,
-            boolean inventoryReady,
-            Map<String, DemandSnapshot> demands,
-            Map<String, Site> sitesByCode,
-            Map<String, Map<String, StockSnapshot>> stockBySiteMerchandise,
-            List<ManualSplitLineInput> lines
-    ) {
+    public static List<String> validate(SplitPlanContext context, List<ManualSplitLineInput> lines) {
         List<String> errors = new ArrayList<>();
+        String requestId = context.requestId();
+        LocalDate startDate = context.startDate();
+        Map<String, MerchandiseDemand> demands = context.demands();
+        Map<String, Site> sitesByCode = context.sitesByCode();
+        Map<String, Map<String, StockSnapshot>> stockBySiteMerchandise = context.stockBySiteMerchandise();
 
-        if (!inventoryReady) {
+        if (!context.inventoryReady()) {
             errors.add("Chưa đủ phản hồi tồn kho từ Site — không thể xác nhận phương án.");
             return errors;
         }
@@ -71,7 +59,7 @@ final class ManualSplitPlanValidator {
                 errors.add("Dòng " + row + ": chọn phương tiện vận chuyển.");
             }
 
-            DemandSnapshot demand = demands.get(merchandiseCode);
+            MerchandiseDemand demand = demands.get(merchandiseCode);
             if (demand == null) {
                 errors.add("Dòng " + row + ": mã hàng " + merchandiseCode + " không thuộc yêu cầu " + requestId + ".");
             } else if (demand.skippedNoSite()) {
@@ -115,7 +103,7 @@ final class ManualSplitPlanValidator {
         Map<String, Map<String, Integer>> usedBySiteMerchandise = new HashMap<>();
         for (Map.Entry<String, List<ManualSplitLineInput>> entry : byMerchandise.entrySet()) {
             String merchandiseCode = entry.getKey();
-            DemandSnapshot demand = demands.get(merchandiseCode);
+            MerchandiseDemand demand = demands.get(merchandiseCode);
             int total = entry.getValue().stream().mapToInt(ManualSplitLineInput::quantity).sum();
             if (total != demand.quantityNeeded()) {
                 errors.add("Mặt hàng " + merchandiseCode + ": tổng phân bổ " + total
@@ -124,10 +112,11 @@ final class ManualSplitPlanValidator {
 
             for (ManualSplitLineInput line : entry.getValue()) {
                 String siteCode = normalize(line.siteCode());
-                int used = usedBySiteMerchandise
+                usedBySiteMerchandise
                         .computeIfAbsent(siteCode, k -> new HashMap<>())
                         .merge(merchandiseCode, line.quantity(), Integer::sum);
                 StockSnapshot stock = stockBySiteMerchandise.get(siteCode).get(merchandiseCode);
+                int used = usedBySiteMerchandise.get(siteCode).get(merchandiseCode);
                 if (used > stock.quantity()) {
                     errors.add("Site " + siteCode + " / " + merchandiseCode
                             + ": tổng lấy " + used + " vượt tồn kho " + stock.quantity() + ".");
@@ -135,7 +124,7 @@ final class ManualSplitPlanValidator {
             }
         }
 
-        for (DemandSnapshot demand : demands.values()) {
+        for (MerchandiseDemand demand : demands.values()) {
             if (demand.skippedNoSite()) {
                 if (byMerchandise.containsKey(demand.merchandiseCode())) {
                     errors.add("Mặt hàng " + demand.merchandiseCode() + " không có Site kinh doanh — không được phân bổ.");

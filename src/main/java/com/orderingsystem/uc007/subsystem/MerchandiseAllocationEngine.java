@@ -1,4 +1,4 @@
-package com.orderingsystem.uc007.controller;
+package com.orderingsystem.uc007.subsystem;
 
 import com.orderingsystem.core.domain.DeliveryMeans;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Thuật toán phân bổ UC007 theo đề bài ITSS:
+ * Thuật toán phân bổ UC007
  * (1) ưu tiên tàu hơn hàng không → (2) ưu tiên Site có tồn kho lớn → (3) dùng ít Site nhất có thể.
  */
 public final class MerchandiseAllocationEngine {
@@ -38,11 +38,6 @@ public final class MerchandiseAllocationEngine {
         }
     }
 
-    /**
-     * @param quantityNeeded Q
-     * @param shipPools      Site đáp ứng ETA tàu (tồn &gt; 0)
-     * @param airPools       Site đáp ứng ETA bay (tồn &gt; 0, có thể trùng mã với ship)
-     */
     public static Plan allocate(int quantityNeeded, List<SitePool> shipPools, List<SitePool> airPools) {
         if (quantityNeeded <= 0) {
             return Plan.ok(List.of());
@@ -93,9 +88,6 @@ public final class MerchandiseAllocationEngine {
         return Plan.ok(lines);
     }
 
-    /**
-     * Chọn tập Site và số lượng lấy từ mỗi Site cho một phương tiện (tàu hoặc bay).
-     */
     static Map<String, Integer> allocateForMode(List<SitePool> pools, int target) {
         if (target <= 0 || pools.isEmpty()) {
             return Map.of();
@@ -139,9 +131,6 @@ public final class MerchandiseAllocationEngine {
         return distributeQuantities(bestChosen[0], target);
     }
 
-    /**
-     * Mức “ưu tiên tồn lớn”: danh sách mức tồn kho (giảm dần) của các Site thực sự được lấy hàng.
-     */
     private static List<Integer> stockPriorityVector(List<SitePool> chosen, Map<String, Integer> allocation) {
         return chosen.stream()
                 .filter(p -> allocation.getOrDefault(p.siteCode(), 0) > 0)
@@ -151,7 +140,6 @@ public final class MerchandiseAllocationEngine {
                 .toList();
     }
 
-    /** So sánh mức ưu tiên tồn: phần tử đầu lớn hơn thì phương án tốt hơn. */
     private static int compareStockPriority(List<Integer> candidate, List<Integer> best) {
         if (best == null) {
             return 1;
@@ -185,7 +173,6 @@ public final class MerchandiseAllocationEngine {
         }
     }
 
-    /** Trên tập Site đã chọn: lấy từ Site tồn lớn trước. */
     private static Map<String, Integer> distributeQuantities(List<SitePool> chosen, int target) {
         List<SitePool> order = chosen.stream()
                 .sorted(Comparator.comparingInt(SitePool::stock).reversed()
