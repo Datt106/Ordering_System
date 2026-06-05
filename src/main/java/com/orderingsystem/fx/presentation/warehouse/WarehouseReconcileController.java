@@ -15,6 +15,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,6 +33,9 @@ public class WarehouseReconcileController extends BaseViewController {
     @FXML private TextField actualField;
     @FXML private TextField timeField;
     @FXML private Button reconcileButton;
+    @FXML private VBox resultCard;
+    @FXML private HBox tableArea;
+    @FXML private VBox tableContainer;
     @FXML private TableView<WarehouseOrderDto> table;
     @FXML private TableColumn<WarehouseOrderDto, String> orderIdCol;
     @FXML private TableColumn<WarehouseOrderDto, String> siteCol;
@@ -58,7 +63,8 @@ public class WarehouseReconcileController extends BaseViewController {
         });
         
         reconcileButton.setDisable(true);
-        bindTableScroll(table);
+        bindResultTableInsets(tableContainer, tableArea, 0.02);
+        TableColumnLayout.applyRowHeight(table);
         Platform.runLater(this::refresh);
     }
 

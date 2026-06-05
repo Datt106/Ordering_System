@@ -4,6 +4,7 @@ import com.orderingsystem.fx.app.AppContext;
 import com.orderingsystem.fx.presentation.ux.EmptyStates;
 import com.orderingsystem.fx.presentation.ux.FormValidation;
 import com.orderingsystem.fx.presentation.ux.TableColumnLayout;
+import javafx.beans.binding.Bindings;
 import javafx.scene.layout.Region;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -74,6 +75,22 @@ public abstract class BaseViewController implements ViewController, Initializabl
 
     protected void bindTableScroll(TableView<?> table, double height) {
         TableColumnLayout.constrainHeight(table, height);
+    }
+
+    /**
+     * Khung bảng kết quả căn giữa trong {@code area}, mỗi cạnh cách viền {@code marginRatio}
+     * (vd. 0.05 → bảng chiếm 90% chiều ngang và chiều dọc vùng chứa).
+     */
+    protected void bindResultTableInsets(Region tableFrame, Region area, double marginRatio) {
+        double sizeRatio = 1.0 - 2 * marginRatio;
+        tableFrame.prefWidthProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.max(0, area.getWidth() * sizeRatio),
+                area.widthProperty()));
+        tableFrame.maxWidthProperty().bind(tableFrame.prefWidthProperty());
+        tableFrame.prefHeightProperty().bind(Bindings.createDoubleBinding(
+                () -> Math.max(0, area.getHeight() * sizeRatio),
+                area.heightProperty()));
+        tableFrame.maxHeightProperty().bind(tableFrame.prefHeightProperty());
     }
 
     protected void validateRequired(TextInputControl field, String message) {

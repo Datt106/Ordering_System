@@ -14,6 +14,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.time.ZoneId;
@@ -31,6 +33,9 @@ public class WarehouseOrdersController extends BaseViewController {
     @FXML private ComboBox<OrderStatus> statusFilter;
     @FXML private TextField siteFilter;
     @FXML private TextField merchandiseFilter;
+    @FXML private VBox resultCard;
+    @FXML private HBox tableArea;
+    @FXML private VBox tableContainer;
     @FXML private TableView<WarehouseOrderDto> table;
     
     @FXML private TableColumn<WarehouseOrderDto, String> orderIdCol;
@@ -75,7 +80,8 @@ public class WarehouseOrdersController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(codeCol);
         TableColumnLayout.bindEllipsisCellFactory(statusCol);
 
-        bindTableScroll(table);
+        bindResultTableInsets(tableContainer, tableArea, 0.02);
+        TableColumnLayout.applyRowHeight(table);
         Platform.runLater(this::onSearch);
     }
 
