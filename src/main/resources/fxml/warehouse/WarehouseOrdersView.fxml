@@ -41,10 +41,11 @@
             <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
-                    <TableColumn fx:id="requestCol" text="Yêu cầu" sortable="true"/>
                     <TableColumn fx:id="siteCol" text="Site" sortable="true"/>
-                    <TableColumn fx:id="codeCol" text="Mã hàng" sortable="true"/>
-                    <TableColumn fx:id="qtyCol" text="SL" sortable="true"/>
+                    <TableColumn fx:id="codeCol" text="Mặt hàng" sortable="true"/>
+                    <TableColumn fx:id="qtyCol" text="SL đặt" sortable="true"/>
+                    <TableColumn fx:id="actualQtyCol" text="SL nhận" sortable="true"/>
+                    <TableColumn fx:id="timeCol" text="TG Nhập" sortable="true"/>
                     <TableColumn fx:id="statusCol" text="Trạng thái" sortable="true"/>
                 </columns>
             </TableView>

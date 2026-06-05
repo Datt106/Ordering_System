@@ -8,10 +8,12 @@ import com.orderingsystem.uc013.controller.WarehouseOrderViewController;
 @Deprecated
 public class WarehouseOrderViewService extends WarehouseOrderViewController {
 
+    @Deprecated
     public WarehouseOrderViewService() {
         super();
     }
 
+    @Deprecated
     public WarehouseOrderViewService(AuthService authService, PurchaseOrderRepository purchaseOrderRepository) {
         super(authService, purchaseOrderRepository);
     }

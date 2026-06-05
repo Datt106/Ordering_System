@@ -16,48 +16,58 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.List;
 
 public class WarehouseReconcileController extends BaseViewController {
 
-    private static final double[] COL_RATIOS = {0.24, 0.16, 0.20, 0.14, 0.26};
+    // Tỷ lệ cho bảng đối chiếu (5 cột): Mã đơn (28%), Site (25%), Hàng (25%), SL đặt (8%), Trạng thái (14%)
+    private static final double[] COL_RATIOS = {0.28, 0.25, 0.25, 0.08, 0.14};
+    
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    // Đã thay đổi từ Spinner sang TextField
-    @FXML
-    private TextField actualField;
-    @FXML
-    private Button reconcileButton;
-    @FXML
-    private TableView<WarehouseOrderDto> table;
-    @FXML
-    private TableColumn<WarehouseOrderDto, String> orderIdCol;
-    @FXML
-    private TableColumn<WarehouseOrderDto, String> siteCol;
-    @FXML
-    private TableColumn<WarehouseOrderDto, String> codeCol;
-    @FXML
-    private TableColumn<WarehouseOrderDto, String> orderedCol;
-    @FXML
-    private TableColumn<WarehouseOrderDto, String> statusCol;
+    @FXML private TextField actualField;
+    @FXML private TextField timeField; // Ô nhập thời gian mới
+    @FXML private Button reconcileButton;
+    @FXML private TableView<WarehouseOrderDto> table;
+    
+    @FXML private TableColumn<WarehouseOrderDto, String> orderIdCol;
+    @FXML private TableColumn<WarehouseOrderDto, String> siteCol;
+    @FXML private TableColumn<WarehouseOrderDto, String> codeCol;
+    @FXML private TableColumn<WarehouseOrderDto, String> orderedCol;
+    @FXML private TableColumn<WarehouseOrderDto, String> statusCol;
 
     @Override
     protected void onInit() {
-        actualField.setText("0"); // Đặt giá trị mặc định cho ô TextField
+        actualField.setText("0");
+        // Mặc định điền sẵn giờ hiện tại cho tiện
+        timeField.setText(LocalDateTime.now().format(TIME_FORMATTER));
         
         orderIdCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().orderId()));
-        siteCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode()));
-        codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode()));
+        
+        // Hiển thị Mã - Tên
+        siteCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().siteCode() + (c.getValue().siteName() != null ? " - " + c.getValue().siteName() : "")));
+        codeCol.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().merchandiseCode() + (c.getValue().merchandiseName() != null ? " - " + c.getValue().merchandiseName() : "")));
+                
         orderedCol.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().quantityOrdered())));
         statusCol.setCellValueFactory(c -> new SimpleStringProperty(StatusLabels.orderStatus(c.getValue().status())));
+        
         TableColumnLayout.bindProportionalColumns(table, COL_RATIOS, orderIdCol, siteCol, codeCol, orderedCol, statusCol);
         TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
+        TableColumnLayout.bindEllipsisCellFactory(siteCol);
+        TableColumnLayout.bindEllipsisCellFactory(codeCol);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
             reconcileButton.setDisable(row == null);
             if (row != null) {
-                // Tự động điền số lượng đặt vào ô thực nhận khi click chọn dòng
                 actualField.setText(String.valueOf(row.quantityOrdered()));
+                timeField.setText(LocalDateTime.now().format(TIME_FORMATTER)); // Reset giờ khi bấm chọn dòng khác
             } else {
                 actualField.setText("0");
             }
@@ -84,18 +94,26 @@ public class WarehouseReconcileController extends BaseViewController {
         int actual;
         try {
             actual = Integer.parseInt(actualField.getText().trim());
-            if (actual < 0) {
-                throw new NumberFormatException();
-            }
+            if (actual < 0) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
-            UiTasks.showError(new IllegalArgumentException("Vui lòng nhập số lượng thực nhận hợp lệ."));
+            UiTasks.showError(new IllegalArgumentException("Vui lòng nhập số lượng hợp lệ."));
+            return;
+        }
+        
+        // Xử lý lấy thời gian từ ô nhập liệu
+        Instant actualTime;
+        try {
+            LocalDateTime ldt = LocalDateTime.parse(timeField.getText().trim(), TIME_FORMATTER);
+            actualTime = ldt.atZone(ZoneId.systemDefault()).toInstant();
+        } catch (Exception e) {
+            UiTasks.showError(new IllegalArgumentException("Sai định dạng thời gian. Vui lòng nhập: dd/MM/yyyy HH:mm"));
             return;
         }
         
         String orderId = selected.orderId();
         UiTasks.<WarehouseReconcileResultDto>runWithStatus(
                 "Đang ghi nhận...",
-                () -> app.uc014().recordInbound(orderId, actual),
+                () -> app.uc014().recordInbound(orderId, actual, actualTime), // Truyền thêm actualTime
                 result -> {
                     setScreenStatus("Đơn " + result.orderId() + ": "
                             + StatusLabels.orderStatus(result.status())

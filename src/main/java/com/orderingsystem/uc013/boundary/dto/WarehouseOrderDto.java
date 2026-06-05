@@ -9,13 +9,16 @@ public record WarehouseOrderDto(
         String orderId,
         String requestId,
         String siteCode,
+        String siteName,
         String merchandiseCode,
+        String merchandiseName,
         int quantityOrdered,
         String unit,
         String deliveryMeans,
         OrderStatus status,
         Instant sentAt,
         Instant confirmedAt,
+        Instant reconciledAt,
         Integer actualQuantity,
         Integer quantityDiff
 ) {
@@ -24,13 +27,16 @@ public record WarehouseOrderDto(
                 order.getOrderId(),
                 order.getRequestId(),
                 order.getSiteCode(),
+                order.getSiteName(),
                 order.getMerchandiseCode(),
+                order.getMerchandiseName(),
                 order.getQuantityOrdered(),
                 order.getUnit(),
                 order.getDeliveryMeans().toExternalValue(),
                 order.getStatus(),
                 order.getSentAt(),
                 order.getConfirmedAt(),
+                order.getReconciledAt(),
                 order.getActualQuantity(),
                 order.getQuantityDiff()
         );

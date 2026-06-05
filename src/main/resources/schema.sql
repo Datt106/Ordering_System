@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     status            TEXT NOT NULL,
     sent_at           TEXT,
     confirmed_at      TEXT,
+    reconciled_at     TEXT,
     actual_quantity   INTEGER,
     quantity_diff     INTEGER
 );

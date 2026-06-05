@@ -19,9 +19,16 @@ public class PurchaseOrderRepository extends BaseRepository {
             OrderStatus.SAI_LECH
     );
 
+    // Câu lệnh gốc được bổ sung JOIN với bảng sites và standard_merchandise để lấy Tên
+    private static final String SELECT_BASE = 
+            "SELECT po.*, s.site_name, sm.merchandise_name " +
+            "FROM purchase_orders po " +
+            "LEFT JOIN sites s ON po.site_code = s.site_code " +
+            "LEFT JOIN standard_merchandise sm ON po.merchandise_code = sm.merchandise_code ";
+
     public void save(PurchaseOrder order) {
         inJdbcTransaction(connection -> executeUpdate(connection,
-                "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff, reconciled_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 statement -> {
                     statement.setString(1, order.getOrderId());
                     statement.setString(2, order.getRequestId());
@@ -35,6 +42,7 @@ public class PurchaseOrderRepository extends BaseRepository {
                     JdbcSupport.setInstant(statement, 10, order.getConfirmedAt());
                     statement.setObject(11, order.getActualQuantity());
                     statement.setObject(12, order.getQuantityDiff());
+                    JdbcSupport.setInstant(statement, 13, order.getReconciledAt());
                 }));
     }
 
@@ -42,7 +50,7 @@ public class PurchaseOrderRepository extends BaseRepository {
         inJdbcTransaction(connection -> {
             for (PurchaseOrder order : orders) {
                 executeUpdate(connection,
-                        "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT OR REPLACE INTO purchase_orders (order_id, request_id, site_code, merchandise_code, quantity_ordered, unit, delivery_means, status, sent_at, confirmed_at, actual_quantity, quantity_diff, reconciled_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         statement -> {
                             statement.setString(1, order.getOrderId());
                             statement.setString(2, order.getRequestId());
@@ -56,6 +64,7 @@ public class PurchaseOrderRepository extends BaseRepository {
                             JdbcSupport.setInstant(statement, 10, order.getConfirmedAt());
                             statement.setObject(11, order.getActualQuantity());
                             statement.setObject(12, order.getQuantityDiff());
+                            JdbcSupport.setInstant(statement, 13, order.getReconciledAt());
                         });
             }
             return null;
@@ -64,7 +73,7 @@ public class PurchaseOrderRepository extends BaseRepository {
 
     public Optional<PurchaseOrder> findById(String orderId) {
         return jdbcQuery(connection -> executeQuery(connection,
-                "SELECT * FROM purchase_orders WHERE order_id = ?",
+                SELECT_BASE + "WHERE po.order_id = ?",
                 bind(orderId),
                 rs -> rs.next() ? Optional.of(mapOrder(rs)) : Optional.empty()));
     }
@@ -84,7 +93,7 @@ public class PurchaseOrderRepository extends BaseRepository {
 
     public List<PurchaseOrder> findByRequestId(String requestId) {
         return jdbcQuery(connection -> executeQuery(connection,
-                "SELECT * FROM purchase_orders WHERE request_id = ? ORDER BY site_code, merchandise_code",
+                SELECT_BASE + "WHERE po.request_id = ? ORDER BY po.site_code, po.merchandise_code",
                 bind(requestId),
                 rs -> {
                     List<PurchaseOrder> list = new ArrayList<>();
@@ -101,7 +110,7 @@ public class PurchaseOrderRepository extends BaseRepository {
 
     public List<PurchaseOrder> findByStatus(OrderStatus status) {
         return jdbcQuery(connection -> executeQuery(connection,
-                "SELECT * FROM purchase_orders WHERE status = ? ORDER BY sent_at DESC",
+                SELECT_BASE + "WHERE po.status = ? ORDER BY po.sent_at DESC",
                 bind(status.name()),
                 rs -> {
                     List<PurchaseOrder> list = new ArrayList<>();
@@ -110,13 +119,12 @@ public class PurchaseOrderRepository extends BaseRepository {
                 }));
     }
 
-
     public List<PurchaseOrder> findBySiteCodeAndStatuses(String siteCode, Set<OrderStatus> statuses) {
         if (statuses == null || statuses.isEmpty()) {
             return List.of();
         }
         String placeholders = statuses.stream().map(s -> "?").collect(Collectors.joining(","));
-        String sql = "SELECT * FROM purchase_orders WHERE site_code = ? AND status IN (" + placeholders + ") ORDER BY request_id, merchandise_code";
+        String sql = SELECT_BASE + "WHERE po.site_code = ? AND po.status IN (" + placeholders + ") ORDER BY po.request_id, po.merchandise_code";
         Object[] params = new Object[statuses.size() + 1];
         params[0] = siteCode;
         int idx = 1;
@@ -135,7 +143,7 @@ public class PurchaseOrderRepository extends BaseRepository {
 
     public List<PurchaseOrder> findAll() {
         return jdbcQuery(connection -> executeQuery(connection,
-                "SELECT * FROM purchase_orders ORDER BY request_id, site_code, merchandise_code",
+                SELECT_BASE + "ORDER BY po.request_id, po.site_code, po.merchandise_code",
                 null,
                 rs -> {
                     List<PurchaseOrder> list = new ArrayList<>();
@@ -149,7 +157,7 @@ public class PurchaseOrderRepository extends BaseRepository {
             return List.of();
         }
         String placeholders = statuses.stream().map(s -> "?").collect(Collectors.joining(","));
-        String sql = "SELECT * FROM purchase_orders WHERE status IN (" + placeholders + ") ORDER BY request_id, site_code";
+        String sql = SELECT_BASE + "WHERE po.status IN (" + placeholders + ") ORDER BY po.request_id, po.site_code";
         Object[] params = statuses.stream().map(Enum::name).toArray();
         return jdbcQuery(connection -> executeQuery(connection,
                 sql,
@@ -191,6 +199,12 @@ public class PurchaseOrderRepository extends BaseRepository {
         order.setConfirmedAt(JdbcSupport.getInstant(rs, "confirmed_at"));
         order.setActualQuantity((Integer) rs.getObject("actual_quantity"));
         order.setQuantityDiff((Integer) rs.getObject("quantity_diff"));
+        
+        // Thêm mapping cho các dữ liệu mới
+        order.setReconciledAt(JdbcSupport.getInstant(rs, "reconciled_at"));
+        order.setSiteName(rs.getString("site_name"));
+        order.setMerchandiseName(rs.getString("merchandise_name"));
+        
         return order;
     }
 }

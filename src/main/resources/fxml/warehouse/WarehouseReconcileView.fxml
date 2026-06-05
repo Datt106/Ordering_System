@@ -15,11 +15,17 @@
 
     <VBox styleClass="content-card" maxWidth="Infinity">
         <Label text="Ghi nhận nhập" styleClass="section-heading"/>
-        <HBox spacing="12" alignment="CENTER_LEFT">
+        <HBox spacing="16" alignment="CENTER_LEFT">
             <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text="Số lượng thực nhận" styleClass="field-label"/>
-                <TextField fx:id="actualField" promptText="0" prefWidth="120" styleClass="uniform-field"/>
+                <TextField fx:id="actualField" promptText="0" prefWidth="140" styleClass="uniform-field"/>
             </VBox>
+            
+            <VBox spacing="6" alignment="CENTER_LEFT">
+                <Label text="Thời gian hàng đến (dd/MM/yyyy HH:mm)" styleClass="field-label"/>
+                <TextField fx:id="timeField" promptText="05/06/2026 14:30" prefWidth="250" styleClass="uniform-field"/>
+            </VBox>
+
             <VBox spacing="6" alignment="CENTER_LEFT">
                 <Label text=" " styleClass="field-label"/>
                 <HBox spacing="8" alignment="CENTER_LEFT">

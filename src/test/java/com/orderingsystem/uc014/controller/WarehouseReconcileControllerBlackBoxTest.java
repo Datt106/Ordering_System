@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,13 +57,13 @@ class WarehouseReconcileControllerBlackBoxTest {
     @Test
     void recordInbound_rejectsNegativeActualQuantity() {
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("PO-20260604-001", -1));
+                () -> controller.recordInbound("PO-20260604-001", -1, Instant.now()));
     }
 
     @Test
     void recordInbound_rejectsBlankOrderId() {
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("   ", 1));
+                () -> controller.recordInbound("   ", 1, Instant.now()));
     }
 
     @Test
@@ -70,7 +71,7 @@ class WarehouseReconcileControllerBlackBoxTest {
         when(purchaseOrderRepository.findById("PO-404")).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("PO-404", 1));
+                () -> controller.recordInbound("PO-404", 1, Instant.now()));
     }
 
     @Test
@@ -79,13 +80,13 @@ class WarehouseReconcileControllerBlackBoxTest {
         when(purchaseOrderRepository.findById("PO-20260604-001")).thenReturn(Optional.of(confirmedOrder));
 
         assertThrows(IllegalStateException.class,
-                () -> controller.recordInbound("PO-20260604-001", 10));
+                () -> controller.recordInbound("PO-20260604-001", 10, Instant.now()));
     }
 
     @Test
     void recordInbound_acceptsMatchingQuantityAndReturnsSuccessDto() {
         when(purchaseOrderRepository.findById("PO-20260604-001")).thenReturn(Optional.of(confirmedOrder));
-        WarehouseReconcileResultDto result = controller.recordInbound("PO-20260604-001", 10);
+        WarehouseReconcileResultDto result = controller.recordInbound("PO-20260604-001", 10, Instant.now());
 
         assertEquals("PO-20260604-001", result.orderId());
         assertEquals(10, result.orderedQuantity());
@@ -98,7 +99,7 @@ class WarehouseReconcileControllerBlackBoxTest {
     @Test
     void recordInbound_acceptsMismatchedQuantityAndMarksDiscrepancy() {
         when(purchaseOrderRepository.findById("PO-20260604-001")).thenReturn(Optional.of(confirmedOrder));
-        WarehouseReconcileResultDto result = controller.recordInbound("PO-20260604-001", 12);
+        WarehouseReconcileResultDto result = controller.recordInbound("PO-20260604-001", 12, Instant.now());
 
         assertEquals(2, result.quantityDiff());
         assertEquals(OrderStatus.SAI_LECH, result.status());

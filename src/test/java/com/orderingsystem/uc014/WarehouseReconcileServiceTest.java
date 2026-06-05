@@ -6,10 +6,13 @@ import com.orderingsystem.infrastructure.database.DbManager;
 import com.orderingsystem.infrastructure.database.PurchaseOrderRepository;
 import com.orderingsystem.infrastructure.database.SchemaInitializer;
 import com.orderingsystem.infrastructure.seed.DatabaseSeeder;
-import com.orderingsystem.uc013.WarehouseOrderViewService;
+import com.orderingsystem.uc013.controller.WarehouseOrderViewController;
+import com.orderingsystem.uc014.controller.WarehouseReconcileController;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,8 +22,8 @@ class WarehouseReconcileServiceTest {
 
     private static final AuthService authService = new AuthService();
     private static final PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepository();
-    private static final WarehouseReconcileService warehouseReconcileService = new WarehouseReconcileService();
-    private static final WarehouseOrderViewService warehouseOrderViewService = new WarehouseOrderViewService();
+    private static final WarehouseReconcileController warehouseReconcileController = new WarehouseReconcileController();
+    private static final WarehouseOrderViewController warehouseOrderViewController = new WarehouseOrderViewController();
 
     @BeforeAll
     static void init() {
@@ -48,12 +51,13 @@ class WarehouseReconcileServiceTest {
 
         authService.logout();
         authService.login("warehouse", "wh123");
-        var result = warehouseReconcileService.recordInbound(anyOrder.getOrderId(), anyOrder.getQuantityOrdered());
+        // Thêm Instant.now()
+        var result = warehouseReconcileController.recordInbound(anyOrder.getOrderId(), anyOrder.getQuantityOrdered(), Instant.now());
 
         assertEquals(OrderStatus.DA_NHAP_KHO, result.status());
         assertEquals(0, result.quantityDiff());
 
-        var rows = warehouseOrderViewService.listOrders(OrderStatus.DA_NHAP_KHO, null, null);
+        var rows = warehouseOrderViewController.listOrders(OrderStatus.DA_NHAP_KHO, null, null);
         assertFalse(rows.isEmpty());
     }
 
@@ -61,7 +65,7 @@ class WarehouseReconcileServiceTest {
     void warehouseReconcile_requiresWarehouseRole() {
         authService.logout();
         authService.login("sales", "sales123");
-        assertThrows(SecurityException.class, () -> warehouseReconcileService.recordInbound("PO-X", 1));
+        assertThrows(SecurityException.class, () -> warehouseReconcileController.recordInbound("PO-X", 1, Instant.now()));
     }
 
     @Test
@@ -73,7 +77,7 @@ class WarehouseReconcileServiceTest {
         authService.logout();
         authService.login("warehouse", "wh123");
         assertThrows(IllegalArgumentException.class,
-                () -> warehouseReconcileService.recordInbound(anyOrder.getOrderId(), -1));
+                () -> warehouseReconcileController.recordInbound(anyOrder.getOrderId(), -1, Instant.now()));
         authService.logout();
     }
 
@@ -86,7 +90,7 @@ class WarehouseReconcileServiceTest {
         authService.logout();
         authService.login("warehouse", "wh123");
         assertThrows(IllegalStateException.class,
-                () -> warehouseReconcileService.recordInbound(anyOrder.getOrderId(), 1));
+                () -> warehouseReconcileController.recordInbound(anyOrder.getOrderId(), 1, Instant.now()));
         authService.logout();
     }
 }

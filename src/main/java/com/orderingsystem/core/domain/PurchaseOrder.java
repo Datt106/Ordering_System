@@ -10,7 +10,11 @@ public class PurchaseOrder {
 
     private String siteCode;
 
+    private String siteName; 
+
     private String merchandiseCode;
+    
+    private String merchandiseName;
 
     private int quantityOrdered;
 
@@ -23,6 +27,8 @@ public class PurchaseOrder {
     private Instant sentAt;
 
     private Instant confirmedAt;
+
+    private Instant reconciledAt;
 
     private Integer actualQuantity;
 
@@ -115,5 +121,29 @@ public class PurchaseOrder {
 
     public void setQuantityDiff(Integer quantityDiff) {
         this.quantityDiff = quantityDiff;
+    }
+
+    public String getSiteName() { 
+        return siteName; 
+    }
+    
+    public void setSiteName(String siteName) {
+        this.siteName = siteName; 
+    }
+
+    public String getMerchandiseName() { 
+        return merchandiseName; 
+    }
+
+    public void setMerchandiseName(String merchandiseName) {
+        this.merchandiseName = merchandiseName; 
+    }
+
+    public Instant getReconciledAt() { 
+        return reconciledAt; 
+    }
+
+    public void setReconciledAt(Instant reconciledAt) { 
+        this.reconciledAt = reconciledAt; 
     }
 }

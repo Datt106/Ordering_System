@@ -21,7 +21,7 @@ public class WarehouseReconcileController {
         this.purchaseOrderRepository = purchaseOrderRepository;
     }
 
-    public WarehouseReconcileResultDto recordInbound(String orderId, int actualQuantity) {
+    public WarehouseReconcileResultDto recordInbound(String orderId, int actualQuantity, java.time.Instant actualTime) {
         authService.requireRole(UserRole.WAREHOUSE);
         if (actualQuantity < 0) {
             throw new IllegalArgumentException("Số lượng thực nhận không được âm.");
@@ -38,6 +38,9 @@ public class WarehouseReconcileController {
         order.setActualQuantity(actualQuantity);
         order.setQuantityDiff(diff);
         order.setStatus(diff == 0 ? OrderStatus.DA_NHAP_KHO : OrderStatus.SAI_LECH);
+        
+        order.setReconciledAt(actualTime != null ? actualTime : java.time.Instant.now());
+        
         purchaseOrderRepository.save(order);
 
         return new WarehouseReconcileResultDto(

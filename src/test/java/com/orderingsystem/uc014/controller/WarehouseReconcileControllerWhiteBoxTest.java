@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,20 +54,20 @@ class WarehouseReconcileControllerWhiteBoxTest {
     @Test
     void branchNegativeQuantityTrue() {
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("PO-20260604-010", -1));
+                () -> controller.recordInbound("PO-20260604-010", -1, Instant.now()));
     }
 
     @Test
     void branchBlankOrderIdTrue() {
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("", 1));
+                () -> controller.recordInbound("", 1, Instant.now()));
     }
 
     @Test
     void branchOrderNotFoundTrue() {
         when(purchaseOrderRepository.findById("PO-404")).thenReturn(Optional.empty());
         assertThrows(IllegalArgumentException.class,
-                () -> controller.recordInbound("PO-404", 1));
+                () -> controller.recordInbound("PO-404", 1, Instant.now()));
     }
 
     @Test
@@ -74,13 +75,13 @@ class WarehouseReconcileControllerWhiteBoxTest {
         order.setStatus(OrderStatus.CHO_GUI);
         when(purchaseOrderRepository.findById("PO-20260604-010")).thenReturn(Optional.of(order));
         assertThrows(IllegalStateException.class,
-                () -> controller.recordInbound("PO-20260604-010", 1));
+                () -> controller.recordInbound("PO-20260604-010", 1, Instant.now()));
     }
 
     @Test
     void branchDiffEqualsZeroFalsePath() {
         when(purchaseOrderRepository.findById("PO-20260604-010")).thenReturn(Optional.of(order));
-        var result = controller.recordInbound("PO-20260604-010", 10);
+        var result = controller.recordInbound("PO-20260604-010", 10, Instant.now());
 
         assertEquals(OrderStatus.DA_NHAP_KHO, result.status());
         assertEquals(0, result.quantityDiff());
@@ -90,7 +91,7 @@ class WarehouseReconcileControllerWhiteBoxTest {
     @Test
     void branchDiffNotEqualsZeroFalsePath() {
         when(purchaseOrderRepository.findById("PO-20260604-010")).thenReturn(Optional.of(order));
-        var result = controller.recordInbound("PO-20260604-010", 13);
+        var result = controller.recordInbound("PO-20260604-010", 13, Instant.now());
 
         assertEquals(OrderStatus.SAI_LECH, result.status());
         assertEquals(3, result.quantityDiff());

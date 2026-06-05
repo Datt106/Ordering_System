@@ -18,8 +18,8 @@ import com.orderingsystem.uc008.OrderDispatchService;
 import com.orderingsystem.uc009.SiteMerchandiseService;
 import com.orderingsystem.uc010.SiteShippingService;
 import com.orderingsystem.uc012.SiteOrderConfirmService;
-import com.orderingsystem.uc013.WarehouseOrderViewService;
-import com.orderingsystem.uc014.WarehouseReconcileService;
+import com.orderingsystem.uc013.controller.WarehouseOrderViewController;
+import com.orderingsystem.uc014.controller.WarehouseReconcileController;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,9 +34,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Luồng Quản lý kho: Site xác nhận đơn → Kho xem danh sách → Đối chiếu nhập (khớp / lệch).
- */
+@SuppressWarnings("deprecation")
 class WarehouseManagementFlowTest {
 
     private static final AuthService authService = new AuthService();
@@ -47,8 +45,11 @@ class WarehouseManagementFlowTest {
     private static final OrderSplitService orderSplitService = new OrderSplitService();
     private static final OrderDispatchService orderDispatchService = new OrderDispatchService();
     private static final SiteOrderConfirmService siteOrderConfirmService = new SiteOrderConfirmService();
-    private static final WarehouseOrderViewService warehouseOrderViewService = new WarehouseOrderViewService();
-    private static final WarehouseReconcileService warehouseReconcileService = new WarehouseReconcileService();
+    
+    // Đã đổi sang Controller
+    private static final WarehouseOrderViewController warehouseOrderViewController = new WarehouseOrderViewController();
+    private static final WarehouseReconcileController warehouseReconcileController = new WarehouseReconcileController();
+    
     private static final PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepository();
     private static final SiteShippingService siteShippingService = new SiteShippingService();
     private static final SiteMerchandiseService siteMerchandiseService = new SiteMerchandiseService();
@@ -80,10 +81,10 @@ class WarehouseManagementFlowTest {
 
         authService.login("warehouse", "wh123");
 
-        assertTrue(warehouseOrderViewService.listOrders(null, null, null).stream()
+        assertTrue(warehouseOrderViewController.listOrders(null, null, null).stream()
                 .anyMatch(o -> orderId.equals(o.orderId())));
 
-        var filtered = warehouseOrderViewService.listOrders(
+        var filtered = warehouseOrderViewController.listOrders(
                 OrderStatus.DA_XAC_NHAN, DatabaseSeeder.DEMO_SITE_CODE, "P001");
         assertTrue(filtered.stream().anyMatch(o -> orderId.equals(o.orderId())));
         assertEquals(40, filtered.stream()
@@ -92,11 +93,12 @@ class WarehouseManagementFlowTest {
                 .orElseThrow()
                 .quantityOrdered());
 
-        var result = warehouseReconcileService.recordInbound(orderId, 40);
+        // Đã sửa: Truyền thêm Instant.now()
+        var result = warehouseReconcileController.recordInbound(orderId, 40, Instant.now());
         assertEquals(OrderStatus.DA_NHAP_KHO, result.status());
         assertEquals(0, result.quantityDiff());
 
-        assertTrue(warehouseOrderViewService.listOrders(OrderStatus.DA_NHAP_KHO, null, null).stream()
+        assertTrue(warehouseOrderViewController.listOrders(OrderStatus.DA_NHAP_KHO, null, null).stream()
                 .anyMatch(o -> orderId.equals(o.orderId())));
 
         authService.logout();
@@ -108,7 +110,8 @@ class WarehouseManagementFlowTest {
         String orderId = prepareConfirmedOrder(30);
 
         authService.login("warehouse", "wh123");
-        var result = warehouseReconcileService.recordInbound(orderId, 25);
+        // Đã sửa: Truyền thêm Instant.now()
+        var result = warehouseReconcileController.recordInbound(orderId, 25, Instant.now());
         assertEquals(OrderStatus.SAI_LECH, result.status());
         assertEquals(-5, result.quantityDiff());
         assertEquals(OrderStatus.SAI_LECH, purchaseOrderRepository.findById(orderId).orElseThrow().getStatus());
