@@ -148,6 +148,10 @@ public class StockQueryController {
         List<InventoryQuery> pending = inventoryQueryRepository.findByRequestId(id).stream()
                 .filter(InventoryQuery::isPending)
                 .toList();
+        // Chặn nếu không còn gì để chờ (do đã phản hồi hết hoặc đã bấm ngắt trước đó)
+        if (pending.isEmpty()) {
+            throw new IllegalStateException("Tất cả các Site đã phản hồi hoặc bạn đã thực hiện ngắt kết nối trước đó. Không thể thao tác lại!");
+        }
         for (InventoryQuery query : pending) {
             query.setInStockQuantity(0);
             query.setRespondedAt(java.time.Instant.now());
