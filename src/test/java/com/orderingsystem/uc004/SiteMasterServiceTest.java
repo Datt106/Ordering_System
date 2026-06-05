@@ -115,6 +115,20 @@ class SiteMasterServiceTest {
     }
 
     @Test
+    void searchSites_byKeywordAndActiveFilter() {
+        authService.login("overseas", "overseas123");
+
+        assertFalse(siteMasterService.searchSites("Tokyo", null).isEmpty());
+        assertTrue(siteMasterService.searchSites("S01", null).stream()
+                .anyMatch(site -> DatabaseSeeder.DEMO_SITE_CODE.equals(site.siteCode())));
+        assertTrue(siteMasterService.searchSites("not-found-xyz", null).isEmpty());
+
+        assertTrue(siteMasterService.searchSites(null, true).stream().allMatch(SiteDto::active));
+        assertTrue(siteMasterService.searchSites("Osaka", false).isEmpty()
+                || siteMasterService.searchSites("Osaka", false).stream().noneMatch(SiteDto::active));
+    }
+
+    @Test
     void register_afterHardDelete_allowsSameCode() {
         authService.login("overseas", "overseas123");
         String code = "X-DEL";

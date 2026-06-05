@@ -72,6 +72,38 @@ public class SiteRepository extends BaseRepository {
                 }));
     }
 
+    /**
+     * @param keyword    từ khóa (mã, tên, ghi chú); null/blank = không lọc theo chữ
+     * @param activeOnly true = hoạt động, false = ngừng, null = tất cả
+     */
+    public List<Site> search(String keyword, Boolean activeOnly) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM sites WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        if (keyword != null && !keyword.isBlank()) {
+            String pattern = "%" + keyword.trim().toLowerCase() + "%";
+            sql.append(" AND (LOWER(site_code) LIKE ? OR LOWER(site_name) LIKE ? OR LOWER(COALESCE(other_info, '')) LIKE ?)");
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+        if (activeOnly != null) {
+            sql.append(" AND active = ?");
+            params.add(activeOnly ? 1 : 0);
+        }
+        sql.append(" ORDER BY site_code");
+        Object[] bindParams = params.toArray();
+        return jdbcQuery(connection -> executeQuery(connection,
+                sql.toString(),
+                bindParams.length == 0 ? null : bind(bindParams),
+                rs -> {
+                    List<Site> sites = new ArrayList<>();
+                    while (rs.next()) {
+                        sites.add(mapSite(rs));
+                    }
+                    return sites;
+                }));
+    }
+
     public List<Site> findWithShippingDeclared() {
         return jdbcQuery(connection -> executeQuery(connection,
                 "SELECT * FROM sites WHERE active = 1 AND shipping_status = ? ORDER BY site_code",

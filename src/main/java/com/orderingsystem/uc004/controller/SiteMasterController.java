@@ -128,6 +128,17 @@ public class SiteMasterController {
         return siteRepository.findAllActive().stream().map(SiteDto::from).toList();
     }
 
+    /**
+     * Tìm Site theo từ khóa (mã, tên, thông tin khác) và trạng thái hoạt động.
+     *
+     * @param keyword    null/blank = không lọc theo chữ
+     * @param activeOnly true = hoạt động, false = ngừng, null = tất cả
+     */
+    public List<SiteDto> searchSites(String keyword, Boolean activeOnly) {
+        authService.requireRole(UserRole.OVERSEAS);
+        return siteRepository.search(keyword, activeOnly).stream().map(SiteDto::from).toList();
+    }
+
     private static String normalizeSiteCode(String siteCode) {
         if (siteCode == null || siteCode.isBlank()) {
             throw new IllegalArgumentException("Mã Site không được để trống.");

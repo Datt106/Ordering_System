@@ -11,12 +11,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 import java.util.List;
 
@@ -24,6 +26,22 @@ public class OverseasSitesController extends BaseViewController {
 
     private static final double[] SITES_COL_RATIOS = {0.12, 0.22, 0.24, 0.32, 0.10};
 
+    private enum ActiveFilter {
+        ALL(null),
+        ACTIVE(true),
+        INACTIVE(false);
+
+        private final Boolean activeOnly;
+
+        ActiveFilter(Boolean activeOnly) {
+            this.activeOnly = activeOnly;
+        }
+    }
+
+    @FXML
+    private TextField keywordField;
+    @FXML
+    private ComboBox<ActiveFilter> activeFilter;
     @FXML
     private TableView<SiteDto> table;
     @FXML
@@ -79,10 +97,29 @@ public class OverseasSitesController extends BaseViewController {
         TableColumnLayout.bindEllipsisCellFactory(shipCol);
         bindTableScroll(table, tableContainer);
 
+        activeFilter.setItems(FXCollections.observableArrayList(ActiveFilter.values()));
+        activeFilter.setConverter(activeFilterConverter());
+        activeFilter.getSelectionModel().select(ActiveFilter.ALL);
+
         FormValidation.bindDisabledUntilFilled(formOkButton, codeField, nameField);
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> updateActionButtons(row));
-        refresh();
+        onSearch();
+    }
+
+    @FXML
+    private void onSearch() {
+        String keyword = keywordField.getText();
+        ActiveFilter filter = activeFilter.getValue() != null ? activeFilter.getValue() : ActiveFilter.ALL;
+        UiTasks.runWithStatus(
+                "Đang tìm Site…",
+                () -> app.uc004().searchSites(keyword, filter.activeOnly),
+                items -> {
+                    table.setItems(FXCollections.observableArrayList(items));
+                    updateActionButtons(table.getSelectionModel().getSelectedItem());
+                },
+                "Danh sách Site sẵn sàng."
+        );
     }
 
     private void updateActionButtons(SiteDto row) {
@@ -100,7 +137,7 @@ public class OverseasSitesController extends BaseViewController {
 
     @FXML
     private void onRefresh() {
-        refresh();
+        onSearch();
     }
 
     @FXML
@@ -161,7 +198,7 @@ public class OverseasSitesController extends BaseViewController {
                 () -> app.uc004().deactivateSite(code),
                 updated -> {
                     UiTasks.showInfo("Đã ngừng hoạt động", "Site " + updated.siteCode() + " đã chuyển sang Ngừng.");
-                    refresh();
+                    onSearch();
                 },
                 "Danh sách Site đã cập nhật."
         );
@@ -190,7 +227,7 @@ public class OverseasSitesController extends BaseViewController {
                 () -> app.uc004().activateSite(code),
                 updated -> {
                     UiTasks.showInfo("Đã kích hoạt", "Site " + updated.siteCode() + " đang Hoạt động.");
-                    refresh();
+                    onSearch();
                 },
                 "Danh sách Site đã cập nhật."
         );
@@ -223,7 +260,7 @@ public class OverseasSitesController extends BaseViewController {
                             "Đã xóa",
                             "Site " + deletedCode + " đã gỡ khỏi hệ thống.\n"
                                     + "Mã Site có thể dùng lại khi thêm Site mới.");
-                    refresh();
+                    onSearch();
                 },
                 "Danh sách Site đã cập nhật."
         );
@@ -252,7 +289,7 @@ public class OverseasSitesController extends BaseViewController {
                             "Đã lưu",
                             "Site " + savedCode + " đã được thêm.\n"
                                     + "Mỗi Site chỉ một tài khoản — đại diện Site đăng ký từ màn đăng nhập.");
-                    refresh();
+                    onSearch();
                 },
                 "Danh sách Site đã cập nhật."
         );
@@ -282,21 +319,9 @@ public class OverseasSitesController extends BaseViewController {
                 savedCode -> {
                     FormPanels.close(formPanel);
                     UiTasks.showInfo("Đã lưu", "Đã cập nhật Site " + savedCode);
-                    refresh();
+                    onSearch();
                 },
                 "Danh sách Site đã cập nhật."
-        );
-    }
-
-    private void refresh() {
-        UiTasks.runWithStatus(
-                "Đang tải Site…",
-                () -> app.uc004().listAllSites(),
-                items -> {
-                    table.setItems(FXCollections.observableArrayList(items));
-                    updateActionButtons(table.getSelectionModel().getSelectedItem());
-                },
-                "Danh sách Site sẵn sàng."
         );
     }
 
@@ -328,5 +353,26 @@ public class OverseasSitesController extends BaseViewController {
             return StatusLabels.shippingStatus(site.shippingStatus());
         }
         return "Tàu " + site.shipDays() + " ngày / Bay " + site.airDays() + " ngày";
+    }
+
+    private static StringConverter<ActiveFilter> activeFilterConverter() {
+        return new StringConverter<>() {
+            @Override
+            public String toString(ActiveFilter filter) {
+                if (filter == null) {
+                    return "Tất cả trạng thái";
+                }
+                return switch (filter) {
+                    case ALL -> "Tất cả trạng thái";
+                    case ACTIVE -> "Hoạt động";
+                    case INACTIVE -> "Ngừng";
+                };
+            }
+
+            @Override
+            public ActiveFilter fromString(String string) {
+                return null;
+            }
+        };
     }
 }
