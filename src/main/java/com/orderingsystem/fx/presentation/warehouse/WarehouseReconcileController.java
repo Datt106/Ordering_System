@@ -25,16 +25,13 @@ import java.util.List;
 
 public class WarehouseReconcileController extends BaseViewController {
 
-    // Tỷ lệ cho bảng đối chiếu (5 cột): Mã đơn (28%), Site (25%), Hàng (25%), SL đặt (8%), Trạng thái (14%)
-    private static final double[] COL_RATIOS = {0.28, 0.25, 0.25, 0.08, 0.14};
-    
+    private static final double[] COL_RATIOS = {0.25, 0.25, 0.25, 0.10, 0.15};
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @FXML private TextField actualField;
-    @FXML private TextField timeField; // Ô nhập thời gian mới
+    @FXML private TextField timeField;
     @FXML private Button reconcileButton;
     @FXML private TableView<WarehouseOrderDto> table;
-    
     @FXML private TableColumn<WarehouseOrderDto, String> orderIdCol;
     @FXML private TableColumn<WarehouseOrderDto, String> siteCol;
     @FXML private TableColumn<WarehouseOrderDto, String> codeCol;
@@ -44,36 +41,23 @@ public class WarehouseReconcileController extends BaseViewController {
     @Override
     protected void onInit() {
         actualField.setText("0");
-        // Mặc định điền sẵn giờ hiện tại cho tiện
         timeField.setText(LocalDateTime.now().format(TIME_FORMATTER));
         
+        // Gán Factory cẩn thận
         orderIdCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().orderId()));
-        
-        // Hiển thị Mã - Tên
-        siteCol.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().siteCode() + (c.getValue().siteName() != null ? " - " + c.getValue().siteName() : "")));
-        codeCol.setCellValueFactory(c -> new SimpleStringProperty(
-                c.getValue().merchandiseCode() + (c.getValue().merchandiseName() != null ? " - " + c.getValue().merchandiseName() : "")));
-                
+        siteCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().siteCode() + " - " + c.getValue().siteName()));
+        codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().merchandiseCode() + " - " + c.getValue().merchandiseName()));
         orderedCol.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().quantityOrdered())));
         statusCol.setCellValueFactory(c -> new SimpleStringProperty(StatusLabels.orderStatus(c.getValue().status())));
         
         TableColumnLayout.bindProportionalColumns(table, COL_RATIOS, orderIdCol, siteCol, codeCol, orderedCol, statusCol);
-        TableColumnLayout.bindEllipsisCellFactory(orderIdCol);
-        TableColumnLayout.bindEllipsisCellFactory(siteCol);
-        TableColumnLayout.bindEllipsisCellFactory(codeCol);
-
+        
         table.getSelectionModel().selectedItemProperty().addListener((obs, o, row) -> {
             reconcileButton.setDisable(row == null);
-            if (row != null) {
-                actualField.setText(String.valueOf(row.quantityOrdered()));
-                timeField.setText(LocalDateTime.now().format(TIME_FORMATTER)); // Reset giờ khi bấm chọn dòng khác
-            } else {
-                actualField.setText("0");
-            }
+            actualField.setText(row != null ? String.valueOf(row.quantityOrdered()) : "0");
         });
+        
         reconcileButton.setDisable(true);
-
         bindTableScroll(table);
         Platform.runLater(this::refresh);
     }

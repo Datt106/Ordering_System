@@ -465,7 +465,7 @@ Text {
 
 /* —— Danh mục: full width + cột 15% / 35% / 50% —— */
 .table-container {
-    -fx-background-color: #111827;
+    -fx-background-color: #101916; /* Đã sửa thành màu nền chuẩn */
     -fx-background-radius: 8;
     -fx-border-color: #2a3d36;
     -fx-border-radius: 8;
@@ -475,11 +475,32 @@ Text {
     -fx-min-width: 0;
 }
 
+/* Ép bảng chiếm trọn không gian content-card */
 .catalog-table {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-max-width: infinity;
-    -fx-pref-width: -1;
+    -fx-background-color: #101916;
+    -fx-base: #101916;
+    -fx-control-inner-background: #101916; /* Màu nền bảng */
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.catalog-table .virtual-flow .viewport,
+.catalog-table .virtual-flow .sheet {
+    -fx-background-color: #101916;
+}
+
+.catalog-table .table-row-cell:empty {
+    -fx-background-color: #101916;
+    -fx-border-color: transparent;
+}
+
+.catalog-table .column-header-background {
+    -fx-background-color: #152820;
+}
+
+.content-card {
+    -fx-padding: 16;
+    -fx-spacing: 8;
 }
 
 .catalog-table .column-header,
@@ -597,6 +618,7 @@ Text {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-padding: 0;
+    -fx-fit-to-height: true;
 }
 
 .screen-scroll > .viewport {

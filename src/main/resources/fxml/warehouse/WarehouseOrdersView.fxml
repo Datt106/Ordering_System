@@ -35,20 +35,18 @@
         </HBox>
     </VBox>
 
-    <VBox styleClass="content-card" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+    <VBox styleClass="content-card" maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS">
         <Label text="Kết quả" styleClass="section-heading"/>
-        <VBox styleClass="table-container" maxWidth="Infinity" VBox.vgrow="ALWAYS">
-            <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
-                    <TableColumn fx:id="siteCol" text="Site" sortable="true"/>
-                    <TableColumn fx:id="codeCol" text="Mặt hàng" sortable="true"/>
-                    <TableColumn fx:id="qtyCol" text="SL đặt" sortable="true"/>
-                    <TableColumn fx:id="actualQtyCol" text="SL nhận" sortable="true"/>
-                    <TableColumn fx:id="timeCol" text="TG Nhập" sortable="true"/>
-                    <TableColumn fx:id="statusCol" text="Trạng thái" sortable="true"/>
-                </columns>
-            </TableView>
-        </VBox>
+        <TableView fx:id="table" styleClass="catalog-table" maxWidth="Infinity" maxHeight="Infinity" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="orderIdCol" text="Mã đơn" sortable="true"/>
+                <TableColumn fx:id="siteCol" text="Site" sortable="true"/>
+                <TableColumn fx:id="codeCol" text="Mặt hàng" sortable="true"/>
+                <TableColumn fx:id="qtyCol" text="SL đặt" sortable="true"/>
+                <TableColumn fx:id="actualQtyCol" text="SL nhận" sortable="true"/>
+                <TableColumn fx:id="timeCol" text="TG Nhập" sortable="true"/>
+                <TableColumn fx:id="statusCol" text="Trạng thái" sortable="true"/>
+            </columns>
+        </TableView>
     </VBox>
 </VBox>
