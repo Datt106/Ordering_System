@@ -1,8 +1,10 @@
 package com.orderingsystem.uc003.controller;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.ImportRequest;
 import com.orderingsystem.core.domain.ImportRequestItem;
+import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.RequestStatus;
 import com.orderingsystem.core.domain.UserRole;
 import com.orderingsystem.infrastructure.database.ImportRequestRepository;
@@ -19,18 +21,24 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
- * Kiểm thử hộp trắng cho UC003 – RequestTrackController.
+ * Kiểm thử hộp trắng cho UC003 – theo dõi trạng thái yêu cầu nhập hàng.
  *
- * Kỹ thuật áp dụng:
- * - Phân tích đường đi điều khiển
- * - Độ đo C1 cho nhánh if/else trong toDetail()
- *
- * Full class name: com.orderingsystem.uc003.controller.RequestTrackControllerWhiteBoxTest
+ * Tập trung vào các nhánh điều kiện quan trọng của service phía sau controller:
+ * - validate khoảng ngày
+ * - xử lý request không thuộc Sales
+ * - xử lý request đã tách đơn / chưa tách đơn
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UC003 – RequestTrackController – White Box")
@@ -54,47 +62,6 @@ class RequestTrackControllerWhiteBoxTest {
     }
 
     @Test
-    void getRequestDetail_whenDaTachDon_executesChildOrderBranch() {
-        ImportRequest request = new ImportRequest("REQ-010", "sales", "Sales");
-        request.setStatus(RequestStatus.DA_TACH_DON);
-        request.getItems().add(new ImportRequestItem("M001", 4, "pcs", LocalDate.of(2026, 6, 20)));
-        request.getItems().add(new ImportRequestItem("M001", 8, "pcs", LocalDate.of(2026, 6, 18)));
-        request.getItems().add(new ImportRequestItem("M002", 2, "box", LocalDate.of(2026, 6, 22)));
-
-        when(importRequestRepository.findByIdWithItems("REQ-010")).thenReturn(Optional.of(request));
-        when(purchaseOrderRepository.findByRequestId("REQ-010")).thenReturn(List.of());
-
-        ImportRequestTrackingDetailDto detail = controller.getRequestDetail("REQ-010").orElseThrow();
-
-        assertEquals(RequestStatus.DA_TACH_DON, detail.request().status());
-        verify(purchaseOrderRepository).findByRequestId("REQ-010");
-        assertNotNull(detail.childOrders());
-    }
-
-    @Test
-    void getRequestDetail_whenStatusNotSplit_skipsChildOrderBranch() {
-        ImportRequest request = new ImportRequest("REQ-011", "sales", "Sales");
-        request.setStatus(RequestStatus.DANG_XU_LY);
-        request.getItems().add(new ImportRequestItem("M003", 5, "pcs", LocalDate.of(2026, 6, 25)));
-        when(importRequestRepository.findByIdWithItems("REQ-011")).thenReturn(Optional.of(request));
-
-        ImportRequestTrackingDetailDto detail = controller.getRequestDetail("REQ-011").orElseThrow();
-
-        assertEquals(RequestStatus.DANG_XU_LY, detail.request().status());
-        assertTrue(detail.childOrders().isEmpty());
-        verifyNoInteractions(purchaseOrderRepository);
-    }
-
-    @Test
-    void validateDateRange_whenFromAfterTo_throwsIllegalArgumentException() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> controller.listRequests(RequestStatus.CHO_XU_LY,
-                        LocalDate.of(2026, 6, 5),
-                        LocalDate.of(2026, 6, 4)));
-        assertTrue(ex.getMessage().contains("không được sau"));
-    }
-
-    @Test
     void listRequests_whenDateRangeValid_executesFilteredPath() {
         ImportRequest request = new ImportRequest("REQ-012", "sales", "Sales");
         request.setStatus(RequestStatus.CHO_XU_LY);
@@ -107,6 +74,65 @@ class RequestTrackControllerWhiteBoxTest {
                 LocalDate.of(2026, 6, 30));
 
         assertEquals(1, result.size());
+        assertEquals("REQ-012", result.getFirst().requestId());
         verify(importRequestRepository).findByDepartmentFiltered(eq("Sales"), eq(RequestStatus.CHO_XU_LY), any(), any());
+    }
+
+    @Test
+    void listRequests_whenFromAfterTo_throwsIllegalArgumentException() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> controller.listRequests(RequestStatus.CHO_XU_LY,
+                        LocalDate.of(2026, 6, 5),
+                        LocalDate.of(2026, 6, 4)));
+        assertTrue(ex.getMessage().contains("không được sau"));
+    }
+
+    @Test
+    void getRequestDetail_whenRequestIdBlank_throwsIllegalArgumentException() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> controller.getRequestDetail("   "));
+        assertTrue(ex.getMessage().contains("không được để trống"));
+    }
+
+    @Test
+    void getRequestDetail_whenRequestNotInSales_returnsEmpty() {
+        ImportRequest request = new ImportRequest("REQ-013", "overseas", "Overseas");
+        request.setStatus(RequestStatus.DANG_XU_LY);
+        when(importRequestRepository.findByIdWithItems("REQ-013")).thenReturn(Optional.of(request));
+
+        assertTrue(controller.getRequestDetail("REQ-013").isEmpty());
+        verifyNoInteractions(purchaseOrderRepository);
+    }
+
+    @Test
+    void getRequestDetail_whenStatusNotSplit_skipsChildOrderBranch() {
+        ImportRequest request = new ImportRequest("REQ-014", "sales", "Sales");
+        request.setStatus(RequestStatus.DANG_XU_LY);
+        request.getItems().add(new ImportRequestItem("M003", 5, "pcs", LocalDate.of(2026, 6, 25)));
+        when(importRequestRepository.findByIdWithItems("REQ-014")).thenReturn(Optional.of(request));
+
+        ImportRequestTrackingDetailDto detail = controller.getRequestDetail("REQ-014").orElseThrow();
+
+        assertEquals(RequestStatus.DANG_XU_LY, detail.request().status());
+        assertTrue(detail.childOrders().isEmpty());
+        verifyNoInteractions(purchaseOrderRepository);
+    }
+
+    @Test
+    void getRequestDetail_whenStatusSplit_executesChildOrderBranch() {
+        ImportRequest request = new ImportRequest("REQ-015", "sales", "Sales");
+        request.setStatus(RequestStatus.DA_TACH_DON);
+        request.getItems().add(new ImportRequestItem("M001", 4, "pcs", LocalDate.of(2026, 6, 20)));
+        when(importRequestRepository.findByIdWithItems("REQ-015")).thenReturn(Optional.of(request));
+        when(purchaseOrderRepository.findByRequestId("REQ-015")).thenReturn(List.of(
+                new PurchaseOrder("PO-015", "REQ-015", "SITE-01", "M001", 4, "pcs", DeliveryMeans.SHIP_DELIVERY)
+        ));
+
+        ImportRequestTrackingDetailDto detail = controller.getRequestDetail("REQ-015").orElseThrow();
+
+        assertEquals(RequestStatus.DA_TACH_DON, detail.request().status());
+        assertNotNull(detail.childOrders());
+        assertEquals(1, detail.childOrders().size());
+        verify(purchaseOrderRepository).findByRequestId("REQ-015");
     }
 }

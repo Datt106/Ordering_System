@@ -1,6 +1,7 @@
 package com.orderingsystem.uc014.controller;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.OrderStatus;
 import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.UserRole;
@@ -17,7 +18,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +46,7 @@ class WarehouseReconcileControllerWhiteBoxTest {
                 "MCH-010",
                 10,
                 "BOX",
-                com.orderingsystem.core.domain.DeliveryMeans.SHIP_DELIVERY
+                DeliveryMeans.SHIP_DELIVERY
         );
         order.setStatus(OrderStatus.DA_XAC_NHAN);
     }

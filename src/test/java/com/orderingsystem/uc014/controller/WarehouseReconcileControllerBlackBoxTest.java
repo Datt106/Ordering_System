@@ -1,6 +1,7 @@
 package com.orderingsystem.uc014.controller;
 
 import com.orderingsystem.auth.AuthService;
+import com.orderingsystem.core.domain.DeliveryMeans;
 import com.orderingsystem.core.domain.OrderStatus;
 import com.orderingsystem.core.domain.PurchaseOrder;
 import com.orderingsystem.core.domain.UserRole;
@@ -47,7 +48,7 @@ class WarehouseReconcileControllerBlackBoxTest {
                 "MCH-001",
                 10,
                 "BOX",
-                com.orderingsystem.core.domain.DeliveryMeans.SHIP_DELIVERY
+                DeliveryMeans.SHIP_DELIVERY
         );
         confirmedOrder.setStatus(OrderStatus.DA_XAC_NHAN);
         doNothing().when(authService).requireRole(UserRole.WAREHOUSE);

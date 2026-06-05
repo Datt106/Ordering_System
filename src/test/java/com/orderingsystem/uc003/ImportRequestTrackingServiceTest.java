@@ -20,6 +20,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -37,7 +39,9 @@ class ImportRequestTrackingServiceTest {
     private static final ImportRequestRepository importRequestRepository = new ImportRequestRepository();
 
     @BeforeAll
-    static void setUp() {
+    static void setUp() throws Exception {
+        Path dbPath = Path.of("data/test-ordering.db");
+        Files.deleteIfExists(dbPath);
         DbManager.init("jdbc:sqlite:data/test-ordering.db", "", "");
         SchemaInitializer.apply();
         new DatabaseSeeder().seedDemoData();
